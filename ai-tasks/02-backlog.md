@@ -90,11 +90,13 @@ Handlers **khớp 1:1** với 28 endpoint M1 trong `ai-docs/04-api-contract.md`;
 
 **Kết quả:** store persist `localStorage` + `resetStore()`; đủ **28 handler của M1** và đã đối chiếu chính xác method/path. Dòng thứ 29 là SSE `GET /staff/stream`, chủ ý để M7 theo chính contract. Store thực thi 7 bất biến, validate payload, snapshot giá phía server, idempotency 60 giây, guest/staff/owner auth. Panel chaos lưu `localStorage`, hỗ trợ trễ 150–800ms, lỗi 500, offline và ép hai lỗi nghiệp vụ. `src/browser.ts` xuất `startMockWorker()`; `src/node.ts` xuất `server`.
 
-### `WS-04` — `packages/ui` · TODO (M1)
+### `WS-04` — `packages/ui` · **DONE** (2026-08-02) — build sạch
 
 `theme.css` với token Tailwind v4 `@theme` (bảng token ở `ai-docs/05`), cộng primitive: `Button` · `IconButton` · `Badge` · `OrderStatusBadge` · `BottomSheet` (bẫy focus, `Esc`) · `Modal` · `QuantityStepper` · `Money` · `EmptyState` · `ErrorState` · `LoadingSkeleton` · `Toast`.
 
 Named export, không `export default`. Chỉ đưa vào đây thứ **≥ 2 app** dùng.
+
+**Kết quả:** tạo `@kimthanh-tableqr/ui` với `theme.css` Tailwind v4 `@theme` đúng token `ai-docs/08`, CSS primitive bám prototype, named exports cho đủ component backlog. `Modal` và `BottomSheet` có focus trap, đóng bằng `Esc`, trả focus về phần tử mở. `Money` dùng `formatVnd()` từ contracts; `OrderStatusBadge` dùng nhãn trạng thái chung từ contracts. React khai báo peer dependency để các app dùng chung runtime.
 
 ### `WS-08` — Prototype trực quan · **DONE** (2026-08-02)
 
@@ -131,7 +133,7 @@ Hoàn thiện checklist test ở mục D của `ai-docs/07`. Test logic thuần,
 | `WS-01` | `packages/contracts` | M1 | **DONE** — 45/45 test |
 | `WS-02` | Fixture + **21 ảnh món thật** | M1 | **DONE** |
 | `WS-03` | Mock store + MSW handlers | M1 | **DONE** |
-| `WS-04` | `packages/ui` (theo `ai-docs/08`) | M1 | TODO |
+| `WS-04` | `packages/ui` (theo `ai-docs/08`) | M1 | **DONE** |
 | `WS-08` | **Prototype 13 màn** — chốt look | M1 | **DONE** |
 | `GU-00` | Khởi tạo app khách | M2 | TODO |
 | `GU-01` | Router + shell + tải phiên bàn | M2 | TODO |

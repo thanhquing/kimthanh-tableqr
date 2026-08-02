@@ -6,15 +6,15 @@
 
 ## Current task
 
-> ### `WS-04` — `packages/ui`
+> ### `GU-00` — Khởi tạo app khách
 >
-> **Mốc:** M1 · **Trạng thái:** TODO
+> **Mốc:** M2 · **Trạng thái:** TODO
 >
-> Chi tiết đầy đủ: [02-backlog.md § WS-04](02-backlog.md)
+> Chi tiết đầy đủ: [02-backlog.md § GU-00](02-backlog.md)
 >
-> **Đọc trước khi làm:** [`ai-docs/05-ui-ux-spec.md`](../ai-docs/05-ui-ux-spec.md), [`ai-docs/08-design-system.md`](../ai-docs/08-design-system.md), [`prototype/`](../prototype/README.md).
+> **Đọc trước khi làm:** [`ai-tasks/12-prototype-to-react.md`](12-prototype-to-react.md), [`prototype/README.md`](../prototype/README.md), [`ai-docs/05-ui-ux-spec.md`](../ai-docs/05-ui-ux-spec.md), [`ai-docs/08-design-system.md`](../ai-docs/08-design-system.md).
 >
-> **Xong khi:** `theme.css` có token Tailwind v4 và đủ primitive dùng chung theo backlog; named export; build sạch. Chỉ đưa vào package thứ thực sự dùng ở ít nhất 2 app.
+> **Xong khi:** tạo `tableqr-guest` Vite React app dùng `@kimthanh-tableqr/ui`, `@kimthanh-tableqr/contracts`, `@kimthanh-tableqr/mock`; app chạy được trên mock và sẵn sàng cho các task `GU-01`…`GU-10`.
 
 ---
 
@@ -26,15 +26,17 @@
 | `WS-01` — `packages/contracts` | 2026-08-02 | Build sạch, **45/45 test pass**. `formatVnd` · `calcSessionTotal` (loại `CANCELLED`) · `addToCart` (gộp theo `menuItemId`+`note`) · `removeVietnameseTones` · bảng chuyển trạng thái |
 | `WS-02` — Fixture + ảnh món | 2026-08-02 | **21 ảnh thật đã kiểm bằng mắt**, ≤90KB, `CREDITS.md`. Bỏ 3 món không có ảnh đúng. Xem Q9 ở [04-open-questions.md](04-open-questions.md) |
 | `WS-03` — Mock store + MSW handlers | 2026-08-02 | **28 handler M1** đối chiếu method/path (SSE để M7), đủ 7 bất biến, auth/validation/idempotency/persistence/chaos; **16/16 test pass** |
+| `WS-04` — `packages/ui` | 2026-08-02 | `theme.css` Tailwind v4 `@theme`; đủ primitive dùng chung; focus trap cho `Modal`/`BottomSheet`; workspace typecheck/build/test sạch |
+| Cổng M1→M2 | 2026-08-02 | **Đạt**: 3 package build sạch; 28 handler M1 đã đối chiếu; prototype đã duyệt |
 | `WS-08` — Prototype giao diện | 2026-08-02 | **13 màn HTML**, người dùng đã duyệt hướng thiết kế. Không lỗi JS, không tràn ngang ở 375/768/1440. Xem [`prototype/`](../prototype/README.md) |
 
 ---
 
 ## Tiếp theo (theo thứ tự, không đảo)
 
-`WS-04` → **cổng M1→M2** → `GU-00`…`GU-10` → `ST-00`…`ST-08` → `AD-00`…`AD-08` → `WS-05`…`WS-07` → **cổng M5→M6** → `BE-*`.
+`GU-00`…`GU-10` → `ST-00`…`ST-08` → `AD-00`…`AD-08` → `WS-05`…`WS-07` → **cổng M5→M6** → `BE-*`.
 
-Cổng M1→M2: đối chiếu xong 28 handler M1 ở bảng cuối `ai-docs/04`; dòng 29 là SSE để M7. (Điều kiện thứ hai — duyệt look prototype — **đã đạt**.)
+Cổng M1→M2 đã đạt ngày 2026-08-02: đối chiếu xong 28 handler M1 ở bảng cuối `ai-docs/04`, dòng 29 là SSE để M7; prototype đã duyệt; 3 package M1 build sạch.
 
 ---
 
