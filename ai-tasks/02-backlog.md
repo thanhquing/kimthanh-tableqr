@@ -139,7 +139,7 @@ Hoàn thiện checklist test ở mục D của `ai-docs/07`. Test logic thuần,
 | `GU-01` | Router + shell + tải phiên bàn | M2 | **DONE** — route shell + session query, cart/orders lazy |
 | `GU-02` | Màn menu | M2 | **DONE** — menu nhóm danh mục, tab sticky, item availability |
 | `GU-03` | Tìm kiếm món (bỏ dấu) | M2 | **DONE** — lọc local không dấu, clear và empty state |
-| `GU-04` | Bottom sheet chi tiết món | M2 | TODO |
+| `GU-04` | Bottom sheet chi tiết món | M2 | **DONE** — sheet chi tiết, focus trap, quantity/note |
 | `GU-05` | Trạng thái giỏ hàng | M2 | TODO |
 | `GU-06` | Màn giỏ hàng + Gửi đơn | M2 | TODO |
 | `GU-07` | Màn xác nhận đã gửi | M2 | TODO |

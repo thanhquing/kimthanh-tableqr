@@ -1,8 +1,8 @@
-import { Button, EmptyState } from '@kimthanh-tableqr/ui'
+import { BottomSheet, Button, EmptyState, QuantityStepper } from '@kimthanh-tableqr/ui'
 import { formatVnd, removeVietnameseTones, type MenuCategory, type MenuItem } from '@kimthanh-tableqr/contracts'
 import { Plus, Search, X } from 'lucide-react'
 import { type RefObject, useEffect, useMemo, useRef, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 import { useTableSessionContext } from '../features/table-session/table-session-context'
 
 interface MenuGroup {
@@ -12,10 +12,13 @@ interface MenuGroup {
 
 export function MenuPage() {
   const { bootstrap, qrToken } = useTableSessionContext()
+  const { itemId } = useParams()
   const navigate = useNavigate()
   const [activeCategoryId, setActiveCategoryId] = useState<string | null>(null)
   const [quickAddCounts, setQuickAddCounts] = useState<Record<string, number>>({})
   const [query, setQuery] = useState('')
+  const [sheetNote, setSheetNote] = useState('')
+  const [sheetQuantity, setSheetQuantity] = useState(1)
   const groupRefs = useRef(new Map<string, HTMLElement>())
   const searchInputRef = useRef<HTMLInputElement>(null)
 
@@ -53,6 +56,11 @@ export function MenuPage() {
   useEffect(() => {
     setActiveCategoryId(groups[0]?.category.id ?? null)
   }, [groups])
+
+  useEffect(() => {
+    setSheetNote('')
+    setSheetQuantity(1)
+  }, [itemId])
 
   useEffect(() => {
     if (!groups.length || !('IntersectionObserver' in window)) return
@@ -106,6 +114,21 @@ export function MenuPage() {
       behavior: 'smooth',
       block: 'start',
     })
+  }
+
+  const selectedItem = bootstrap.items.find((item) => item.id === itemId && item.isAvailable)
+
+  function closeItemSheet() {
+    navigate(`/t/${qrToken}`)
+  }
+
+  function addFromSheet() {
+    if (!selectedItem) return
+    setQuickAddCounts((counts) => ({
+      ...counts,
+      [selectedItem.id]: (counts[selectedItem.id] ?? 0) + sheetQuantity,
+    }))
+    closeItemSheet()
   }
 
   return (
@@ -167,8 +190,69 @@ export function MenuPage() {
           </section>
         ))}
       </div>
+      {selectedItem ? (
+        <BottomSheet
+          className="guest-item-sheet"
+          description={selectedItem.description}
+          isOpen
+          media={<ItemSheetMedia item={selectedItem} />}
+          onClose={closeItemSheet}
+          title={selectedItem.name}
+        >
+          <div className="guest-item-sheet__quantity">
+            <p className="guest-item-sheet__label">Số lượng</p>
+            <QuantityStepper onChange={setSheetQuantity} value={sheetQuantity} />
+          </div>
+          <label className="guest-item-sheet__label" htmlFor="item-note">Ghi chú cho bếp</label>
+          <textarea
+            className="guest-item-sheet__note"
+            id="item-note"
+            onChange={(event) => setSheetNote(event.target.value)}
+            placeholder="Ví dụ: ít đá, không rau..."
+            rows={2}
+            value={sheetNote}
+          />
+          <div className="guest-item-sheet__suggestions">
+            {NOTE_SUGGESTIONS.map((suggestion) => {
+              const selected = splitNote(sheetNote).includes(suggestion)
+              return (
+                <button
+                  aria-pressed={selected}
+                  key={suggestion}
+                  onClick={() => setSheetNote(toggleSuggestion(sheetNote, suggestion))}
+                  type="button"
+                >
+                  {suggestion}
+                </button>
+              )
+            })}
+          </div>
+          <Button block onClick={addFromSheet} size="lg">
+            Thêm vào giỏ · {formatVnd(selectedItem.priceVnd * sheetQuantity)}
+          </Button>
+        </BottomSheet>
+      ) : null}
     </main>
   )
+}
+
+const NOTE_SUGGESTIONS = ['ít đá', 'không rau', 'thêm ớt', 'ít cay', 'không hành']
+
+function ItemSheetMedia({ item }: { readonly item: MenuItem }) {
+  if (item.imageUrl) {
+    return <img alt="" className="guest-item-sheet__image" height={270} src={item.imageUrl} width={480} />
+  }
+
+  return <div aria-hidden="true" className="guest-item-sheet__image guest-item-sheet__image--placeholder">{item.name.charAt(0)}</div>
+}
+
+function splitNote(note: string): string[] {
+  return note.split(',').map((part) => part.trim()).filter(Boolean)
+}
+
+function toggleSuggestion(note: string, suggestion: string): string {
+  const parts = splitNote(note)
+  return (parts.includes(suggestion) ? parts.filter((part) => part !== suggestion) : [...parts, suggestion]).join(', ')
 }
 
 interface MenuSearchProps {

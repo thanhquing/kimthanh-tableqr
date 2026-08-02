@@ -2,7 +2,6 @@ import { lazy, Suspense } from 'react'
 import { Navigate, Route, Routes } from 'react-router-dom'
 import { TableSessionRoute } from './table-session-route'
 import { InvalidPage } from '../pages/invalid-page'
-import { ItemPage } from '../pages/item-page'
 import { MenuPage } from '../pages/menu-page'
 import { SuccessPage } from '../pages/success-page'
 
@@ -16,7 +15,7 @@ export function App() {
         <Route path="/t/invalid" element={<InvalidPage />} />
         <Route path="/t/:qrToken" element={<TableSessionRoute />}>
           <Route index element={<MenuPage />} />
-          <Route path="item/:itemId" element={<ItemPage />} />
+          <Route path="item/:itemId" element={<MenuPage />} />
           <Route path="cart" element={<CartPage />} />
           <Route path="orders" element={<OrdersPage />} />
           <Route path="success" element={<SuccessPage />} />

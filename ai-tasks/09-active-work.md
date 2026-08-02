@@ -6,15 +6,15 @@
 
 ## Current task
 
-> ### `GU-04` — Bottom sheet chi tiết món
+> ### `GU-05` — Trạng thái giỏ hàng
 >
 > **Mốc:** M2 · **Trạng thái:** TODO
 >
-> Chi tiết đầy đủ: [05-guest-task-list.md § GU-04](05-guest-task-list.md)
+> Chi tiết đầy đủ: [05-guest-task-list.md § GU-05](05-guest-task-list.md)
 >
-> **Đọc trước khi làm:** [`ai-tasks/12-prototype-to-react.md`](12-prototype-to-react.md), [`prototype/guest-menu.html`](../prototype/guest-menu.html), [`ai-docs/05-ui-ux-spec.md`](../ai-docs/05-ui-ux-spec.md), [`ai-docs/08-design-system.md`](../ai-docs/08-design-system.md), [`packages/ui/src/bottom-sheet.tsx`](../packages/ui/src/bottom-sheet.tsx).
+> **Đọc trước khi làm:** [`ai-tasks/12-prototype-to-react.md`](12-prototype-to-react.md), [`prototype/guest-menu.html`](../prototype/guest-menu.html), [`ai-docs/05-ui-ux-spec.md`](../ai-docs/05-ui-ux-spec.md), [`ai-docs/04-api-contract.md`](../ai-docs/04-api-contract.md), [`packages/contracts/src/totals.ts`](../packages/contracts/src/totals.ts).
 >
-> **Xong khi:** card món mở bottom sheet có ảnh/mô tả/stepper/note/chip; đóng bằng scrim, Esc, vuốt xuống; focus trap và trả focus; CTA cập nhật theo số lượng.
+> **Xong khi:** cart context/reducer lưu `sessionStorage` theo sessionId; cùng món+cùng note gộp; thanh giỏ hiện số món/tổng khi >0.
 
 ---
 
@@ -22,6 +22,7 @@
 
 | Task | Ngày | Ghi chú |
 | --- | --- | --- |
+| `GU-04` — Bottom sheet chi tiết món | 2026-08-02 | Sheet phủ menu: ảnh 16:9, stepper/note/chip/CTA; scrim/Esc/vuốt, focus trap/trả focus; UI + guest lint/typecheck/build sạch, JS initial 72,14 KB gzip |
 | `GU-03` — Tìm kiếm món (bỏ dấu) | 2026-08-02 | Tìm tại chỗ theo tên bằng `removeVietnameseTones`; clear giữ focus; không kết quả có nút xoá; lint/typecheck/build sạch, JS initial 70,82 KB gzip |
 | `GU-02` — Màn menu | 2026-08-02 | Menu nhóm/sắp xếp theo danh mục; tab sticky cuộn ngang và active theo IntersectionObserver; item 88px lazy + placeholder; món hết hàng mờ/khóa; nút `+` hiện số lượng đã chọn; lint/typecheck/build sạch, JS initial 70,30 KB gzip |
 | `GU-01` — Router + shell + tải phiên bàn | 2026-08-02 | Đủ route guest; shell hiện tên quán + bàn; `apiClient` tự gắn `X-Guest-Token`; `useTableSession(qrToken)` qua TanStack Query; `TABLE_NOT_FOUND` → `/t/invalid`; `/cart` và `/orders` lazy chunk; lint/build sạch, JS initial 69,16 KB gzip |
@@ -38,7 +39,7 @@
 
 ## Tiếp theo (theo thứ tự, không đảo)
 
-`GU-04`…`GU-10` → `ST-00`…`ST-08` → `AD-00`…`AD-08` → `WS-05`…`WS-07` → **cổng M5→M6** → `BE-*`.
+`GU-05`…`GU-10` → `ST-00`…`ST-08` → `AD-00`…`AD-08` → `WS-05`…`WS-07` → **cổng M5→M6** → `BE-*`.
 
 Cổng M1→M2 đã đạt ngày 2026-08-02: đối chiếu xong 28 handler M1 ở bảng cuối `ai-docs/04`, dòng 29 là SSE để M7; prototype đã duyệt; 3 package M1 build sạch.
 

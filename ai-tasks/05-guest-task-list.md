@@ -49,13 +49,15 @@ Skeleton lúc tải; state lỗi có nút thử lại.
 
 **Kết quả:** thêm ô tìm kiếm sticky, lọc cục bộ theo tên qua `removeVietnameseTones()` (đã có test ở contracts); nút xoá xuất hiện khi có từ khoá và trả focus về ô nhập. Danh mục/menu đồng bộ với kết quả lọc; không có kết quả hiện state tiếng Việt cùng nút xoá tìm kiếm. Lint/typecheck/build sạch, initial JS 70,82 KB gzip.
 
-### `GU-04` — Bottom sheet chi tiết món · TODO
+### `GU-04` — Bottom sheet chi tiết món · **DONE** (2026-08-02)
 
 **Prototype:** `prototype/guest-menu.html (bottom sheet — bấm vào thẻ món)`
 
 Sheet trượt từ dưới, nền mờ, vuốt xuống / chạm nền / `Esc` để đóng. **Bẫy focus, trả focus về card đã mở.** Ảnh lớn, mô tả, bộ đếm số lượng, ô ghi chú + chip gợi ý (`ít đá`, `không rau`, `thêm ớt`, `ít cay`, `không hành`). Nút `Thêm vào giỏ · 50.000 ₫` cập nhật tiền theo số lượng.
 
 Đóng sheet phải quay về đúng vị trí cuộn cũ trong menu.
+
+**Kết quả:** route item dùng cùng `MenuPage` để hiển thị sheet phủ menu. Sheet có ảnh 16:9/placeholder, mô tả, `QuantityStepper`, ghi chú và 5 chip gợi ý; CTA tính lại theo số lượng. Mở/đóng bằng scrim, `Esc`, vuốt xuống; `BottomSheet` dùng focus trap và tự trả focus về card. Lint/typecheck/build UI + guest sạch, initial JS 72,14 KB gzip.
 
 ### `GU-05` — Trạng thái giỏ hàng · TODO
 

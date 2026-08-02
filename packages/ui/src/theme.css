@@ -531,6 +531,7 @@ a {
 }
 
 .kt-sheet {
+  animation: kt-sheet-in var(--kt-base) var(--kt-ease);
   background: var(--kt-surface);
   border-radius: var(--radius-sheet);
   bottom: 0;
@@ -543,6 +544,24 @@ a {
   transform: translateX(-50%);
   width: 100%;
   z-index: 61;
+}
+
+@keyframes kt-sheet-in {
+  from {
+    transform: translateX(-50%) translateY(100%);
+  }
+
+  to {
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+.kt-sheet-grab {
+  background: var(--kt-line-300);
+  border-radius: var(--kt-radius-pill);
+  height: 4px;
+  margin: 12px auto 8px;
+  width: 36px;
 }
 
 .kt-sheet-body {
