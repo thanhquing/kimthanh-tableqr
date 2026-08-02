@@ -41,11 +41,13 @@ Skeleton lúc tải; state lỗi có nút thử lại.
 
 **Kết quả:** render menu từ bootstrap, nhóm/sắp xếp theo danh mục và `sortOrder`; tab danh mục sticky, cuộn ngang, đổi active theo `IntersectionObserver` và cuộn mượt tới nhóm. Card món bám prototype, giữ kích thước ảnh 88×88 với `loading="lazy"`/placeholder; món hết hàng opacity 45%, badge và khóa tương tác. Nút `+` tăng số lượng đã chọn ngay trên card; phần lưu giỏ theo phiên sẽ được nối tại `GU-05`. Skeleton và lỗi dùng state của table-session route; empty state đủ khi quán chưa có menu. Lint/typecheck/build sạch, initial JS 70,30 KB gzip.
 
-### `GU-03` — Tìm kiếm món · TODO
+### `GU-03` — Tìm kiếm món · **DONE** (2026-08-02)
 
 **Prototype:** `prototype/guest-menu.html (ô tìm kiếm)`
 
 Ô tìm kiếm lọc tại chỗ theo tên. **Bỏ dấu tiếng Việt khi so khớp**: gõ "ca phe" ra "Cà phê sữa đá". Viết hàm `removeVietnameseTones()` trong `packages/contracts` + test. Không kết quả → empty state "Không tìm thấy món nào" + nút xoá tìm kiếm.
+
+**Kết quả:** thêm ô tìm kiếm sticky, lọc cục bộ theo tên qua `removeVietnameseTones()` (đã có test ở contracts); nút xoá xuất hiện khi có từ khoá và trả focus về ô nhập. Danh mục/menu đồng bộ với kết quả lọc; không có kết quả hiện state tiếng Việt cùng nút xoá tìm kiếm. Lint/typecheck/build sạch, initial JS 70,82 KB gzip.
 
 ### `GU-04` — Bottom sheet chi tiết món · TODO
 

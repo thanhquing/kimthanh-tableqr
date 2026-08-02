@@ -6,15 +6,15 @@
 
 ## Current task
 
-> ### `GU-03` — Tìm kiếm món (bỏ dấu)
+> ### `GU-04` — Bottom sheet chi tiết món
 >
 > **Mốc:** M2 · **Trạng thái:** TODO
 >
-> Chi tiết đầy đủ: [05-guest-task-list.md § GU-03](05-guest-task-list.md)
+> Chi tiết đầy đủ: [05-guest-task-list.md § GU-04](05-guest-task-list.md)
 >
-> **Đọc trước khi làm:** [`ai-tasks/12-prototype-to-react.md`](12-prototype-to-react.md), [`prototype/guest-menu.html`](../prototype/guest-menu.html), [`ai-docs/05-ui-ux-spec.md`](../ai-docs/05-ui-ux-spec.md), [`ai-docs/08-design-system.md`](../ai-docs/08-design-system.md), [`packages/contracts/src/format.ts`](../packages/contracts/src/format.ts).
+> **Đọc trước khi làm:** [`ai-tasks/12-prototype-to-react.md`](12-prototype-to-react.md), [`prototype/guest-menu.html`](../prototype/guest-menu.html), [`ai-docs/05-ui-ux-spec.md`](../ai-docs/05-ui-ux-spec.md), [`ai-docs/08-design-system.md`](../ai-docs/08-design-system.md), [`packages/ui/src/bottom-sheet.tsx`](../packages/ui/src/bottom-sheet.tsx).
 >
-> **Xong khi:** ô tìm kiếm lọc tại chỗ theo tên/mô tả, bỏ dấu tiếng Việt; nút xoá; trạng thái không có kết quả có đường xoá tìm kiếm.
+> **Xong khi:** card món mở bottom sheet có ảnh/mô tả/stepper/note/chip; đóng bằng scrim, Esc, vuốt xuống; focus trap và trả focus; CTA cập nhật theo số lượng.
 
 ---
 
@@ -22,6 +22,7 @@
 
 | Task | Ngày | Ghi chú |
 | --- | --- | --- |
+| `GU-03` — Tìm kiếm món (bỏ dấu) | 2026-08-02 | Tìm tại chỗ theo tên bằng `removeVietnameseTones`; clear giữ focus; không kết quả có nút xoá; lint/typecheck/build sạch, JS initial 70,82 KB gzip |
 | `GU-02` — Màn menu | 2026-08-02 | Menu nhóm/sắp xếp theo danh mục; tab sticky cuộn ngang và active theo IntersectionObserver; item 88px lazy + placeholder; món hết hàng mờ/khóa; nút `+` hiện số lượng đã chọn; lint/typecheck/build sạch, JS initial 70,30 KB gzip |
 | `GU-01` — Router + shell + tải phiên bàn | 2026-08-02 | Đủ route guest; shell hiện tên quán + bàn; `apiClient` tự gắn `X-Guest-Token`; `useTableSession(qrToken)` qua TanStack Query; `TABLE_NOT_FOUND` → `/t/invalid`; `/cart` và `/orders` lazy chunk; lint/build sạch, JS initial 69,16 KB gzip |
 | `GU-00` — Khởi tạo app khách | 2026-08-02 | Vite 5 + React 18 + TS; UI theme/Tailwind v4; Router + Query provider; error boundary; MSW dynamic import/await trước render; lint/build sạch, workspace **61/61 test pass**, JS initial 57,18 KB gzip |
@@ -37,7 +38,7 @@
 
 ## Tiếp theo (theo thứ tự, không đảo)
 
-`GU-03`…`GU-10` → `ST-00`…`ST-08` → `AD-00`…`AD-08` → `WS-05`…`WS-07` → **cổng M5→M6** → `BE-*`.
+`GU-04`…`GU-10` → `ST-00`…`ST-08` → `AD-00`…`AD-08` → `WS-05`…`WS-07` → **cổng M5→M6** → `BE-*`.
 
 Cổng M1→M2 đã đạt ngày 2026-08-02: đối chiếu xong 28 handler M1 ở bảng cuối `ai-docs/04`, dòng 29 là SSE để M7; prototype đã duyệt; 3 package M1 build sạch.
 

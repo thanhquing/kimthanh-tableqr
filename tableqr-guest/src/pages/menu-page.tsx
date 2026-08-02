@@ -1,7 +1,7 @@
-import { EmptyState } from '@kimthanh-tableqr/ui'
-import { formatVnd, type MenuCategory, type MenuItem } from '@kimthanh-tableqr/contracts'
-import { Plus } from 'lucide-react'
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { Button, EmptyState } from '@kimthanh-tableqr/ui'
+import { formatVnd, removeVietnameseTones, type MenuCategory, type MenuItem } from '@kimthanh-tableqr/contracts'
+import { Plus, Search, X } from 'lucide-react'
+import { type RefObject, useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTableSessionContext } from '../features/table-session/table-session-context'
 
@@ -15,9 +15,11 @@ export function MenuPage() {
   const navigate = useNavigate()
   const [activeCategoryId, setActiveCategoryId] = useState<string | null>(null)
   const [quickAddCounts, setQuickAddCounts] = useState<Record<string, number>>({})
+  const [query, setQuery] = useState('')
   const groupRefs = useRef(new Map<string, HTMLElement>())
+  const searchInputRef = useRef<HTMLInputElement>(null)
 
-  const groups = useMemo<MenuGroup[]>(() => {
+  const allGroups = useMemo<MenuGroup[]>(() => {
     const itemsByCategory = new Map<string, MenuItem[]>()
     for (const item of bootstrap.items) {
       const items = itemsByCategory.get(item.categoryId) ?? []
@@ -36,6 +38,18 @@ export function MenuPage() {
       .filter((group) => group.items.length > 0)
   }, [bootstrap.categories, bootstrap.items])
 
+  const groups = useMemo(() => {
+    const normalizedQuery = removeVietnameseTones(query)
+    if (!normalizedQuery) return allGroups
+
+    return allGroups
+      .map((group) => ({
+        ...group,
+        items: group.items.filter((item) => removeVietnameseTones(item.name).includes(normalizedQuery)),
+      }))
+      .filter((group) => group.items.length > 0)
+  }, [allGroups, query])
+
   useEffect(() => {
     setActiveCategoryId(groups[0]?.category.id ?? null)
   }, [groups])
@@ -48,7 +62,7 @@ export function MenuPage() {
         const visibleEntry = entries.find((entry) => entry.isIntersecting)
         if (visibleEntry) setActiveCategoryId(visibleEntry.target.id.replace('menu-category-', ''))
       },
-      { rootMargin: '-112px 0px -70% 0px' },
+      { rootMargin: '-164px 0px -70% 0px' },
     )
 
     const sections = [...groupRefs.current.values()]
@@ -56,12 +70,31 @@ export function MenuPage() {
     return () => observer.disconnect()
   }, [groups])
 
-  if (!groups.length) {
+  if (!allGroups.length) {
     return (
       <main className="guest-route-state">
         <EmptyState
           description="Vui lòng gọi nhân viên để được hỗ trợ gọi món."
           title="Quán chưa cập nhật thực đơn"
+        />
+      </main>
+    )
+  }
+
+  if (!groups.length) {
+    return (
+      <main className="guest-menu">
+        <MenuSearch
+          inputRef={searchInputRef}
+          onChange={setQuery}
+          onClear={() => setQuery('')}
+          query={query}
+        />
+        <EmptyState
+          action={<Button onClick={() => setQuery('')} variant="secondary">Xoá tìm kiếm</Button>}
+          className="guest-menu__empty-search"
+          description="Thử từ khoá khác, hoặc xem toàn bộ thực đơn."
+          title="Không tìm thấy món nào"
         />
       </main>
     )
@@ -77,22 +110,30 @@ export function MenuPage() {
 
   return (
     <main className="guest-menu">
-      <nav aria-label="Danh mục thực đơn" className="guest-category-tabs">
-        <div className="guest-category-tabs__scroll" role="tablist">
-          {groups.map(({ category }) => (
-            <button
-              aria-selected={category.id === activeCategoryId}
-              className="guest-category-tab"
-              key={category.id}
-              onClick={() => scrollToCategory(category.id)}
-              role="tab"
-              type="button"
-            >
-              {category.name}
-            </button>
-          ))}
-        </div>
-      </nav>
+      <div className="guest-menu-controls">
+        <MenuSearch
+          inputRef={searchInputRef}
+          onChange={setQuery}
+          onClear={() => setQuery('')}
+          query={query}
+        />
+        <nav aria-label="Danh mục thực đơn" className="guest-category-tabs">
+          <div className="guest-category-tabs__scroll" role="tablist">
+            {groups.map(({ category }) => (
+              <button
+                aria-selected={category.id === activeCategoryId}
+                className="guest-category-tab"
+                key={category.id}
+                onClick={() => scrollToCategory(category.id)}
+                role="tab"
+                type="button"
+              >
+                {category.name}
+              </button>
+            ))}
+          </div>
+        </nav>
+      </div>
 
       <div className="guest-menu__groups">
         {groups.map(({ category, items }) => (
@@ -127,6 +168,41 @@ export function MenuPage() {
         ))}
       </div>
     </main>
+  )
+}
+
+interface MenuSearchProps {
+  readonly inputRef: RefObject<HTMLInputElement>
+  readonly onChange: (query: string) => void
+  readonly onClear: () => void
+  readonly query: string
+}
+
+function MenuSearch({ inputRef, onChange, onClear, query }: MenuSearchProps) {
+  function clearSearch() {
+    onClear()
+    inputRef.current?.focus()
+  }
+
+  return (
+    <div className="guest-menu-search">
+      <div className="guest-menu-search__box">
+        <Search aria-hidden="true" size={18} />
+        <input
+          aria-label="Tìm món"
+          onChange={(event) => onChange(event.target.value)}
+          placeholder="Tìm món..."
+          ref={inputRef}
+          type="search"
+          value={query}
+        />
+        {query ? (
+          <button aria-label="Xoá tìm kiếm" className="guest-menu-search__clear" onClick={clearSearch} type="button">
+            <X aria-hidden="true" size={16} strokeWidth={2.5} />
+          </button>
+        ) : null}
+      </div>
+    </div>
   )
 }
 
