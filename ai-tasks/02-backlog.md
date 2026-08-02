@@ -124,8 +124,10 @@ Hoàn thiện checklist test ở mục D của `ai-docs/07`. Test logic thuần,
 
 **Kết quả:** đối chiếu 45 tests contracts và 16 tests mock: đủ format tiền, tổng/gộp giỏ, session loại CANCELLED, transition chặn quay lui và assertion 28 handlers M1. Workspace test sạch.
 
-### `WS-07` — Ngân sách hiệu năng app khách · TODO (M5)
+### `WS-07` — Ngân sách hiệu năng app khách · DONE (M5)
 Đo theo mục B của `ai-docs/07`. Bundle initial `tableqr-guest` **< 150 KB gzip**. Vượt thì cắt, không nới ngưỡng.
+
+**Kết quả:** production build `VITE_USE_MOCK=false` entry guest 74,429 bytes gzip (<153,600); cấu hình Vite loại `public/mockServiceWorker.js` khi mock tắt, `rg 'msw' dist` sạch. Lint/typecheck/build sạch.
 
 ---
 
@@ -171,5 +173,5 @@ Hoàn thiện checklist test ở mục D của `ai-docs/07`. Test logic thuần,
 | `AD-08` | Cài đặt quán | M4 | **DONE** — restaurant settings GET/PATCH and guest preview |
 | `WS-05` | Rà soát responsive & a11y | M5 | **DONE** — automated quality audit; device/visual checks deferred |
 | `WS-06` | Bổ sung test logic | M5 | **DONE** — D checklist covered by 61 existing tests |
-| `WS-07` | Ngân sách hiệu năng | M5 | TODO |
+| `WS-07` | Ngân sách hiệu năng | M5 | **DONE** — 74,429 B gzip, no MSW production artifact |
 | `BE-00`…`BE-13` | Backend + nối FE↔BE | M6–M7 | 🔒 **BLOCKED** |

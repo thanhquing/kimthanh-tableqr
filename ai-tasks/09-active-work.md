@@ -6,15 +6,15 @@
 
 ## Current task
 
-> ### `WS-07` — Ngân sách hiệu năng app khách
+> ### Cổng M5 → M6
 >
-> **Mốc:** M5 · **Trạng thái:** TODO
+> **Mốc:** M5 · **Trạng thái:** REVIEW
 >
-> Chi tiết đầy đủ: [02-backlog.md § WS-07](02-backlog.md)
+> Chi tiết đầy đủ: [01-milestones.md § M5](01-milestones.md)
 >
 > **Đọc trước khi làm:** [`ai-tasks/01-milestones.md`](01-milestones.md), [`ai-tasks/02-backlog.md`](02-backlog.md), [`ai-docs/07-acceptance-criteria.md`](../ai-docs/07-acceptance-criteria.md).
 >
-> **Xong khi:** production bundle initial guest được đo và nhỏ hơn 150 KB gzip; MSW không bị kéo khi mock tắt.
+> **Xong khi:** M5 quality gates được kiểm lại, deferred camera/Print Preview được ghi rõ và quyết định mở `BE-*` theo acceptance criteria.
 
 ---
 
@@ -22,6 +22,7 @@
 
 | Task | Ngày | Ghi chú |
 | --- | --- | --- |
+| `WS-07` — Ngân sách hiệu năng guest | 2026-08-02 | VITE_USE_MOCK=false entry 74,429 B gzip (<150 KB); Vite loại public worker, dist không chứa MSW; lint/typecheck/build sạch |
 | `WS-06` — Bổ sung test logic | 2026-08-02 | 45 contracts + 16 mock tests phủ D: money/cart/session/transition/28 handlers; workspace test sạch |
 | `WS-05` — Rà soát responsive & a11y | 2026-08-02 | Workspace lint/test/build pass, static audit any/ignore/log/money/fetch sạch; visual/device checks deferred |
 | `AD-08` — Cài đặt quán | 2026-08-02 | GET/PATCH restaurant, validate name, logo URL/address + preview khách; lint/typecheck/build sạch, JS initial 81,21 KB gzip |
@@ -65,7 +66,7 @@
 
 ## Tiếp theo (theo thứ tự, không đảo)
 
-`WS-07` → **cổng M5→M6** → `BE-*`.
+**Cổng M5 → M6** → `BE-*`.
 
 Cổng M1→M2 đã đạt ngày 2026-08-02: đối chiếu xong 28 handler M1 ở bảng cuối `ai-docs/04`, dòng 29 là SSE để M7; prototype đã duyệt; 3 package M1 build sạch.
 
