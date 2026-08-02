@@ -71,7 +71,7 @@ Hàm thuần trong `packages/contracts/src/totals.ts`, có test: `calcLineTotal`
 
 **Kết quả:** `CartProvider`/reducer dùng `addToCart`, `calcCartItemCount`, `calcCartTotal`; lưu `sessionStorage` theo session ID và hydrate lại khi mở app. Thêm nhanh và CTA sheet đều đi qua context, giữ ghi chú; thanh giỏ nổi chỉ hiện khi có món. Lint/typecheck/build sạch, initial JS 72,70 KB gzip.
 
-### `GU-06` — Màn giỏ hàng + Gửi đơn · TODO
+### `GU-06` — Màn giỏ hàng + Gửi đơn · **DONE** (2026-08-02)
 
 **Prototype:** `prototype/guest-cart.html`
 
@@ -83,6 +83,8 @@ Xử lý lỗi:
 - `ITEMS_UNAVAILABLE` → giữ giỏ, đánh dấu đỏ đúng món trong `details.unavailableItemIds`, hiện `message` của server
 - `SESSION_CLOSED` → màn "Phiên đã kết thúc, quét lại mã QR"
 - Mất mạng → "Không có kết nối mạng" + nút Thử lại, **giỏ giữ nguyên**
+
+**Kết quả:** màn giỏ có tăng/giảm/xóa kèm snackbar Hoàn tác, sửa ghi chú inline với chip gợi ý, tổng tiền và empty state. `POST /guest/sessions/:id/orders` chỉ gửi item/quantity/note, thêm UUID `X-Request-Id`, khóa nút khi gửi và xóa giỏ sau thành công rồi tới success. Lỗi giữ giỏ; `ITEMS_UNAVAILABLE` tô đúng dòng; `SESSION_CLOSED` hiện state phiên đã kết thúc. Lint/typecheck/build sạch, initial JS 72,99 KB gzip.
 
 ### `GU-07` — Màn xác nhận đã gửi · TODO
 

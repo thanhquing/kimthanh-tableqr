@@ -3,17 +3,29 @@ import { createContext, type ReactNode, useContext, useEffect, useMemo, useReduc
 
 interface CartContextValue {
   readonly addItem: (item: MenuItem, quantity: number, note?: string) => void
+  readonly clear: () => void
   readonly itemCount: number
   readonly lines: readonly CartLine[]
+  readonly removeLine: (index: number) => void
+  readonly restoreLine: (line: CartLine) => void
   readonly totalVnd: number
+  readonly updateQuantity: (index: number, quantity: number) => void
+  readonly updateNote: (index: number, note: string) => void
 }
 
 const CartContext = createContext<CartContextValue | null>(null)
 
-type CartAction = { readonly type: 'add'; readonly line: CartLine } | { readonly type: 'hydrate'; readonly lines: CartLine[] }
+type CartAction = { readonly type: 'add'; readonly line: CartLine } | { readonly type: 'clear' } | { readonly type: 'hydrate'; readonly lines: CartLine[] } | { readonly type: 'note'; readonly index: number; readonly note: string } | { readonly type: 'remove'; readonly index: number } | { readonly type: 'quantity'; readonly index: number; readonly quantity: number }
 
 function reducer(lines: readonly CartLine[], action: CartAction): readonly CartLine[] {
   if (action.type === 'hydrate') return action.lines
+  if (action.type === 'clear') return []
+  if (action.type === 'note') {
+    const target = lines[action.index]
+    return target ? addToCart(lines.filter((_, index) => index !== action.index), { ...target, note: action.note.trim() || null }) : lines
+  }
+  if (action.type === 'remove') return lines.filter((_, index) => index !== action.index)
+  if (action.type === 'quantity') return action.quantity < 1 ? lines.filter((_, index) => index !== action.index) : lines.map((line, index) => index === action.index ? { ...line, quantity: action.quantity } : line)
   return addToCart(lines, action.line)
 }
 
@@ -47,9 +59,14 @@ export function CartProvider({ children, sessionId }: { readonly children: React
       type: 'add',
       line: { menuItemId: item.id, name: item.name, unitPriceVnd: item.priceVnd, quantity, note: note.trim() || null },
     }),
+    clear: () => dispatch({ type: 'clear' }),
     itemCount: calcCartItemCount(lines),
     lines,
+    removeLine: (index) => dispatch({ type: 'remove', index }),
+    restoreLine: (line) => dispatch({ type: 'add', line }),
     totalVnd: calcCartTotal(lines),
+    updateQuantity: (index, quantity) => dispatch({ type: 'quantity', index, quantity }),
+    updateNote: (index, note) => dispatch({ type: 'note', index, note }),
   }), [lines])
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>

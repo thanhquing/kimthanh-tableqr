@@ -6,15 +6,15 @@
 
 ## Current task
 
-> ### `GU-06` — Màn giỏ hàng + Gửi đơn
+> ### `GU-07` — Màn xác nhận đã gửi
 >
 > **Mốc:** M2 · **Trạng thái:** TODO
 >
-> Chi tiết đầy đủ: [05-guest-task-list.md § GU-06](05-guest-task-list.md)
+> Chi tiết đầy đủ: [05-guest-task-list.md § GU-07](05-guest-task-list.md)
 >
 > **Đọc trước khi làm:** [`ai-tasks/12-prototype-to-react.md`](12-prototype-to-react.md), [`prototype/guest-menu.html`](../prototype/guest-menu.html), [`ai-docs/05-ui-ux-spec.md`](../ai-docs/05-ui-ux-spec.md), [`ai-docs/04-api-contract.md`](../ai-docs/04-api-contract.md), [`packages/contracts/src/totals.ts`](../packages/contracts/src/totals.ts).
 >
-> **Xong khi:** màn giỏ và gửi đơn thật, chống double submit, xử lý `ITEMS_UNAVAILABLE`/`SESSION_CLOSED`/offline.
+> **Xong khi:** có tóm tắt đơn vừa gửi, chuyển `/orders` sau 3 giây và có nút bỏ qua chờ.
 
 ---
 
@@ -22,6 +22,7 @@
 
 | Task | Ngày | Ghi chú |
 | --- | --- | --- |
+| `GU-06` — Màn giỏ hàng + Gửi đơn | 2026-08-02 | Cart tăng/giảm/xóa + Hoàn tác; ghi chú inline/chip; POST thật kèm request ID, chặn double-submit; ITEMS_UNAVAILABLE/SESSION_CLOSED; lint/typecheck/build sạch, JS initial 72,99 KB gzip |
 | `GU-05` — Trạng thái giỏ hàng | 2026-08-02 | Cart context/reducer `sessionStorage` theo session; gộp món+note qua contracts; thanh giỏ nổi; lint/typecheck/build sạch, JS initial 72,70 KB gzip |
 | `GU-04` — Bottom sheet chi tiết món | 2026-08-02 | Sheet phủ menu: ảnh 16:9, stepper/note/chip/CTA; scrim/Esc/vuốt, focus trap/trả focus; UI + guest lint/typecheck/build sạch, JS initial 72,14 KB gzip |
 | `GU-03` — Tìm kiếm món (bỏ dấu) | 2026-08-02 | Tìm tại chỗ theo tên bằng `removeVietnameseTones`; clear giữ focus; không kết quả có nút xoá; lint/typecheck/build sạch, JS initial 70,82 KB gzip |
@@ -40,7 +41,7 @@
 
 ## Tiếp theo (theo thứ tự, không đảo)
 
-`GU-06`…`GU-10` → `ST-00`…`ST-08` → `AD-00`…`AD-08` → `WS-05`…`WS-07` → **cổng M5→M6** → `BE-*`.
+`GU-07`…`GU-10` → `ST-00`…`ST-08` → `AD-00`…`AD-08` → `WS-05`…`WS-07` → **cổng M5→M6** → `BE-*`.
 
 Cổng M1→M2 đã đạt ngày 2026-08-02: đối chiếu xong 28 handler M1 ở bảng cuối `ai-docs/04`, dòng 29 là SSE để M7; prototype đã duyệt; 3 package M1 build sạch.
 
