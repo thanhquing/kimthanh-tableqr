@@ -6,15 +6,15 @@
 
 ## Current task
 
-> ### `ST-07` — Chi tiết phiên + Đã thanh toán + Reset bàn
+> ### `ST-08` — Thông báo gọi nhân viên
 >
-> **Mốc:** M2 · **Trạng thái:** TODO
+> **Mốc:** M3 · **Trạng thái:** TODO
 >
-> Chi tiết đầy đủ: [06-staff-task-list.md § ST-07](06-staff-task-list.md)
+> Chi tiết đầy đủ: [06-staff-task-list.md § ST-08](06-staff-task-list.md)
 >
-> **Đọc trước khi làm:** [`ai-tasks/12-prototype-to-react.md`](12-prototype-to-react.md), [`prototype/guest-menu.html`](../prototype/guest-menu.html), [`ai-docs/05-ui-ux-spec.md`](../ai-docs/05-ui-ux-spec.md), [`ai-docs/04-api-contract.md`](../ai-docs/04-api-contract.md), [`packages/contracts/src/totals.ts`](../packages/contracts/src/totals.ts).
+> **Đọc trước khi làm:** [`ai-tasks/12-prototype-to-react.md`](12-prototype-to-react.md), [`prototype/staff-orders.html`](../prototype/staff-orders.html), [`ai-docs/05-ui-ux-spec.md`](../ai-docs/05-ui-ux-spec.md), [`ai-docs/04-api-contract.md`](../ai-docs/04-api-contract.md).
 >
-> **Xong khi:** chi tiết phiên, thanh toán, reset bàn và xác nhận đúng thông điệp nghiệp vụ.
+> **Xong khi:** chuông header hiển thị call pending theo polling 3 giây, có ưu tiên yêu cầu tính tiền và nhân viên có thể đánh dấu đã xử lý.
 
 ---
 
@@ -22,6 +22,7 @@
 
 | Task | Ngày | Ghi chú |
 | --- | --- | --- |
+| `ST-07` — Chi tiết phiên + thanh toán + reset bàn | 2026-08-02 | GET session detail, tổng `calcSessionTotal`, POST pay/close, cảnh báo reset chưa thanh toán; lint/typecheck/build sạch, JS initial 71,79 KB gzip |
 | `ST-06` — Sơ đồ bàn | 2026-08-02 | Query tables, lưới busy/empty/call, link chi tiết phiên; lint/typecheck/build sạch, JS initial 70,69 KB gzip |
 | `ST-05` — Chuông báo đơn mới | 2026-08-02 | Web Audio khi có order mới, mute localStorage/gợi ý autoplay; lint/typecheck/build sạch, JS initial 69,55 KB gzip |
 | `ST-04` — Chuyển trạng thái đơn | 2026-08-02 | PATCH optimistic/rollback trong order stream; transition hợp lệ + modal hủy; lint/typecheck/build sạch, JS initial 68,94 KB gzip |
@@ -52,7 +53,7 @@
 
 ## Tiếp theo (theo thứ tự, không đảo)
 
-`ST-07`…`ST-08` → `AD-00`…`AD-08` → `WS-05`…`WS-07` → **cổng M5→M6** → `BE-*`.
+`ST-08` → `AD-00`…`AD-08` → `WS-05`…`WS-07` → **cổng M5→M6** → `BE-*`.
 
 Cổng M1→M2 đã đạt ngày 2026-08-02: đối chiếu xong 28 handler M1 ở bảng cuối `ai-docs/04`, dòng 29 là SSE để M7; prototype đã duyệt; 3 package M1 build sạch.
 

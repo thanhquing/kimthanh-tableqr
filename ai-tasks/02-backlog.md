@@ -153,7 +153,7 @@ Hoàn thiện checklist test ở mục D của `ai-docs/07`. Test logic thuần,
 | `ST-04` | Chuyển trạng thái đơn | M3 | **DONE** — optimistic PATCH + cancel modal |
 | `ST-05` | Chuông báo đơn mới | M3 | **DONE** — Web Audio + mute persistence |
 | `ST-06` | Sơ đồ bàn | M3 | **DONE** — API table grid + session links |
-| `ST-07` | Chi tiết phiên + Reset bàn | M3 | TODO |
+| `ST-07` | Chi tiết phiên + Reset bàn | M3 | **DONE** — session bill, pay and guarded reset |
 | `ST-08` | Thông báo gọi nhân viên | M3 | TODO |
 | `ST-09` | (tuỳ chọn) Proxy cùng origin | M3 | TODO |
 | `AD-00` | Khởi tạo app admin + shell | M4 | TODO |

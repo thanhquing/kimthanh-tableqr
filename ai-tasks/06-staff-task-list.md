@@ -80,7 +80,7 @@ Lưu ý trình duyệt chặn autoplay: chỉ phát sau khi người dùng đã 
 
 **Kết quả:** query `GET /staff/tables`, render lưới responsive phân biệt bàn trống/có khách, thông tin phiên và chip khách gọi; bàn đang có phiên link tới route chi tiết. Lint/typecheck/build sạch, initial JS 70,69 KB gzip.
 
-### `ST-07` — Chi tiết phiên + Đã thanh toán + Reset bàn · TODO
+### `ST-07` — Chi tiết phiên + Đã thanh toán + Reset bàn · DONE
 
 **Prototype:** `prototype/staff-session.html`
 
@@ -92,6 +92,8 @@ Lưu ý trình duyệt chặn autoplay: chỉ phát sau khi người dùng đã 
 Cho Reset khi chưa thanh toán (khách bỏ đi, vẫn phải dọn bàn) nhưng thêm một dòng cảnh báo đỏ.
 
 Đơn `CANCELLED` **không** tính vào tổng — dùng `calcSessionTotal()` của `packages/contracts`, không cộng tay.
+
+**Kết quả:** route chi tiết phiên tải orders theo session, hiển thị tổng bill qua `calcSessionTotal()`, ghi nhận thanh toán và reset với xác nhận/cảnh báo khi chưa thanh toán. Lint/typecheck/build sạch, initial JS 71,79 KB gzip.
 
 ### `ST-08` — Thông báo gọi nhân viên · TODO
 
