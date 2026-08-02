@@ -29,7 +29,7 @@ Header hiện tên quán + số bàn.
 
 **Kết quả:** đủ route `/t/:qrToken`, `/t/:qrToken/item/:itemId`, `/t/:qrToken/cart`, `/t/:qrToken/orders`, `/t/:qrToken/success`, `/t/invalid` và `*` → invalid. `apiClient` tự sinh/lưu `guestToken` UUID trong `sessionStorage` và gắn `X-Guest-Token`; `useTableSession(qrToken)` tải `GET /guest/tables/:qrToken` qua TanStack Query. Shell bám prototype, hiện tên quán + bàn. `TABLE_NOT_FOUND` chuyển `/t/invalid`. `/cart` và `/orders` tách chunk lazy. Lint/build sạch; initial JS 69,16 KB gzip.
 
-### `GU-02` — Màn menu · TODO
+### `GU-02` — Màn menu · **DONE** (2026-08-02)
 
 **Prototype:** `prototype/guest-menu.html`
 
@@ -38,6 +38,8 @@ Danh sách món nhóm theo danh mục. Tab danh mục cuộn ngang, dính dướ
 Ảnh: `loading="lazy"`, `width`/`height` cố định, nền placeholder — **CLS phải < 0.1**.
 
 Skeleton lúc tải; state lỗi có nút thử lại.
+
+**Kết quả:** render menu từ bootstrap, nhóm/sắp xếp theo danh mục và `sortOrder`; tab danh mục sticky, cuộn ngang, đổi active theo `IntersectionObserver` và cuộn mượt tới nhóm. Card món bám prototype, giữ kích thước ảnh 88×88 với `loading="lazy"`/placeholder; món hết hàng opacity 45%, badge và khóa tương tác. Nút `+` tăng số lượng đã chọn ngay trên card; phần lưu giỏ theo phiên sẽ được nối tại `GU-05`. Skeleton và lỗi dùng state của table-session route; empty state đủ khi quán chưa có menu. Lint/typecheck/build sạch, initial JS 70,30 KB gzip.
 
 ### `GU-03` — Tìm kiếm món · TODO
 
