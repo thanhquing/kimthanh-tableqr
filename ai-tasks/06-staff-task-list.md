@@ -62,13 +62,15 @@ Thẻ đơn theo `ai-docs/05`: **số bàn là chữ to nhất**, số lần g�
 
 **Kết quả:** dùng `primaryNextStatus`/`primaryActionLabel` để chỉ hiện transition hợp lệ; PATCH cập nhật lạc quan qua `useOrderStream`, lỗi hoàn rollback + toast/refetch. Có nút hủy và modal xác nhận focus-trapped. Lint/typecheck/build sạch, initial JS 68,94 KB gzip.
 
-### `ST-05` — Chuông báo đơn mới · TODO
+### `ST-05` — Chuông báo đơn mới · **DONE** (2026-08-02)
 
 **Prototype:** `prototype/staff-orders.html (nút loa trên header)`
 
 Tiếng chuông ngắn khi có đơn mới (Web Audio, không tải file mp3 nặng). Nút bật/tắt tiếng ở header, lưu `localStorage`.
 
 Lưu ý trình duyệt chặn autoplay: chỉ phát sau khi người dùng đã tương tác lần đầu; chưa tương tác thì hiện gợi ý "Chạm để bật âm báo".
+
+**Kết quả:** `SoundProvider` tạo tiếng bíp Web Audio cho ID đơn mới sau poll đầu, mute lưu `localStorage`; header có toggle và gợi ý bật âm báo trước first interaction. Lint/typecheck/build sạch, initial JS 69,55 KB gzip.
 
 ### `ST-06` — Sơ đồ bàn · TODO
 
