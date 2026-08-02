@@ -95,11 +95,13 @@ Cho Reset khi chưa thanh toán (khách bỏ đi, vẫn phải dọn bàn) nhưn
 
 **Kết quả:** route chi tiết phiên tải orders theo session, hiển thị tổng bill qua `calcSessionTotal()`, ghi nhận thanh toán và reset với xác nhận/cảnh báo khi chưa thanh toán. Lint/typecheck/build sạch, initial JS 71,79 KB gzip.
 
-### `ST-08` — Thông báo gọi nhân viên · TODO
+### `ST-08` — Thông báo gọi nhân viên · DONE
 
 **Prototype:** `prototype/staff-orders.html (chuông trên header)`
 
 Chuông trên header có badge số, từ `GET /staff/calls?status=PENDING` (chung chu kỳ polling với `ST-02`). Danh sách: "Bàn 3 · Xin tính tiền · 1 phút trước" + nút "Đã xử lý" → `PATCH /staff/calls/:id`. `REQUEST_BILL` nổi bật hơn `CALL_STAFF`.
+
+**Kết quả:** chuông header poll pending calls mỗi 3 giây, badge số lượng, modal danh sách theo thời gian tương đối; yêu cầu xin tính tiền nổi bật và PATCH DONE cập nhật lạc quan có rollback. Lint/typecheck/build sạch, initial JS 72,41 KB gzip.
 
 ### `ST-09` — (tuỳ chọn) Proxy cùng origin để demo sớm · TODO
 
