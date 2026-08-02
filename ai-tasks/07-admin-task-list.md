@@ -17,9 +17,11 @@ Vite + React + TS, cổng 5175. Sidebar trái: **Menu · Bàn & mã QR · Cài �
 
 **Kết quả:** `tableqr-admin` có Vite/React/TS, mock worker, Query/Router, shell sidebar responsive và routes placeholder `/menu`, `/tables`, `/tables/print`, `/settings`; `.env.example` có guest base URL. Lint/typecheck/build sạch, initial JS 63,90 KB gzip.
 
-### `AD-01` — Đăng nhập · TODO
+### `AD-01` — Đăng nhập · DONE
 
 `/login` email + mật khẩu → `POST /admin/auth/login`. Token `localStorage`, route guard, nút Đăng xuất.
+
+**Kết quả:** form email/password gọi admin login, hiển thị lỗi API, lưu `AuthResponse` owner trong localStorage, bảo vệ routes admin và logout từ sidebar. Lint/typecheck/build sạch, initial JS 64,77 KB gzip.
 
 ### `AD-02` — Danh sách danh mục · TODO
 

@@ -6,15 +6,15 @@
 
 ## Current task
 
-> ### `AD-01` — Đăng nhập
+> ### `AD-02` — Danh sách danh mục
 >
 > **Mốc:** M4 · **Trạng thái:** TODO
 >
-> Chi tiết đầy đủ: [07-admin-task-list.md § AD-01](07-admin-task-list.md)
+> Chi tiết đầy đủ: [07-admin-task-list.md § AD-02](07-admin-task-list.md)
 >
-> **Đọc trước khi làm:** [`ai-tasks/12-prototype-to-react.md`](12-prototype-to-react.md), [`ai-docs/04-api-contract.md`](../ai-docs/04-api-contract.md), [`ai-docs/05-ui-ux-spec.md`](../ai-docs/05-ui-ux-spec.md).
+> **Đọc trước khi làm:** [`ai-tasks/12-prototype-to-react.md`](12-prototype-to-react.md), [`prototype/admin-menu.html`](../prototype/admin-menu.html), [`ai-docs/04-api-contract.md`](../ai-docs/04-api-contract.md), [`ai-docs/05-ui-ux-spec.md`](../ai-docs/05-ui-ux-spec.md).
 >
-> **Xong khi:** email/password login gọi API, token bền trong localStorage, route guard hoạt động và shell có nút đăng xuất.
+> **Xong khi:** danh mục hiển thị số món, hỗ trợ thêm/sửa/bật-tắt/xoá có lỗi 409 và đổi thứ tự lưu ngay.
 
 ---
 
@@ -22,6 +22,7 @@
 
 | Task | Ngày | Ghi chú |
 | --- | --- | --- |
+| `AD-01` — Đăng nhập | 2026-08-02 | POST email/password, lỗi API, auth owner localStorage/guard/logout sidebar; lint/typecheck/build sạch, JS initial 64,77 KB gzip |
 | `AD-00` — Khởi tạo app + shell | 2026-08-02 | Vite/React/TS cổng 5175, mock worker, Query/Router, sidebar responsive + placeholder routes, `.env.example` guest URL; lint/typecheck/build sạch, JS initial 63,90 KB gzip |
 | `ST-08` — Thông báo gọi nhân viên | 2026-08-02 | Header bell poll 3 giây, badge/modal, ưu tiên request bill, optimistic PATCH DONE rollback; lint/typecheck/build sạch, JS initial 72,41 KB gzip |
 | `ST-07` — Chi tiết phiên + thanh toán + reset bàn | 2026-08-02 | GET session detail, tổng `calcSessionTotal`, POST pay/close, cảnh báo reset chưa thanh toán; lint/typecheck/build sạch, JS initial 71,79 KB gzip |
@@ -55,7 +56,7 @@
 
 ## Tiếp theo (theo thứ tự, không đảo)
 
-`AD-01`…`AD-08` → `WS-05`…`WS-07` → **cổng M5→M6** → `BE-*`.
+`AD-02`…`AD-08` → `WS-05`…`WS-07` → **cổng M5→M6** → `BE-*`.
 
 Cổng M1→M2 đã đạt ngày 2026-08-02: đối chiếu xong 28 handler M1 ở bảng cuối `ai-docs/04`, dòng 29 là SSE để M7; prototype đã duyệt; 3 package M1 build sạch.
 
