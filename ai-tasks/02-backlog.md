@@ -145,7 +145,7 @@ Hoàn thiện checklist test ở mục D của `ai-docs/07`. Test logic thuần,
 | `GU-07` | Màn xác nhận đã gửi | M2 | **DONE** — recap đơn vừa gửi + redirect |
 | `GU-08` | Màn đơn của bàn (gọi thêm món) | M2 | **DONE** — polling orders, status và tổng phiên |
 | `GU-09` | Nút nổi Gọi nhân viên | M2 | **DONE** — staff call menu + 30s cooldown |
-| `GU-10` | Trạng thái lỗi & màn biên | M2 | TODO |
+| `GU-10` | Trạng thái lỗi & màn biên | M2 | **DONE** — offline/session closed/error boundary |
 | `ST-00` | Khởi tạo app bếp | M3 | TODO |
 | `ST-01` | Đăng nhập PIN | M3 | TODO |
 | `ST-02` | Hook realtime (polling) | M3 | TODO |

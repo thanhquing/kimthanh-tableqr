@@ -114,11 +114,13 @@ Nút tròn góc phải dưới (không che thanh giỏ hàng). Chạm mở 2 l�
 
 **Kết quả:** nút nổi trong shell tự nâng khi có thanh giỏ, mở menu 2 lựa chọn và `POST` tới calls API. Sau thành công đổi sang dấu tích/khoá 30 giây. Lint/typecheck/build sạch, initial JS 74,17 KB gzip.
 
-### `GU-10` — Trạng thái lỗi & màn hình biên · TODO
+### `GU-10` — Trạng thái lỗi & màn hình biên · **DONE** (2026-08-02)
 
 **Prototype:** `prototype/guest-invalid.html (3 biến thể)`
 
 `/t/invalid`; màn "Phiên đã kết thúc"; xử lý offline toàn app; skeleton cho mọi màn gọi dữ liệu. Rà lại toàn bộ chuỗi tiếng Việt — không để lọt tiếng Anh.
+
+**Kết quả:** giữ `/t/invalid`, thêm `SessionClosedPage` dùng cho cart/orders, banner offline toàn app và error boundary dùng `EmptyState`; skeleton/error/empty tồn tại ở mọi route có query. Lint/typecheck/build sạch, initial JS 74,41 KB gzip; quét sạch mã prototype bị cấm.
 
 ---
 

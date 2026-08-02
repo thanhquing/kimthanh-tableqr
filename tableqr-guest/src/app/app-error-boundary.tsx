@@ -1,4 +1,5 @@
 import { Component, type ErrorInfo, type ReactNode } from 'react'
+import { EmptyState } from '@kimthanh-tableqr/ui'
 
 interface AppErrorBoundaryProps {
   children: ReactNode
@@ -24,15 +25,7 @@ export class AppErrorBoundary extends Component<AppErrorBoundaryProps, AppErrorB
   public override render(): ReactNode {
     if (this.state.hasError) {
       return (
-        <main className="guest-bootstrap">
-          <section className="guest-bootstrap__panel" role="alert">
-            <p className="guest-bootstrap__eyebrow">Không thể mở ứng dụng</p>
-            <h1 className="guest-bootstrap__title">Đã có lỗi xảy ra</h1>
-            <p className="guest-bootstrap__description">
-              Vui lòng tải lại trang. Nếu vẫn chưa được, hãy gọi nhân viên hỗ trợ.
-            </p>
-          </section>
-        </main>
+        <main className="guest-invalid-page"><EmptyState description="Vui lòng tải lại trang. Nếu vẫn chưa được, hãy gọi nhân viên hỗ trợ." title="Đã có lỗi xảy ra" /></main>
       )
     }
 

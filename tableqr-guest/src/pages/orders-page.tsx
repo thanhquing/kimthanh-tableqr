@@ -6,12 +6,15 @@ import { Link } from 'react-router-dom'
 import { useTableSessionContext } from '../features/table-session/table-session-context'
 import { getGuestOrders } from '../lib/api/guest'
 import { getApiClientErrorMessage } from '../lib/api/client'
+import { isApiClientError } from '../lib/api/client'
+import { SessionClosedPage } from './session-closed-page'
 
 export function OrdersPage() {
   const { bootstrap, qrToken } = useTableSessionContext()
   const query = useQuery({ queryFn: () => getGuestOrders(bootstrap.session.id), queryKey: ['guest-orders', bootstrap.session.id], refetchInterval: 10_000 })
 
   if (query.isPending) return <OrdersLoading />
+  if (query.isError && isApiClientError(query.error) && query.error.body?.error.code === 'SESSION_CLOSED') return <SessionClosedPage />
   if (query.isError) return <main className="guest-route-state"><ErrorState action={<Button onClick={() => void query.refetch()} variant="secondary">Thử lại</Button>} description={getApiClientErrorMessage(query.error)} title="Không tải được đơn của bàn" /></main>
   if (!query.data.orders.length) return <main className="guest-route-state"><EmptyState action={<Link className="kt-btn kt-btn-primary" to={`/t/${qrToken}`}>Gọi thêm món</Link>} description="Bạn có thể gọi thêm món bất cứ lúc nào." title="Chưa có đơn nào" /></main>
 

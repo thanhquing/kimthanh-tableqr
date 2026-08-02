@@ -1,6 +1,7 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { type ReactNode, useState } from 'react'
 import { BrowserRouter } from 'react-router-dom'
+import { OfflineNotice } from './offline-notice'
 
 interface AppProvidersProps {
   children: ReactNode
@@ -22,7 +23,7 @@ export function AppProviders({ children }: AppProvidersProps) {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <BrowserRouter>{children}</BrowserRouter>
+      <BrowserRouter><OfflineNotice />{children}</BrowserRouter>
     </QueryClientProvider>
   )
 }

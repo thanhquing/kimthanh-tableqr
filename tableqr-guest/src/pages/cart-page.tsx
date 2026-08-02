@@ -7,6 +7,7 @@ import { useCart } from '../features/cart/cart-context'
 import { useTableSessionContext } from '../features/table-session/table-session-context'
 import { createGuestOrder } from '../lib/api/guest'
 import { getApiClientErrorMessage, isApiClientError } from '../lib/api/client'
+import { SessionClosedPage } from './session-closed-page'
 
 function newRequestId(): string { return crypto.randomUUID() }
 const NOTE_SUGGESTIONS = ['ít đá', 'không rau', 'thêm ớt', 'ít cay', 'không hành']
@@ -49,7 +50,7 @@ export function CartPage() {
     } finally { setIsSending(false) }
   }
 
-  if (isSessionClosed) return <main className="guest-route-state"><EmptyState description="Phiên gọi món đã kết thúc. Quét lại mã QR trên bàn để gọi món mới." title="Phiên đã kết thúc" /></main>
+  if (isSessionClosed) return <SessionClosedPage />
 
   function startEditing(index: number) { setEditingIndex(index); setNoteDraft(lines[index]?.note ?? '') }
   function toggleSuggestion(suggestion: string) {
