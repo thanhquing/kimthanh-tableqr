@@ -73,7 +73,7 @@ Bắt buộc kiểm tra bằng camera điện thoại thật, không chỉ nhìn
 
 **Kết quả:** modal render `QRCodeCanvas` quét được từ `qrUrl` API, hiện tên bàn/URL và xuất đúng canvas thành PNG. Lint/typecheck/build sạch, initial JS 80,09 KB gzip. **Cần xác nhận quét bằng camera điện thoại thật trước khi phát hành.**
 
-### `AD-07` — Trang in mã QR hàng loạt · TODO
+### `AD-07` — Trang in mã QR hàng loạt · DONE
 
 **Prototype:** `prototype/admin-print.html`
 
@@ -82,6 +82,8 @@ Bắt buộc kiểm tra bằng camera điện thoại thật, không chỉ nhìn
 CSS `@media print`: ẩn mọi thứ ngoài lưới, `page-break-after` đúng chỗ, chừa lề an toàn để cắt không phạm chữ. Chọn lọc bàn cần in (mặc định tất cả bàn `isActive`).
 
 Kiểm tra bằng **Print Preview thật**, không đoán.
+
+**Kết quả:** route riêng không sidebar, chọn các bàn active mặc định, chia QR thật thành sheets A4 3×4 và CSS `@media print` ẩn controls/giữ lề/page break. Lint/typecheck/build sạch, initial JS 80,69 KB gzip. **Cần kiểm Print Preview thật trước khi phát hành.**
 
 ### `AD-08` — Cài đặt quán · TODO
 

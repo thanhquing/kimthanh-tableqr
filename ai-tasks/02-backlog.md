@@ -163,7 +163,7 @@ Hoàn thiện checklist test ở mục D của `ai-docs/07`. Test logic thuần,
 | `AD-04` | Form món | M4 | **DONE** — create/edit form with validation and dirty warning |
 | `AD-05` | Quản lý bàn | M4 | **DONE** — table CRUD with immutable QR token |
 | `AD-06` | Xem mã QR một bàn | M4 | **DONE** — real QR canvas and PNG download (camera check deferred) |
-| `AD-07` | Trang in mã QR hàng loạt | M4 | TODO |
+| `AD-07` | Trang in mã QR hàng loạt | M4 | **DONE** — A4 QR sheets and print CSS (preview deferred) |
 | `AD-08` | Cài đặt quán | M4 | TODO |
 | `WS-05` | Rà soát responsive & a11y | M5 | TODO |
 | `WS-06` | Bổ sung test logic | M5 | TODO |
