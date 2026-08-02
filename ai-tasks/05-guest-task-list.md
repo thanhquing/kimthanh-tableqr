@@ -11,11 +11,13 @@ Phụ thuộc: M1 xong (`WS-01`…`WS-04`).
 
 ---
 
-### `GU-00` — Khởi tạo app · TODO
+### `GU-00` — Khởi tạo app · **DONE** (2026-08-02)
 
 Vite + React + TS, cổng 5173. Nạp `@kimthanh-tableqr/ui` (`theme.css` + Tailwind v4), TanStack Query provider, react-router. Bật MSW qua dynamic import trong `main.tsx`, **await trước khi render** (xem `ai-docs/06`). `.env.example`. Error boundary toàn app.
 
 Xong khi: `pnpm dev:guest` mở ra trang trắng có style, DevTools thấy MSW đã đăng ký.
+
+**Kết quả:** tạo Vite 5 + React 18 + TypeScript app ở cổng 5173; nạp Tailwind v4 và `@kimthanh-tableqr/ui/theme.css`; có React Router, TanStack Query provider và error boundary toàn app. MSW được dynamic import rồi `await` trước render; dev script tự sinh worker bị gitignore, production build không chứa chunk MSW. Có `.env.example` và mặc định development chạy mock. Lint/typecheck/build sạch; workspace 61/61 test pass; bundle khởi tạo 57,18 KB gzip.
 
 ### `GU-01` — Router + shell + tải phiên bàn · TODO
 

@@ -6,15 +6,15 @@
 
 ## Current task
 
-> ### `GU-00` — Khởi tạo app khách
+> ### `GU-01` — Router + shell + tải phiên bàn
 >
 > **Mốc:** M2 · **Trạng thái:** TODO
 >
-> Chi tiết đầy đủ: [02-backlog.md § GU-00](02-backlog.md)
+> Chi tiết đầy đủ: [05-guest-task-list.md § GU-01](05-guest-task-list.md)
 >
-> **Đọc trước khi làm:** [`ai-tasks/12-prototype-to-react.md`](12-prototype-to-react.md), [`prototype/README.md`](../prototype/README.md), [`ai-docs/05-ui-ux-spec.md`](../ai-docs/05-ui-ux-spec.md), [`ai-docs/08-design-system.md`](../ai-docs/08-design-system.md).
+> **Đọc trước khi làm:** [`ai-tasks/12-prototype-to-react.md`](12-prototype-to-react.md), [`prototype/guest-menu.html`](../prototype/guest-menu.html), [`ai-docs/04-api-contract.md`](../ai-docs/04-api-contract.md), [`ai-docs/06-architecture-and-tech-stack.md`](../ai-docs/06-architecture-and-tech-stack.md).
 >
-> **Xong khi:** tạo `tableqr-guest` Vite React app dùng `@kimthanh-tableqr/ui`, `@kimthanh-tableqr/contracts`, `@kimthanh-tableqr/mock`; app chạy được trên mock và sẵn sàng cho các task `GU-01`…`GU-10`.
+> **Xong khi:** đủ route guest, shell hiển thị đúng tên quán + bàn, `useTableSession(qrToken)` tải qua TanStack Query và `apiClient` tự gắn `X-Guest-Token`; `TABLE_NOT_FOUND` chuyển sang `/t/invalid`; `/cart` và `/orders` được lazy-load.
 
 ---
 
@@ -22,6 +22,7 @@
 
 | Task | Ngày | Ghi chú |
 | --- | --- | --- |
+| `GU-00` — Khởi tạo app khách | 2026-08-02 | Vite 5 + React 18 + TS; UI theme/Tailwind v4; Router + Query provider; error boundary; MSW dynamic import/await trước render; lint/build sạch, workspace **61/61 test pass**, JS initial 57,18 KB gzip |
 | `WS-00` — Khung workspace + tài liệu | 2026-08-01 | M0 đạt. `ai-docs/` 00–08, `ai-tasks/` 00–12, `CLAUDE.md`, `README.md` |
 | `WS-01` — `packages/contracts` | 2026-08-02 | Build sạch, **45/45 test pass**. `formatVnd` · `calcSessionTotal` (loại `CANCELLED`) · `addToCart` (gộp theo `menuItemId`+`note`) · `removeVietnameseTones` · bảng chuyển trạng thái |
 | `WS-02` — Fixture + ảnh món | 2026-08-02 | **21 ảnh thật đã kiểm bằng mắt**, ≤90KB, `CREDITS.md`. Bỏ 3 món không có ảnh đúng. Xem Q9 ở [04-open-questions.md](04-open-questions.md) |
@@ -34,7 +35,7 @@
 
 ## Tiếp theo (theo thứ tự, không đảo)
 
-`GU-00`…`GU-10` → `ST-00`…`ST-08` → `AD-00`…`AD-08` → `WS-05`…`WS-07` → **cổng M5→M6** → `BE-*`.
+`GU-01`…`GU-10` → `ST-00`…`ST-08` → `AD-00`…`AD-08` → `WS-05`…`WS-07` → **cổng M5→M6** → `BE-*`.
 
 Cổng M1→M2 đã đạt ngày 2026-08-02: đối chiếu xong 28 handler M1 ở bảng cuối `ai-docs/04`, dòng 29 là SSE để M7; prototype đã duyệt; 3 package M1 build sạch.
 

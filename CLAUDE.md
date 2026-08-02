@@ -61,7 +61,7 @@ pnpm workspace. Node ≥ 20.19 (dùng 22, xem `.nvmrc`), `pnpm@10.13.1`.
 | `packages/mock` | Fixture + store + MSW handlers khớp `ai-docs/04` | TS + MSW 2 | `WS-02`/`WS-03` DONE |
 | `packages/ui` | `theme.css` (Tailwind v4 `@theme`) + primitive dùng chung | TS + React | `WS-04` DONE |
 | `prototype` | **13 màn HTML tĩnh — giao diện đã duyệt.** Nguồn chân lý về look. | HTML/CSS/JS thuần | `WS-08` DONE |
-| `tableqr-guest` | App khách, mobile-first, không đăng nhập | Vite + React SPA | M2 — chưa tạo |
+| `tableqr-guest` | App khách, mobile-first, không đăng nhập | Vite + React SPA | M2 — `GU-00` DONE, đang `GU-01` |
 | `tableqr-staff` | Màn hình bếp/quầy, tablet-first | Vite + React SPA | M3 — chưa tạo |
 | `tableqr-admin` | Quản trị menu, bàn, in mã QR | Vite + React SPA | M4 — chưa tạo |
 | `tableqr-api` | Backend | NestJS + Prisma + PostgreSQL | 🔒 **M6 — không tạo trước** |

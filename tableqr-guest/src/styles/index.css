@@ -1,0 +1,44 @@
+@import "tailwindcss";
+@import "@kimthanh-tableqr/ui/theme.css";
+
+#root {
+  min-height: 100dvh;
+}
+
+.guest-bootstrap {
+  align-items: center;
+  display: flex;
+  justify-content: center;
+  min-height: 100dvh;
+  padding: var(--spacing-4);
+}
+
+.guest-bootstrap__panel {
+  background: var(--color-surface);
+  border: 1px solid var(--color-line-200);
+  border-radius: var(--radius-lg);
+  max-width: 448px;
+  padding: var(--spacing-6);
+  width: 100%;
+}
+
+.guest-bootstrap__eyebrow {
+  color: var(--color-brand-700);
+  font-size: 13px;
+  font-weight: 700;
+  margin: 0 0 var(--spacing-2);
+}
+
+.guest-bootstrap__title {
+  color: var(--color-ink-900);
+  font-size: 20px;
+  line-height: 26px;
+  margin: 0 0 var(--spacing-2);
+}
+
+.guest-bootstrap__description {
+  color: var(--color-ink-600);
+  font-size: 15px;
+  line-height: 22px;
+  margin: 0;
+}

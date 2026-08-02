@@ -31,4 +31,4 @@ playwright-report/
 !.vscode/extensions.json
 
 # MSW service worker duoc sinh boi `msw init`, khong commit
-public/mockServiceWorker.js
+**/public/mockServiceWorker.js

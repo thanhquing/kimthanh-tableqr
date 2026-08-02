@@ -135,7 +135,7 @@ Hoàn thiện checklist test ở mục D của `ai-docs/07`. Test logic thuần,
 | `WS-03` | Mock store + MSW handlers | M1 | **DONE** |
 | `WS-04` | `packages/ui` (theo `ai-docs/08`) | M1 | **DONE** |
 | `WS-08` | **Prototype 13 màn** — chốt look | M1 | **DONE** |
-| `GU-00` | Khởi tạo app khách | M2 | TODO |
+| `GU-00` | Khởi tạo app khách | M2 | **DONE** — lint/build sạch, MSW dev bootstrap |
 | `GU-01` | Router + shell + tải phiên bàn | M2 | TODO |
 | `GU-02` | Màn menu | M2 | TODO |
 | `GU-03` | Tìm kiếm món (bỏ dấu) | M2 | TODO |
