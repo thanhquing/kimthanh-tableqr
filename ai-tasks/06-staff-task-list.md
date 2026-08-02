@@ -25,7 +25,7 @@ Vite + React + TS, cổng 5174. Cùng cấu hình nền như `GU-00`. Layout tab
 
 **Kết quả:** `StaffAuthProvider` lưu `AuthResponse` trong `localStorage`; login keypad 64px tự gửi ở số thứ 6, hiện lỗi PIN, guard `/orders` và redirect login, header có logout. Lint/typecheck/build sạch, initial JS 62,77 KB gzip.
 
-### `ST-02` — Hook realtime (polling) · TODO
+### `ST-02` — Hook realtime (polling) · **DONE** (2026-08-02)
 
 `src/lib/realtime.ts` xuất `useOrderStream()`. Giai đoạn này: polling `GET /staff/orders?since=<serverTime lần trước>` mỗi 3s qua TanStack Query.
 
@@ -34,6 +34,8 @@ Vite + React + TS, cổng 5174. Cùng cấu hình nền như `GU-00`. Layout tab
 Thiết kế interface sao cho M7 thay bằng `EventSource` mà **không sửa component nào** — đây là mục đích chính của task này.
 
 Kèm nút dev "Giả lập đơn mới" (chỉ hiện khi `VITE_USE_MOCK=true`) ghi thẳng vào mock store, để demo màn bếp mà không cần mở app khách. Cần vì mock store không chia sẻ được giữa các origin — xem `ai-docs/06` §Realtime.
+
+**Kết quả:** `useOrderStream()` poll 3 giây, dùng `serverTime` làm cursor và merge update theo ID; interface tách polling để M7 thay SSE. Debug handler browser-only tạo order trong mock store; staff build sạch, mock 16/16 test pass.
 
 ### `ST-03` — Bảng đơn · TODO
 

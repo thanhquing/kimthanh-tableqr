@@ -1,13 +1,13 @@
 import { setupWorker } from 'msw/browser'
 import { chaos, type ChaosConfig } from './chaos.js'
-import { handlers } from './handlers.js'
+import { debugHandlers, handlers } from './handlers.js'
 
 export interface StartMockWorkerOptions {
   showChaosPanel?: boolean
 }
 
 export async function startMockWorker(options: StartMockWorkerOptions = {}): Promise<void> {
-  const worker = setupWorker(...handlers)
+  const worker = setupWorker(...handlers, ...debugHandlers)
   await worker.start({ onUnhandledRequest: 'bypass' })
   if (options.showChaosPanel) mountChaosPanel()
 }

@@ -301,3 +301,12 @@ export function createHandlers(options: HandlerOptions = {}): HttpHandler[] {
 }
 
 export const handlers = createHandlers()
+
+export const debugHandlers = [
+  http.post(`*${API_BASE_PATH}/__debug/staff/orders`, ({ request }) =>
+    execute(request, chaos, () => {
+      requireRole(request, ['staff', 'owner'])
+      return HttpResponse.json(mockStore.simulateStaffOrder(), { status: 201 })
+    }),
+  ),
+]

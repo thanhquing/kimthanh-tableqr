@@ -160,6 +160,13 @@ export class MockStore {
     this.persist()
   }
 
+  simulateStaffOrder(): OrderDto {
+    return this.createOrder(SEEDED_SESSION.sessionId, {
+      note: null,
+      items: [{ menuItemId: 'item-ca-phe-sua-da', quantity: 1, note: 'Đơn mô phỏng' }],
+    }, crypto.randomUUID())
+  }
+
   snapshot(): Readonly<StoreState> {
     return clone(this.state)
   }
