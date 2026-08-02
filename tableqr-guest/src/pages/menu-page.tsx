@@ -4,6 +4,7 @@ import { Plus, Search, X } from 'lucide-react'
 import { type RefObject, useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useTableSessionContext } from '../features/table-session/table-session-context'
+import { useCart } from '../features/cart/cart-context'
 
 interface MenuGroup {
   readonly category: Pick<MenuCategory, 'id' | 'name' | 'sortOrder'>
@@ -15,7 +16,7 @@ export function MenuPage() {
   const { itemId } = useParams()
   const navigate = useNavigate()
   const [activeCategoryId, setActiveCategoryId] = useState<string | null>(null)
-  const [quickAddCounts, setQuickAddCounts] = useState<Record<string, number>>({})
+  const { addItem, lines } = useCart()
   const [query, setQuery] = useState('')
   const [sheetNote, setSheetNote] = useState('')
   const [sheetQuantity, setSheetQuantity] = useState(1)
@@ -124,10 +125,7 @@ export function MenuPage() {
 
   function addFromSheet() {
     if (!selectedItem) return
-    setQuickAddCounts((counts) => ({
-      ...counts,
-      [selectedItem.id]: (counts[selectedItem.id] ?? 0) + sheetQuantity,
-    }))
+    addItem(selectedItem, sheetQuantity, sheetNote)
     closeItemSheet()
   }
 
@@ -176,14 +174,9 @@ export function MenuPage() {
                 <MenuItemRow
                   item={item}
                   key={item.id}
-                  onQuickAdd={() => {
-                    setQuickAddCounts((counts) => ({
-                      ...counts,
-                      [item.id]: (counts[item.id] ?? 0) + 1,
-                    }))
-                  }}
+                  onQuickAdd={() => addItem(item, 1)}
                   onOpen={() => navigate(`/t/${qrToken}/item/${item.id}`)}
-                  quantity={quickAddCounts[item.id] ?? 0}
+                  quantity={lines.filter((line) => line.menuItemId === item.id).reduce((total, line) => total + line.quantity, 0)}
                 />
               ))}
             </div>

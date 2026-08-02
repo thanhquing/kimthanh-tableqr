@@ -59,7 +59,7 @@ Sheet trượt từ dưới, nền mờ, vuốt xuống / chạm nền / `Esc` �
 
 **Kết quả:** route item dùng cùng `MenuPage` để hiển thị sheet phủ menu. Sheet có ảnh 16:9/placeholder, mô tả, `QuantityStepper`, ghi chú và 5 chip gợi ý; CTA tính lại theo số lượng. Mở/đóng bằng scrim, `Esc`, vuốt xuống; `BottomSheet` dùng focus trap và tự trả focus về card. Lint/typecheck/build UI + guest sạch, initial JS 72,14 KB gzip.
 
-### `GU-05` — Trạng thái giỏ hàng · TODO
+### `GU-05` — Trạng thái giỏ hàng · **DONE** (2026-08-02)
 
 **Prototype:** `prototype/guest-menu.html + guest-cart.html`
 
@@ -68,6 +68,8 @@ Sheet trượt từ dưới, nền mờ, vuốt xuống / chạm nền / `Esc` �
 Quy tắc gộp: **cùng `menuItemId` + cùng `note` → cộng số lượng; khác `note` → tách thành hai dòng.**
 
 Hàm thuần trong `packages/contracts/src/totals.ts`, có test: `calcLineTotal`, `calcCartTotal`. Thanh giỏ nổi hiện số món + tổng tiền, chỉ hiện khi giỏ > 0.
+
+**Kết quả:** `CartProvider`/reducer dùng `addToCart`, `calcCartItemCount`, `calcCartTotal`; lưu `sessionStorage` theo session ID và hydrate lại khi mở app. Thêm nhanh và CTA sheet đều đi qua context, giữ ghi chú; thanh giỏ nổi chỉ hiện khi có món. Lint/typecheck/build sạch, initial JS 72,70 KB gzip.
 
 ### `GU-06` — Màn giỏ hàng + Gửi đơn · TODO
 

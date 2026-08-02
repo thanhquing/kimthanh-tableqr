@@ -2,6 +2,7 @@ import { Button, ErrorState, LoadingSkeleton } from '@kimthanh-tableqr/ui'
 import { useEffect } from 'react'
 import { Navigate, Outlet, useNavigate, useParams } from 'react-router-dom'
 import { TableSessionProvider } from '../features/table-session/table-session-context'
+import { CartProvider } from '../features/cart/cart-context'
 import { useTableSession } from '../features/table-session/use-table-session'
 import { getApiClientErrorMessage, isApiClientError } from '../lib/api/client'
 import { GuestShell } from './guest-shell'
@@ -47,9 +48,11 @@ export function TableSessionRoute() {
 
   return (
     <TableSessionProvider bootstrap={query.data} qrToken={qrToken}>
-      <GuestShell>
-        <Outlet />
-      </GuestShell>
+      <CartProvider sessionId={query.data.session.id}>
+        <GuestShell>
+          <Outlet />
+        </GuestShell>
+      </CartProvider>
     </TableSessionProvider>
   )
 }
