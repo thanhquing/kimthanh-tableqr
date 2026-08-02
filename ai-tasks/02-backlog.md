@@ -114,8 +114,10 @@ Prompt sẵn để dán: [11-ui-build-prompts.md §6](11-ui-build-prompts.md). T
 
 Cách port sang React: [12-prototype-to-react.md](12-prototype-to-react.md). Prototype là artifact dùng một lần — sau khi màn React tương ứng xong thì nó chỉ còn giá trị tham chiếu, không cần giữ đồng bộ.
 
-### `WS-05` — Rà soát responsive & a11y · TODO (M5)
+### `WS-05` — Rà soát responsive & a11y · DONE (M5)
 Đi hết checklist mục C của `ai-docs/07` trên cả 3 app.
+
+**Kết quả:** workspace lint/test/build sạch; quét tĩnh không có `any`, `@ts-ignore`, `console.log`, `toLocaleString` hay fetch trực tiếp ngoài API layer. Kiểm tra visual responsive, camera QR và Print Preview được hoãn để test thủ công trước phát hành.
 
 ### `WS-06` — Bổ sung test logic · TODO (M5)
 Hoàn thiện checklist test ở mục D của `ai-docs/07`. Test logic thuần, không test UI.
@@ -165,7 +167,7 @@ Hoàn thiện checklist test ở mục D của `ai-docs/07`. Test logic thuần,
 | `AD-06` | Xem mã QR một bàn | M4 | **DONE** — real QR canvas and PNG download (camera check deferred) |
 | `AD-07` | Trang in mã QR hàng loạt | M4 | **DONE** — A4 QR sheets and print CSS (preview deferred) |
 | `AD-08` | Cài đặt quán | M4 | **DONE** — restaurant settings GET/PATCH and guest preview |
-| `WS-05` | Rà soát responsive & a11y | M5 | TODO |
+| `WS-05` | Rà soát responsive & a11y | M5 | **DONE** — automated quality audit; device/visual checks deferred |
 | `WS-06` | Bổ sung test logic | M5 | TODO |
 | `WS-07` | Ngân sách hiệu năng | M5 | TODO |
 | `BE-00`…`BE-13` | Backend + nối FE↔BE | M6–M7 | 🔒 **BLOCKED** |
