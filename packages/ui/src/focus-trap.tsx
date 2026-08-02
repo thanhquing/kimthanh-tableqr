@@ -12,7 +12,7 @@ const focusableSelector = [
 export function useFocusTrap<T extends HTMLElement>(
   isOpen: boolean,
   onClose: () => void,
-): RefObject<T | null> {
+): RefObject<T> {
   const ref = useRef<T>(null)
 
   useEffect(() => {

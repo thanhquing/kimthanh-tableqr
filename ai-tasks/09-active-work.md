@@ -6,15 +6,15 @@
 
 ## Current task
 
-> ### `GU-01` — Router + shell + tải phiên bàn
+> ### `GU-02` — Màn menu
 >
 > **Mốc:** M2 · **Trạng thái:** TODO
 >
-> Chi tiết đầy đủ: [05-guest-task-list.md § GU-01](05-guest-task-list.md)
+> Chi tiết đầy đủ: [05-guest-task-list.md § GU-02](05-guest-task-list.md)
 >
-> **Đọc trước khi làm:** [`ai-tasks/12-prototype-to-react.md`](12-prototype-to-react.md), [`prototype/guest-menu.html`](../prototype/guest-menu.html), [`ai-docs/04-api-contract.md`](../ai-docs/04-api-contract.md), [`ai-docs/06-architecture-and-tech-stack.md`](../ai-docs/06-architecture-and-tech-stack.md).
+> **Đọc trước khi làm:** [`ai-tasks/12-prototype-to-react.md`](12-prototype-to-react.md), [`prototype/guest-menu.html`](../prototype/guest-menu.html), [`ai-docs/05-ui-ux-spec.md`](../ai-docs/05-ui-ux-spec.md), [`ai-docs/08-design-system.md`](../ai-docs/08-design-system.md).
 >
-> **Xong khi:** đủ route guest, shell hiển thị đúng tên quán + bàn, `useTableSession(qrToken)` tải qua TanStack Query và `apiClient` tự gắn `X-Guest-Token`; `TABLE_NOT_FOUND` chuyển sang `/t/invalid`; `/cart` và `/orders` được lazy-load.
+> **Xong khi:** danh sách món nhóm theo danh mục khớp prototype; tab danh mục cuộn ngang + active theo scroll; món hết hàng mờ + không tương tác; ảnh có kích thước cố định/lazy; đủ loading/error/empty/data.
 
 ---
 
@@ -22,6 +22,7 @@
 
 | Task | Ngày | Ghi chú |
 | --- | --- | --- |
+| `GU-01` — Router + shell + tải phiên bàn | 2026-08-02 | Đủ route guest; shell hiện tên quán + bàn; `apiClient` tự gắn `X-Guest-Token`; `useTableSession(qrToken)` qua TanStack Query; `TABLE_NOT_FOUND` → `/t/invalid`; `/cart` và `/orders` lazy chunk; lint/build sạch, JS initial 69,16 KB gzip |
 | `GU-00` — Khởi tạo app khách | 2026-08-02 | Vite 5 + React 18 + TS; UI theme/Tailwind v4; Router + Query provider; error boundary; MSW dynamic import/await trước render; lint/build sạch, workspace **61/61 test pass**, JS initial 57,18 KB gzip |
 | `WS-00` — Khung workspace + tài liệu | 2026-08-01 | M0 đạt. `ai-docs/` 00–08, `ai-tasks/` 00–12, `CLAUDE.md`, `README.md` |
 | `WS-01` — `packages/contracts` | 2026-08-02 | Build sạch, **45/45 test pass**. `formatVnd` · `calcSessionTotal` (loại `CANCELLED`) · `addToCart` (gộp theo `menuItemId`+`note`) · `removeVietnameseTones` · bảng chuyển trạng thái |
@@ -35,7 +36,7 @@
 
 ## Tiếp theo (theo thứ tự, không đảo)
 
-`GU-01`…`GU-10` → `ST-00`…`ST-08` → `AD-00`…`AD-08` → `WS-05`…`WS-07` → **cổng M5→M6** → `BE-*`.
+`GU-02`…`GU-10` → `ST-00`…`ST-08` → `AD-00`…`AD-08` → `WS-05`…`WS-07` → **cổng M5→M6** → `BE-*`.
 
 Cổng M1→M2 đã đạt ngày 2026-08-02: đối chiếu xong 28 handler M1 ở bảng cuối `ai-docs/04`, dòng 29 là SSE để M7; prototype đã duyệt; 3 package M1 build sạch.
 

@@ -19,13 +19,15 @@ Xong khi: `pnpm dev:guest` mở ra trang trắng có style, DevTools thấy MSW 
 
 **Kết quả:** tạo Vite 5 + React 18 + TypeScript app ở cổng 5173; nạp Tailwind v4 và `@kimthanh-tableqr/ui/theme.css`; có React Router, TanStack Query provider và error boundary toàn app. MSW được dynamic import rồi `await` trước render; dev script tự sinh worker bị gitignore, production build không chứa chunk MSW. Có `.env.example` và mặc định development chạy mock. Lint/typecheck/build sạch; workspace 61/61 test pass; bundle khởi tạo 57,18 KB gzip.
 
-### `GU-01` — Router + shell + tải phiên bàn · TODO
+### `GU-01` — Router + shell + tải phiên bàn · **DONE** (2026-08-02)
 
 Route: `/t/:qrToken`, `/t/:qrToken/item/:itemId`, `/t/:qrToken/cart`, `/t/:qrToken/orders`, `/t/:qrToken/success`, `/t/invalid`, `*` → invalid.
 
 Hook `useTableSession(qrToken)` gọi `GET /guest/tables/:qrToken`, cache bằng TanStack Query. Sinh `guestToken` (uuid) lưu `sessionStorage`, gắn vào header `X-Guest-Token` trong `apiClient`. Lỗi `TABLE_NOT_FOUND` → chuyển `/t/invalid`. Code splitting: `/cart` và `/orders` tải lười.
 
 Header hiện tên quán + số bàn.
+
+**Kết quả:** đủ route `/t/:qrToken`, `/t/:qrToken/item/:itemId`, `/t/:qrToken/cart`, `/t/:qrToken/orders`, `/t/:qrToken/success`, `/t/invalid` và `*` → invalid. `apiClient` tự sinh/lưu `guestToken` UUID trong `sessionStorage` và gắn `X-Guest-Token`; `useTableSession(qrToken)` tải `GET /guest/tables/:qrToken` qua TanStack Query. Shell bám prototype, hiện tên quán + bàn. `TABLE_NOT_FOUND` chuyển `/t/invalid`. `/cart` và `/orders` tách chunk lazy. Lint/build sạch; initial JS 69,16 KB gzip.
 
 ### `GU-02` — Màn menu · TODO
 
