@@ -6,15 +6,15 @@
 
 ## Current task
 
-> ### `AD-05` — Quản lý bàn
+> ### `AD-06` — Xem mã QR một bàn
 >
 > **Mốc:** M4 · **Trạng thái:** TODO
 >
-> Chi tiết đầy đủ: [07-admin-task-list.md § AD-05](07-admin-task-list.md)
+> Chi tiết đầy đủ: [07-admin-task-list.md § AD-06](07-admin-task-list.md)
 >
 > **Đọc trước khi làm:** [`ai-tasks/12-prototype-to-react.md`](12-prototype-to-react.md), [`prototype/admin-menu.html`](../prototype/admin-menu.html), [`ai-docs/04-api-contract.md`](../ai-docs/04-api-contract.md), [`ai-docs/05-ui-ux-spec.md`](../ai-docs/05-ui-ux-spec.md).
 >
-> **Xong khi:** danh sách bàn CRUD hoạt động, hiện lỗi 409 hợp đồng và không có cách đổi QR token.
+> **Xong khi:** modal QR render URL thật bằng qrcode.react, tên bàn và tải PNG hoạt động; đã kiểm bằng camera thật.
 
 ---
 
@@ -22,6 +22,7 @@
 
 | Task | Ngày | Ghi chú |
 | --- | --- | --- |
+| `AD-05` — Quản lý bàn | 2026-08-02 | Table CRUD/status, 409 delete message, form update không có qrToken; lint/typecheck/build sạch, JS initial 73,69 KB gzip |
 | `AD-04` — Form món | 2026-08-02 | Create/edit routes, fields đầy đủ, client validation/price preview, POST/PATCH và dirty unload warning; lint/typecheck/build sạch, JS initial 72,74 KB gzip |
 | `AD-03` — Danh sách món | 2026-08-02 | Cột món theo danh mục, thumbnail/name/price, availability optimistic rollback, xóa + links form; lint/typecheck/build sạch, JS initial 71,67 KB gzip |
 | `AD-02` — Danh sách danh mục | 2026-08-02 | GET categories/items, số món, CRUD/toggle, 409 message, drag/drop PATCH sort order; lint/typecheck/build sạch, JS initial 71,06 KB gzip |
@@ -59,7 +60,7 @@
 
 ## Tiếp theo (theo thứ tự, không đảo)
 
-`AD-05`…`AD-08` → `WS-05`…`WS-07` → **cổng M5→M6** → `BE-*`.
+`AD-06`…`AD-08` → `WS-05`…`WS-07` → **cổng M5→M6** → `BE-*`.
 
 Cổng M1→M2 đã đạt ngày 2026-08-02: đối chiếu xong 28 handler M1 ở bảng cuối `ai-docs/04`, dòng 29 là SSE để M7; prototype đã duyệt; 3 package M1 build sạch.
 

@@ -53,13 +53,15 @@ Validate phía client trước khi gửi; lỗi `VALIDATION_ERROR` từ server t
 
 Giai đoạn mock chưa có upload ảnh — nhập URL, gợi ý sẵn các ảnh có trong `packages/mock/assets/`. Upload thật là `BE-09`.
 
-### `AD-05` — Quản lý bàn · TODO
+### `AD-05` — Quản lý bàn · DONE
 
 **Prototype:** `prototype/admin-tables.html`
 
 `/tables`: bảng mã / tên hiển thị / trạng thái / thao tác. Thêm bàn (server sinh `qrToken`), sửa `code`, `displayName`, `sortOrder`, `isActive`.
 
 **Không có UI nào cho phép đổi `qrToken`** — mã đã in và dán lên bàn rồi. Xoá bàn đang có khách → 409, hiện `message`.
+
+**Kết quả:** bảng admin tables có trạng thái, create/edit/active/delete API, lỗi 409 server hiển thị trên màn; form chỉ gửi contract update fields và khoá hoàn toàn QR token. Lint/typecheck/build sạch, initial JS 73,69 KB gzip.
 
 ### `AD-06` — Xem mã QR một bàn · TODO
 

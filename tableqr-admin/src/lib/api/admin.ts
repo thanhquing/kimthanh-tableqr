@@ -1,4 +1,4 @@
-import { API_BASE_PATH, type AdminCategoriesResponse, type AdminItemsResponse, type AuthResponse, type CreateCategoryRequest, type CreateMenuItemRequest, type MenuCategory, type MenuItem, type UpdateCategoryRequest, type UpdateMenuItemRequest } from '@kimthanh-tableqr/contracts'
+import { API_BASE_PATH, type AdminCategoriesResponse, type AdminItemsResponse, type AdminTableDto, type AdminTablesResponse, type AuthResponse, type CreateCategoryRequest, type CreateMenuItemRequest, type CreateTableRequest, type MenuCategory, type MenuItem, type UpdateCategoryRequest, type UpdateMenuItemRequest, type UpdateTableRequest } from '@kimthanh-tableqr/contracts'
 
 export async function loginAdmin(email: string, password: string): Promise<AuthResponse> {
   const response = await fetch(`${API_BASE_PATH}/admin/auth/login`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, password }) })
@@ -22,3 +22,7 @@ export const deleteCategory = (token: string, id: string) => adminRequest<void>(
 export const updateItem = (token: string, id: string, body: UpdateMenuItemRequest) => adminRequest<MenuItem>(token, `/admin/items/${id}`, { method: 'PATCH', body: JSON.stringify(body) })
 export const deleteItem = (token: string, id: string) => adminRequest<void>(token, `/admin/items/${id}`, { method: 'DELETE' })
 export const createItem = (token: string, body: CreateMenuItemRequest) => adminRequest<MenuItem>(token, '/admin/items', { method: 'POST', body: JSON.stringify(body) })
+export const getTables = (token: string) => adminRequest<AdminTablesResponse>(token, '/admin/tables')
+export const createTable = (token: string, body: CreateTableRequest) => adminRequest<AdminTableDto>(token, '/admin/tables', { method: 'POST', body: JSON.stringify(body) })
+export const updateTable = (token: string, id: string, body: UpdateTableRequest) => adminRequest<AdminTableDto>(token, `/admin/tables/${id}`, { method: 'PATCH', body: JSON.stringify(body) })
+export const deleteTable = (token: string, id: string) => adminRequest<void>(token, `/admin/tables/${id}`, { method: 'DELETE' })
