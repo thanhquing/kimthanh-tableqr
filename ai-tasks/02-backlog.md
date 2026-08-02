@@ -119,8 +119,10 @@ Cách port sang React: [12-prototype-to-react.md](12-prototype-to-react.md). Pro
 
 **Kết quả:** workspace lint/test/build sạch; quét tĩnh không có `any`, `@ts-ignore`, `console.log`, `toLocaleString` hay fetch trực tiếp ngoài API layer. Kiểm tra visual responsive, camera QR và Print Preview được hoãn để test thủ công trước phát hành.
 
-### `WS-06` — Bổ sung test logic · TODO (M5)
+### `WS-06` — Bổ sung test logic · DONE (M5)
 Hoàn thiện checklist test ở mục D của `ai-docs/07`. Test logic thuần, không test UI.
+
+**Kết quả:** đối chiếu 45 tests contracts và 16 tests mock: đủ format tiền, tổng/gộp giỏ, session loại CANCELLED, transition chặn quay lui và assertion 28 handlers M1. Workspace test sạch.
 
 ### `WS-07` — Ngân sách hiệu năng app khách · TODO (M5)
 Đo theo mục B của `ai-docs/07`. Bundle initial `tableqr-guest` **< 150 KB gzip**. Vượt thì cắt, không nới ngưỡng.
@@ -168,6 +170,6 @@ Hoàn thiện checklist test ở mục D của `ai-docs/07`. Test logic thuần,
 | `AD-07` | Trang in mã QR hàng loạt | M4 | **DONE** — A4 QR sheets and print CSS (preview deferred) |
 | `AD-08` | Cài đặt quán | M4 | **DONE** — restaurant settings GET/PATCH and guest preview |
 | `WS-05` | Rà soát responsive & a11y | M5 | **DONE** — automated quality audit; device/visual checks deferred |
-| `WS-06` | Bổ sung test logic | M5 | TODO |
+| `WS-06` | Bổ sung test logic | M5 | **DONE** — D checklist covered by 61 existing tests |
 | `WS-07` | Ngân sách hiệu năng | M5 | TODO |
 | `BE-00`…`BE-13` | Backend + nối FE↔BE | M6–M7 | 🔒 **BLOCKED** |

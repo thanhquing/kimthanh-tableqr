@@ -6,15 +6,15 @@
 
 ## Current task
 
-> ### `WS-06` — Bổ sung test logic
+> ### `WS-07` — Ngân sách hiệu năng app khách
 >
 > **Mốc:** M5 · **Trạng thái:** TODO
 >
-> Chi tiết đầy đủ: [02-backlog.md § WS-06](02-backlog.md)
+> Chi tiết đầy đủ: [02-backlog.md § WS-07](02-backlog.md)
 >
 > **Đọc trước khi làm:** [`ai-tasks/01-milestones.md`](01-milestones.md), [`ai-tasks/02-backlog.md`](02-backlog.md), [`ai-docs/07-acceptance-criteria.md`](../ai-docs/07-acceptance-criteria.md).
 >
-> **Xong khi:** checklist test logic D được đối chiếu, test thiếu được bổ sung và workspace test sạch.
+> **Xong khi:** production bundle initial guest được đo và nhỏ hơn 150 KB gzip; MSW không bị kéo khi mock tắt.
 
 ---
 
@@ -22,6 +22,7 @@
 
 | Task | Ngày | Ghi chú |
 | --- | --- | --- |
+| `WS-06` — Bổ sung test logic | 2026-08-02 | 45 contracts + 16 mock tests phủ D: money/cart/session/transition/28 handlers; workspace test sạch |
 | `WS-05` — Rà soát responsive & a11y | 2026-08-02 | Workspace lint/test/build pass, static audit any/ignore/log/money/fetch sạch; visual/device checks deferred |
 | `AD-08` — Cài đặt quán | 2026-08-02 | GET/PATCH restaurant, validate name, logo URL/address + preview khách; lint/typecheck/build sạch, JS initial 81,21 KB gzip |
 | `AD-07` — Trang in mã QR hàng loạt | 2026-08-02 | Route no-sidebar, active table selection, QR canvas A4 3×4 và print CSS; lint/typecheck/build sạch, JS initial 80,69 KB gzip; Print Preview deferred |
@@ -64,7 +65,7 @@
 
 ## Tiếp theo (theo thứ tự, không đảo)
 
-`WS-06`…`WS-07` → **cổng M5→M6** → `BE-*`.
+`WS-07` → **cổng M5→M6** → `BE-*`.
 
 Cổng M1→M2 đã đạt ngày 2026-08-02: đối chiếu xong 28 handler M1 ở bảng cuối `ai-docs/04`, dòng 29 là SSE để M7; prototype đã duyệt; 3 package M1 build sạch.
 
