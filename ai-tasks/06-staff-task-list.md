@@ -72,11 +72,13 @@ Lưu ý trình duyệt chặn autoplay: chỉ phát sau khi người dùng đã 
 
 **Kết quả:** `SoundProvider` tạo tiếng bíp Web Audio cho ID đơn mới sau poll đầu, mute lưu `localStorage`; header có toggle và gợi ý bật âm báo trước first interaction. Lint/typecheck/build sạch, initial JS 69,55 KB gzip.
 
-### `ST-06` — Sơ đồ bàn · TODO
+### `ST-06` — Sơ đồ bàn · **DONE** (2026-08-02)
 
 **Prototype:** `prototype/staff-tables.html`
 
 `/tables` từ `GET /staff/tables`. Lưới thẻ bàn: trống = xám nhạt; có khách = tô màu + thời gian ngồi + số lần gọi + tổng tạm tính. **Chấm đỏ** nếu bàn có `StaffCall` `PENDING`. Chạm → `/tables/:code`.
+
+**Kết quả:** query `GET /staff/tables`, render lưới responsive phân biệt bàn trống/có khách, thông tin phiên và chip khách gọi; bàn đang có phiên link tới route chi tiết. Lint/typecheck/build sạch, initial JS 70,69 KB gzip.
 
 ### `ST-07` — Chi tiết phiên + Đã thanh toán + Reset bàn · TODO
 
