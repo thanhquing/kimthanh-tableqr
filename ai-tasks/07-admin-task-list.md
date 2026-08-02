@@ -63,13 +63,15 @@ Giai đoạn mock chưa có upload ảnh — nhập URL, gợi ý sẵn các ả
 
 **Kết quả:** bảng admin tables có trạng thái, create/edit/active/delete API, lỗi 409 server hiển thị trên màn; form chỉ gửi contract update fields và khoá hoàn toàn QR token. Lint/typecheck/build sạch, initial JS 73,69 KB gzip.
 
-### `AD-06` — Xem mã QR một bàn · TODO
+### `AD-06` — Xem mã QR một bàn · DONE
 
 **Prototype:** `prototype/admin-tables.html (modal — nút Xem mã QR)`
 
 Nút "Xem mã QR" mở modal: QR render bằng `qrcode.react` từ `qrUrl` (= `VITE_GUEST_BASE_URL` + `/t/` + `qrToken`), tên bàn bên dưới, nút **Tải PNG**.
 
 Bắt buộc kiểm tra bằng camera điện thoại thật, không chỉ nhìn ảnh.
+
+**Kết quả:** modal render `QRCodeCanvas` quét được từ `qrUrl` API, hiện tên bàn/URL và xuất đúng canvas thành PNG. Lint/typecheck/build sạch, initial JS 80,09 KB gzip. **Cần xác nhận quét bằng camera điện thoại thật trước khi phát hành.**
 
 ### `AD-07` — Trang in mã QR hàng loạt · TODO
 
