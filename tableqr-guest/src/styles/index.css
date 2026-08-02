@@ -525,6 +525,13 @@
 .guest-orders-page__footer { background:var(--color-surface); border-top:1px solid var(--color-line-200); bottom:0; display:flex; gap:12px; left:50%; max-width:480px; padding:16px; position:fixed; transform:translateX(-50%); width:100%; z-index:40; }
 .guest-orders-page__footer > * { flex:1; }
 
+.guest-call-button { align-items:center; background:var(--color-surface); border:1px solid var(--color-line-300); border-radius:var(--radius-pill); bottom:84px; box-shadow:var(--shadow-md); color:var(--color-brand-700); display:flex; height:56px; justify-content:center; position:fixed; right:max(16px, calc(50% - 224px)); width:56px; z-index:39; }
+.guest-call-button--raised { bottom:148px; }
+.guest-call-button--done { background:var(--color-status-served-bg); border-color:var(--color-status-served-bg); color:var(--color-status-served-fg); }
+.guest-call-menu { background:var(--color-surface); border:1px solid var(--color-line-200); border-radius:var(--radius-lg); bottom:148px; box-shadow:var(--shadow-md); display:grid; gap:4px; padding:6px; position:fixed; right:max(16px, calc(50% - 224px)); z-index:40; }
+.guest-call-menu button { align-items:center; border-radius:var(--radius-md); display:flex; font-size:14px; font-weight:600; gap:8px; min-height:44px; padding:0 12px; text-align:left; white-space:nowrap; }
+.guest-call-menu button:hover { background:var(--color-surface-sunken); }
+
 .guest-invalid-page {
   align-items: center;
   background: var(--color-surface);

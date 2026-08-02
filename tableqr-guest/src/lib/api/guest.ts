@@ -1,4 +1,4 @@
-import { REQUEST_ID_HEADER, type CreateOrderRequest, type GuestBootstrapResponse, type GuestOrdersResponse, type OrderDto } from '@kimthanh-tableqr/contracts'
+import { REQUEST_ID_HEADER, type CreateOrderRequest, type CreateStaffCallRequest, type GuestBootstrapResponse, type GuestOrdersResponse, type OrderDto, type StaffCallDto } from '@kimthanh-tableqr/contracts'
 import { apiClient } from './client'
 
 export function getGuestBootstrap(qrToken: string): Promise<GuestBootstrapResponse> {
@@ -15,4 +15,8 @@ export function createGuestOrder(sessionId: string, request: CreateOrderRequest,
 
 export function getGuestOrders(sessionId: string): Promise<GuestOrdersResponse> {
   return apiClient<GuestOrdersResponse>(`/guest/sessions/${encodeURIComponent(sessionId)}/orders`)
+}
+
+export function createStaffCall(sessionId: string, request: CreateStaffCallRequest): Promise<StaffCallDto> {
+  return apiClient<StaffCallDto>(`/guest/sessions/${encodeURIComponent(sessionId)}/calls`, { body: request, method: 'POST' })
 }

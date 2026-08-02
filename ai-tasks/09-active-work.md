@@ -6,15 +6,15 @@
 
 ## Current task
 
-> ### `GU-09` — Nút nổi Gọi nhân viên
+> ### `GU-10` — Trạng thái lỗi & màn hình biên
 >
 > **Mốc:** M2 · **Trạng thái:** TODO
 >
-> Chi tiết đầy đủ: [05-guest-task-list.md § GU-09](05-guest-task-list.md)
+> Chi tiết đầy đủ: [05-guest-task-list.md § GU-10](05-guest-task-list.md)
 >
 > **Đọc trước khi làm:** [`ai-tasks/12-prototype-to-react.md`](12-prototype-to-react.md), [`prototype/guest-menu.html`](../prototype/guest-menu.html), [`ai-docs/05-ui-ux-spec.md`](../ai-docs/05-ui-ux-spec.md), [`ai-docs/04-api-contract.md`](../ai-docs/04-api-contract.md), [`packages/contracts/src/totals.ts`](../packages/contracts/src/totals.ts).
 >
-> **Xong khi:** nút nổi mở lựa chọn gọi nhân viên/xin tính tiền, POST thật và khóa 30 giây sau gửi.
+> **Xong khi:** rà trạng thái lỗi/offline/skeleton toàn guest app và chuỗi tiếng Việt.
 
 ---
 
@@ -22,6 +22,7 @@
 
 | Task | Ngày | Ghi chú |
 | --- | --- | --- |
+| `GU-09` — Nút nổi Gọi nhân viên | 2026-08-02 | Menu call/bill POST thật, cooldown 30 giây, vị trí tránh thanh giỏ; lint/typecheck/build sạch, JS initial 74,17 KB gzip |
 | `GU-08` — Màn đơn của bàn | 2026-08-02 | Poll orders 10 giây, state badge/item/note/tổng phiên, đủ loading/error/empty; lint/typecheck/build sạch, JS initial 73,63 KB gzip |
 | `GU-07` — Màn xác nhận đã gửi | 2026-08-02 | Snapshot đơn vừa gửi, recap/note/tổng, redirect 3 giây và nút bỏ qua; lint/typecheck/build sạch, JS initial 73,40 KB gzip |
 | `GU-06` — Màn giỏ hàng + Gửi đơn | 2026-08-02 | Cart tăng/giảm/xóa + Hoàn tác; ghi chú inline/chip; POST thật kèm request ID, chặn double-submit; ITEMS_UNAVAILABLE/SESSION_CLOSED; lint/typecheck/build sạch, JS initial 72,99 KB gzip |
@@ -43,7 +44,7 @@
 
 ## Tiếp theo (theo thứ tự, không đảo)
 
-`GU-09`…`GU-10` → `ST-00`…`ST-08` → `AD-00`…`AD-08` → `WS-05`…`WS-07` → **cổng M5→M6** → `BE-*`.
+`GU-10` → `ST-00`…`ST-08` → `AD-00`…`AD-08` → `WS-05`…`WS-07` → **cổng M5→M6** → `BE-*`.
 
 Cổng M1→M2 đã đạt ngày 2026-08-02: đối chiếu xong 28 handler M1 ở bảng cuối `ai-docs/04`, dòng 29 là SSE để M7; prototype đã duyệt; 3 package M1 build sạch.
 

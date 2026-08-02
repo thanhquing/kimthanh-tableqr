@@ -106,11 +106,13 @@ Dấu tích, "Đã gửi đơn tới bếp", tóm tắt đơn vừa gửi. Tự 
 
 **Kết quả:** `GET /guest/sessions/:id/orders` qua TanStack Query poll 10 giây; render mỗi lần gọi với thời gian, status badge, item/note/thành tiền và tổng phiên từ server. Có loading/error/empty, gọi thêm món về menu và nút xin tính tiền dành cho GU-09. Lint/typecheck/build sạch, initial JS 73,63 KB gzip.
 
-### `GU-09` — Nút nổi Gọi nhân viên · TODO
+### `GU-09` — Nút nổi Gọi nhân viên · **DONE** (2026-08-02)
 
 **Prototype:** `prototype/guest-menu.html (nút chuông góc phải dưới)`
 
 Nút tròn góc phải dưới (không che thanh giỏ hàng). Chạm mở 2 lựa chọn: Gọi nhân viên / Xin tính tiền → `POST /guest/sessions/:id/calls`. Sau khi gửi, nút đổi "Đã báo nhân viên ✓" và khoá 30 giây.
+
+**Kết quả:** nút nổi trong shell tự nâng khi có thanh giỏ, mở menu 2 lựa chọn và `POST` tới calls API. Sau thành công đổi sang dấu tích/khoá 30 giây. Lint/typecheck/build sạch, initial JS 74,17 KB gzip.
 
 ### `GU-10` — Trạng thái lỗi & màn hình biên · TODO
 
