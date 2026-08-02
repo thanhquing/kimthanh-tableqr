@@ -23,11 +23,13 @@ Vite + React + TS, cổng 5175. Sidebar trái: **Menu · Bàn & mã QR · Cài �
 
 **Kết quả:** form email/password gọi admin login, hiển thị lỗi API, lưu `AuthResponse` owner trong localStorage, bảo vệ routes admin và logout từ sidebar. Lint/typecheck/build sạch, initial JS 64,77 KB gzip.
 
-### `AD-02` — Danh sách danh mục · TODO
+### `AD-02` — Danh sách danh mục · DONE
 
 **Prototype:** `prototype/admin-menu.html (cột trái)`
 
 `/menu` cột trái: danh sách danh mục, số món mỗi danh mục, danh mục `isActive=false` hiện mờ. Thêm / sửa tên / bật-tắt / xoá. **Xoá danh mục còn món → server trả 409, hiện đúng `message`.** Kéo thả đổi `sortOrder` (lưu ngay).
+
+**Kết quả:** cột danh mục hiển thị số món từ API, thêm/sửa/bật-tắt/xóa qua CRUD API, hiện thông báo lỗi server (gồm 409) và drag/drop PATCH sort order ngay. Lint/typecheck/build sạch, initial JS 71,06 KB gzip.
 
 ### `AD-03` — Danh sách món · TODO
 
