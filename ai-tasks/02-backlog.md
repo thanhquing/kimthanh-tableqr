@@ -150,7 +150,7 @@ Hoàn thiện checklist test ở mục D của `ai-docs/07`. Test logic thuần,
 | `ST-01` | Đăng nhập PIN | M3 | **DONE** — PIN auth, guard và logout |
 | `ST-02` | Hook realtime (polling) | M3 | **DONE** — serverTime cursor + mock debug |
 | `ST-03` | Bảng đơn | M3 | **DONE** — board ba cột tablet-first |
-| `ST-04` | Chuyển trạng thái đơn | M3 | TODO |
+| `ST-04` | Chuyển trạng thái đơn | M3 | **DONE** — optimistic PATCH + cancel modal |
 | `ST-05` | Chuông báo đơn mới | M3 | TODO |
 | `ST-06` | Sơ đồ bàn | M3 | TODO |
 | `ST-07` | Chi tiết phiên + Reset bàn | M3 | TODO |

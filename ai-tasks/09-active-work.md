@@ -6,15 +6,15 @@
 
 ## Current task
 
-> ### `ST-04` — Chuyển trạng thái đơn
+> ### `ST-05` — Chuông báo đơn mới
 >
 > **Mốc:** M2 · **Trạng thái:** TODO
 >
-> Chi tiết đầy đủ: [06-staff-task-list.md § ST-04](06-staff-task-list.md)
+> Chi tiết đầy đủ: [06-staff-task-list.md § ST-05](06-staff-task-list.md)
 >
 > **Đọc trước khi làm:** [`ai-tasks/12-prototype-to-react.md`](12-prototype-to-react.md), [`prototype/guest-menu.html`](../prototype/guest-menu.html), [`ai-docs/05-ui-ux-spec.md`](../ai-docs/05-ui-ux-spec.md), [`ai-docs/04-api-contract.md`](../ai-docs/04-api-contract.md), [`packages/contracts/src/totals.ts`](../packages/contracts/src/totals.ts).
 >
-> **Xong khi:** PATCH trạng thái đơn, optimistic update/rollback và hủy đơn có xác nhận.
+> **Xong khi:** âm báo Web Audio cho đơn mới, mute localStorage và xử lý autoplay.
 
 ---
 
@@ -22,6 +22,7 @@
 
 | Task | Ngày | Ghi chú |
 | --- | --- | --- |
+| `ST-04` — Chuyển trạng thái đơn | 2026-08-02 | PATCH optimistic/rollback trong order stream; transition hợp lệ + modal hủy; lint/typecheck/build sạch, JS initial 68,94 KB gzip |
 | `ST-03` — Bảng đơn | 2026-08-02 | Board ba cột tablet/mobile, thẻ đơn có late/fresh/note, state loading/empty; lint/typecheck/build sạch, JS initial 67,72 KB gzip |
 | `ST-02` — Hook realtime | 2026-08-02 | Poll 3 giây, serverTime cursor, merge updates; debug mock handler; staff build sạch, mock 16/16 test pass |
 | `ST-01` — Đăng nhập PIN | 2026-08-02 | PIN keypad 64px, POST login, auth localStorage/guard/logout; lint/typecheck/build sạch, JS initial 62,77 KB gzip |
@@ -49,7 +50,7 @@
 
 ## Tiếp theo (theo thứ tự, không đảo)
 
-`ST-04`…`ST-08` → `AD-00`…`AD-08` → `WS-05`…`WS-07` → **cổng M5→M6** → `BE-*`.
+`ST-05`…`ST-08` → `AD-00`…`AD-08` → `WS-05`…`WS-07` → **cổng M5→M6** → `BE-*`.
 
 Cổng M1→M2 đã đạt ngày 2026-08-02: đối chiếu xong 28 handler M1 ở bảng cuối `ai-docs/04`, dòng 29 là SSE để M7; prototype đã duyệt; 3 package M1 build sạch.
 

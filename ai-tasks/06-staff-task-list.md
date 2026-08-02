@@ -52,13 +52,15 @@ Thẻ đơn theo `ai-docs/05`: **số bàn là chữ to nhất**, số lần g�
 
 **Kết quả:** board dùng `useOrderStream`, ba cột tablet / một cột mobile, sắp thứ tự `createdAt` tăng. Card ưu tiên số bàn, có item/note/tổng, màu quá lâu và nháy đơn mới; loading/empty đầy đủ. Lint/typecheck/build sạch, initial JS 67,72 KB gzip.
 
-### `ST-04` — Chuyển trạng thái đơn · TODO
+### `ST-04` — Chuyển trạng thái đơn · **DONE** (2026-08-02)
 
 **Prototype:** `prototype/staff-orders.html`
 
 `PATCH /staff/orders/:id/status`. Nút chính đổi theo trạng thái: `NEW` → "Bắt đầu làm", `PREPARING` → "Đã phục vụ". Menu `⋯` chứa "Huỷ đơn" (có hộp xác nhận).
 
 **Cập nhật lạc quan**: bấm là thẻ chuyển cột ngay; lỗi thì hoàn lại + toast. Chặn ở UI các chuyển trạng thái không hợp lệ (bảng ở `ai-docs/03`); nếu server vẫn trả `INVALID_TRANSITION` thì hiện `message` và refetch.
+
+**Kết quả:** dùng `primaryNextStatus`/`primaryActionLabel` để chỉ hiện transition hợp lệ; PATCH cập nhật lạc quan qua `useOrderStream`, lỗi hoàn rollback + toast/refetch. Có nút hủy và modal xác nhận focus-trapped. Lint/typecheck/build sạch, initial JS 68,94 KB gzip.
 
 ### `ST-05` — Chuông báo đơn mới · TODO
 
