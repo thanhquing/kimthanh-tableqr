@@ -6,15 +6,15 @@
 
 ## Current task
 
-> ### Cổng M5 → M6
+> ### `BE-00` — Khởi tạo NestJS + Prisma + Postgres
 >
-> **Mốc:** M5 · **Trạng thái:** REVIEW
+> **Mốc:** M6 · **Trạng thái:** TODO
 >
-> Chi tiết đầy đủ: [01-milestones.md § M5](01-milestones.md)
+> Chi tiết đầy đủ: [08-api-task-list.md § BE-00](08-api-task-list.md)
 >
-> **Đọc trước khi làm:** [`ai-tasks/01-milestones.md`](01-milestones.md), [`ai-tasks/02-backlog.md`](02-backlog.md), [`ai-docs/07-acceptance-criteria.md`](../ai-docs/07-acceptance-criteria.md).
+> **Đọc trước khi làm:** [`ai-tasks/08-api-task-list.md`](08-api-task-list.md), [`ai-docs/04-api-contract.md`](../ai-docs/04-api-contract.md), [`ai-docs/06-architecture-and-tech-stack.md`](../ai-docs/06-architecture-and-tech-stack.md).
 >
-> **Xong khi:** M5 quality gates được kiểm lại, deferred camera/Print Preview được ghi rõ và quyết định mở `BE-*` theo acceptance criteria.
+> **Xong khi:** NestJS + Prisma + Postgres scaffold có health/ready endpoints, Docker compose và .env example.
 
 ---
 
@@ -22,6 +22,7 @@
 
 | Task | Ngày | Ghi chú |
 | --- | --- | --- |
+| Cổng M5 → M6 | 2026-08-02 | Lint/test/build workspace pass; guest 74,429 B gzip/no MSW dist; camera/Print Preview/visual checks deferred theo user |
 | `WS-07` — Ngân sách hiệu năng guest | 2026-08-02 | VITE_USE_MOCK=false entry 74,429 B gzip (<150 KB); Vite loại public worker, dist không chứa MSW; lint/typecheck/build sạch |
 | `WS-06` — Bổ sung test logic | 2026-08-02 | 45 contracts + 16 mock tests phủ D: money/cart/session/transition/28 handlers; workspace test sạch |
 | `WS-05` — Rà soát responsive & a11y | 2026-08-02 | Workspace lint/test/build pass, static audit any/ignore/log/money/fetch sạch; visual/device checks deferred |
@@ -66,7 +67,7 @@
 
 ## Tiếp theo (theo thứ tự, không đảo)
 
-**Cổng M5 → M6** → `BE-*`.
+`BE-00`…`BE-13`.
 
 Cổng M1→M2 đã đạt ngày 2026-08-02: đối chiếu xong 28 handler M1 ở bảng cuối `ai-docs/04`, dòng 29 là SSE để M7; prototype đã duyệt; 3 package M1 build sạch.
 
@@ -75,7 +76,7 @@ Cổng M1→M2 đã đạt ngày 2026-08-02: đối chiếu xong 28 handler M1 �
 ## Nhắc
 
 - **Task UI thì KHÔNG thiết kế lại.** Giao diện đã dựng và duyệt ở [`prototype/`](../prototype/README.md). Đọc [12-prototype-to-react.md](12-prototype-to-react.md) trước khi động vào `GU-*` / `ST-*` / `AD-*`.
-- `BE-*` đang 🔒 **BLOCKED** cho tới khi M5 đạt. Xem [08-api-task-list.md](08-api-task-list.md).
+- Camera QR, Print Preview và visual responsive vẫn cần test thủ công trước phát hành.
 - Làm tuần tự guest → staff → admin, **không song song**: app khách định hình `packages/ui`, hai app sau kế thừa.
 - Token màu/chữ lấy từ [`ai-docs/08-design-system.md`](../ai-docs/08-design-system.md) — hex đã đo tương phản, đổi là phải đo lại.
 

@@ -1,8 +1,8 @@
 # 08 — `tableqr-api` (M6–M7)
 
-> # 🔒 BLOCKED
+> # UNBLOCKED — 2026-08-02
 >
-> **Không bắt đầu bất kỳ task nào trong file này cho tới khi M5 đạt.**
+> M5 automation gate đã đạt: workspace lint/test/build sạch, guest bundle 74,429 B gzip và production dist không có MSW. Camera QR, Print Preview và visual responsive được người dùng hoãn để test thủ công trước phát hành.
 >
 > Người dùng yêu cầu rõ: *"Gòy dựng UI trước. xong hết r mới bắt đầu làm BE."*
 >
