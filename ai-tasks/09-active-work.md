@@ -6,15 +6,15 @@
 
 ## Current task
 
-> ### `ST-00` — Khởi tạo app bếp
+> ### `ST-01` — Đăng nhập PIN
 >
 > **Mốc:** M2 · **Trạng thái:** TODO
 >
-> Chi tiết đầy đủ: [06-staff-task-list.md § ST-00](06-staff-task-list.md)
+> Chi tiết đầy đủ: [06-staff-task-list.md § ST-01](06-staff-task-list.md)
 >
 > **Đọc trước khi làm:** [`ai-tasks/12-prototype-to-react.md`](12-prototype-to-react.md), [`prototype/guest-menu.html`](../prototype/guest-menu.html), [`ai-docs/05-ui-ux-spec.md`](../ai-docs/05-ui-ux-spec.md), [`ai-docs/04-api-contract.md`](../ai-docs/04-api-contract.md), [`packages/contracts/src/totals.ts`](../packages/contracts/src/totals.ts).
 >
-> **Xong khi:** app staff khởi động, có shell và mock login theo task list.
+> **Xong khi:** login PIN 6 số, auth token lưu lâu, route guard và đăng xuất.
 
 ---
 
@@ -22,6 +22,7 @@
 
 | Task | Ngày | Ghi chú |
 | --- | --- | --- |
+| `ST-00` — Khởi tạo app bếp | 2026-08-02 | Vite/React/TS, mock worker, Query/Router, shell tablet-first cổng 5174; lint/typecheck/build sạch, JS initial 61,99 KB gzip |
 | `GU-10` — Trạng thái lỗi & màn hình biên | 2026-08-02 | Offline banner, SessionClosedPage, error boundary/state audit; lint/typecheck/build sạch, JS initial 74,41 KB gzip |
 | `GU-09` — Nút nổi Gọi nhân viên | 2026-08-02 | Menu call/bill POST thật, cooldown 30 giây, vị trí tránh thanh giỏ; lint/typecheck/build sạch, JS initial 74,17 KB gzip |
 | `GU-08` — Màn đơn của bàn | 2026-08-02 | Poll orders 10 giây, state badge/item/note/tổng phiên, đủ loading/error/empty; lint/typecheck/build sạch, JS initial 73,63 KB gzip |
@@ -45,7 +46,7 @@
 
 ## Tiếp theo (theo thứ tự, không đảo)
 
-`ST-00`…`ST-08` → `AD-00`…`AD-08` → `WS-05`…`WS-07` → **cổng M5→M6** → `BE-*`.
+`ST-01`…`ST-08` → `AD-00`…`AD-08` → `WS-05`…`WS-07` → **cổng M5→M6** → `BE-*`.
 
 Cổng M1→M2 đã đạt ngày 2026-08-02: đối chiếu xong 28 handler M1 ở bảng cuối `ai-docs/04`, dòng 29 là SSE để M7; prototype đã duyệt; 3 package M1 build sạch.
 

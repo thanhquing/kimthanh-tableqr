@@ -11,9 +11,11 @@ Phụ thuộc: M2 xong (primitive ở `packages/ui` đã ổn định).
 
 ---
 
-### `ST-00` — Khởi tạo app · TODO
+### `ST-00` — Khởi tạo app · **DONE** (2026-08-02)
 
 Vite + React + TS, cổng 5174. Cùng cấu hình nền như `GU-00`. Layout tablet-first: shell có header + vùng nội dung, không sidebar.
+
+**Kết quả:** tạo `tableqr-staff` với Vite/React/TypeScript, Tailwind + UI theme, mock worker trước render, React Query/Router, shell header tablet-first; cổng 5174. Lint/typecheck/build sạch, initial JS 61,99 KB gzip.
 
 ### `ST-01` — Đăng nhập PIN · TODO
 
