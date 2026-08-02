@@ -86,11 +86,13 @@ Xử lý lỗi:
 
 **Kết quả:** màn giỏ có tăng/giảm/xóa kèm snackbar Hoàn tác, sửa ghi chú inline với chip gợi ý, tổng tiền và empty state. `POST /guest/sessions/:id/orders` chỉ gửi item/quantity/note, thêm UUID `X-Request-Id`, khóa nút khi gửi và xóa giỏ sau thành công rồi tới success. Lỗi giữ giỏ; `ITEMS_UNAVAILABLE` tô đúng dòng; `SESSION_CLOSED` hiện state phiên đã kết thúc. Lint/typecheck/build sạch, initial JS 72,99 KB gzip.
 
-### `GU-07` — Màn xác nhận đã gửi · TODO
+### `GU-07` — Màn xác nhận đã gửi · **DONE** (2026-08-02)
 
 **Prototype:** `prototype/guest-success.html`
 
 Dấu tích, "Đã gửi đơn tới bếp", tóm tắt đơn vừa gửi. Tự chuyển `/orders` sau 3s, có nút bỏ qua chờ.
+
+**Kết quả:** lưu snapshot cart vừa gửi theo session để recap món/note/tổng tiền sau khi giỏ xóa; có dấu tích, đếm ngược 3 giây và nút mở đơn ngay. Lint/typecheck/build sạch, initial JS 73,40 KB gzip.
 
 ### `GU-08` — Màn đơn của bàn (gọi thêm món) · TODO
 

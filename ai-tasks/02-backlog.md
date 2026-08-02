@@ -142,7 +142,7 @@ Hoàn thiện checklist test ở mục D của `ai-docs/07`. Test logic thuần,
 | `GU-04` | Bottom sheet chi tiết món | M2 | **DONE** — sheet chi tiết, focus trap, quantity/note |
 | `GU-05` | Trạng thái giỏ hàng | M2 | **DONE** — cart context/session persistence + floating bar |
 | `GU-06` | Màn giỏ hàng + Gửi đơn | M2 | **DONE** — cart editor + POST order/idempotency |
-| `GU-07` | Màn xác nhận đã gửi | M2 | TODO |
+| `GU-07` | Màn xác nhận đã gửi | M2 | **DONE** — recap đơn vừa gửi + redirect |
 | `GU-08` | Màn đơn của bàn (gọi thêm món) | M2 | TODO |
 | `GU-09` | Nút nổi Gọi nhân viên | M2 | TODO |
 | `GU-10` | Trạng thái lỗi & màn biên | M2 | TODO |

@@ -36,6 +36,7 @@ export function CartPage() {
     setErrorMessage(null); setUnavailableIds([]); setIsSending(true)
     try {
       await createGuestOrder(bootstrap.session.id, { note: null, items: lines.map(({ menuItemId, note, quantity }) => ({ menuItemId, note, quantity })) }, newRequestId())
+      sessionStorage.setItem(`tableqr.lastOrder.${bootstrap.session.id}`, JSON.stringify(lines))
       clear()
       navigate(`/t/${qrToken}/success`)
     } catch (error) {
