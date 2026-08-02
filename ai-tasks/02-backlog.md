@@ -156,7 +156,7 @@ Hoàn thiện checklist test ở mục D của `ai-docs/07`. Test logic thuần,
 | `ST-07` | Chi tiết phiên + Reset bàn | M3 | **DONE** — session bill, pay and guarded reset |
 | `ST-08` | Thông báo gọi nhân viên | M3 | **DONE** — polling bell and call resolution |
 | `ST-09` | (tuỳ chọn) Proxy cùng origin | M3 | TODO |
-| `AD-00` | Khởi tạo app admin + shell | M4 | TODO |
+| `AD-00` | Khởi tạo app admin + shell | M4 | **DONE** — Vite shell, routes and responsive sidebar |
 | `AD-01` | Đăng nhập | M4 | TODO |
 | `AD-02` | Danh sách danh mục | M4 | TODO |
 | `AD-03` | Danh sách món + toggle Còn hàng | M4 | TODO |

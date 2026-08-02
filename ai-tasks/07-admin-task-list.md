@@ -11,9 +11,11 @@ Phụ thuộc: M3 xong.
 
 ---
 
-### `AD-00` — Khởi tạo app + shell · TODO
+### `AD-00` — Khởi tạo app + shell · DONE
 
 Vite + React + TS, cổng 5175. Sidebar trái: **Menu · Bàn & mã QR · Cài đặt**. Thu gọn sidebar trên màn hẹp. `.env.example` thêm `VITE_GUEST_BASE_URL`.
+
+**Kết quả:** `tableqr-admin` có Vite/React/TS, mock worker, Query/Router, shell sidebar responsive và routes placeholder `/menu`, `/tables`, `/tables/print`, `/settings`; `.env.example` có guest base URL. Lint/typecheck/build sạch, initial JS 63,90 KB gzip.
 
 ### `AD-01` — Đăng nhập · TODO
 
