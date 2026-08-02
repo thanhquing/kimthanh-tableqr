@@ -1,0 +1,27 @@
+{
+  "name": "@kimthanh-tableqr/mock",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Fixture + in-memory store + MSW handlers khop ai-docs/04-api-contract.md.",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": { "types": "./dist/index.d.ts", "default": "./dist/index.js" },
+    "./browser": { "types": "./dist/browser.d.ts", "default": "./dist/browser.js" },
+    "./node": { "types": "./dist/node.d.ts", "default": "./dist/node.js" },
+    "./assets/*": "./assets/*"
+  },
+  "files": ["dist", "assets"],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@kimthanh-tableqr/contracts": "workspace:*"
+  },
+  "devDependencies": {
+    "msw": "^2.7.0",
+    "typescript": "^5.6.3"
+  }
+}

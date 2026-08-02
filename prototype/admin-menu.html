@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Thực đơn — Quản trị</title>
+<link rel="stylesheet" href="_shared.css">
+<style>
+.two{display:grid;grid-template-columns:260px 1fr;gap:var(--s5);align-items:start}
+@media(max-width:820px){.two{grid-template-columns:1fr}}
+.cat{display:flex;align-items:center;gap:var(--s3);width:100%;padding:var(--s3) var(--s4);
+  text-align:left;border-bottom:1px solid var(--line-200)}
+.cat:last-child{border-bottom:0}
+.cat:hover{background:var(--surface-sunken)}
+.cat.on{background:var(--brand-50)}
+.cat.on .cat-n{color:var(--brand-700)}
+.cat-n{flex:1;font-weight:600;font-size:14px}
+.cat-c{font-size:12px;font-weight:700;color:var(--ink-600);background:var(--line-200);
+  padding:2px 8px;border-radius:var(--r-pill)}
+.cat.off .cat-n{color:var(--ink-500)}
+.drag{color:var(--ink-500);cursor:grab;display:grid;place-items:center}
+.th{width:44px;height:44px;border-radius:var(--r-sm);overflow:hidden;background:var(--img-ph);
+  flex:0 0 44px}
+.th img{width:100%;height:100%;object-fit:cover;display:block}
+.th .ph{width:100%;height:100%;display:grid;place-items:center;color:var(--ink-500);
+  font-size:17px;font-weight:700}
+.cellname{display:flex;align-items:center;gap:var(--s3)}
+.cellname b{font-weight:600}
+.cellname small{display:block;color:var(--ink-600);font-weight:400;max-width:38ch;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rowacts{display:flex;gap:var(--s1);justify-content:flex-end}
+.ia{width:32px;height:32px;border-radius:var(--r-sm);display:grid;place-items:center;
+  color:var(--ink-600)}
+.ia:hover{background:var(--line-200);color:var(--ink-900)}
+.ia.del:hover{background:var(--st-cancel-bg);color:var(--danger)}
+tr.off td{opacity:.55}
+</style>
+</head>
+<body>
+<div class="admin">
+  <aside class="a-side">
+    <div class="a-brand">Kim Thành<small>Quản trị quán</small></div>
+    <a href="admin-menu.html" class="on">Thực đơn</a>
+    <a href="admin-tables.html">Bàn &amp; mã QR</a>
+    <a href="admin-settings.html">Cài đặt</a>
+  </aside>
+
+  <div class="a-main">
+    <header class="a-top">
+      <h1>Thực đơn</h1>
+      <button class="btn btn-secondary" style="height:36px;font-size:14px" id="addcat">+ Danh mục</button>
+      <button class="btn btn-primary" style="height:36px;font-size:14px" id="additem">+ Thêm món</button>
+    </header>
+
+    <div class="a-body">
+      <div class="two">
+        <div class="panel"><div class="panel-hd"><h2>Danh mục</h2></div>
+          <div id="cats"></div></div>
+        <div class="panel">
+          <div class="panel-hd"><h2 id="cathd"></h2>
+            <span style="font-size:13px;color:var(--ink-600)">Kéo ⠿ để đổi thứ tự</span></div>
+          <table class="tbl">
+            <thead><tr>
+              <th style="width:34px"></th><th>Món</th><th style="width:110px">Giá</th>
+              <th style="width:130px">Còn hàng</th><th style="width:90px"></th>
+            </tr></thead>
+            <tbody id="rows"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="scrim" id="scrim"></div>
+<div class="modal" id="modal" role="dialog" aria-modal="true"></div>
+
+<script src="_data.js"></script>
+<script>
+protobar()
+let active = CATS[0].id
+const items = IT.map(i=>({...i}))     // ban sao de sua duoc trong prototype
+
+function render(){
+  document.getElementById('cats').innerHTML = CATS.map(c=>`
+    <button class="cat ${c.id===active?'on':''}" data-c="${c.id}">
+      <span class="drag" aria-hidden="true">⠿</span>
+      <span class="cat-n">${c.name}</span>
+      <span class="cat-c num">${items.filter(i=>i.cat===c.id).length}</span>
+    </button>`).join('')
+
+  const cat = CATS.find(c=>c.id===active)
+  document.getElementById('cathd').textContent = cat.name
+  document.getElementById('rows').innerHTML = items.filter(i=>i.cat===active).map(i=>`
+    <tr class="${i.ok?'':'off'}">
+      <td><span class="drag" aria-hidden="true">⠿</span></td>
+      <td><span class="cellname">
+        <span class="th">${i.slug
+          ?`<img src="menu-images/${i.slug}.jpg" width="44" height="44" loading="lazy" decoding="async" alt="">`
+          :`<span class="ph" aria-hidden="true">${i.name[0]}</span>`}</span>
+        <span><b>${i.name}</b><small>${i.desc}</small></span></span></td>
+      <td class="num" style="font-weight:600">${fmt(i.price)}</td>
+      <td><label class="switch">
+        <input type="checkbox" ${i.ok?'checked':''} data-tog="${i.id}">
+        <span class="track"></span><span class="knob"></span>
+        <span class="txt">${i.ok?'Còn':'Hết'}</span></label></td>
+      <td><span class="rowacts">
+        <button class="ia" data-edit="${i.id}" aria-label="Sửa ${i.name}">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            stroke-width="2" stroke-linecap="round"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button>
+        <button class="ia del" data-del="${i.id}" aria-label="Xoá ${i.name}">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            stroke-width="2" stroke-linecap="round"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg></button>
+      </span></td></tr>`).join('')
+}
+
+document.querySelector('.a-body').addEventListener('click',e=>{
+  const c=e.target.closest('[data-c]'); if(c){ active=c.dataset.c; render(); return }
+  const ed=e.target.closest('[data-edit]'); if(ed){ openForm(items.find(i=>i.id===ed.dataset.edit)); return }
+  const dl=e.target.closest('[data-del]'); if(dl){
+    const it=items.find(i=>i.id===dl.dataset.del)
+    askDelete(it); return }
+})
+/* Cong tac "Con hang": doi la LUU NGAY, khong co nut Luu */
+document.querySelector('.a-body').addEventListener('change',e=>{
+  const t=e.target.closest('[data-tog]'); if(!t) return
+  const it=items.find(i=>i.id===t.dataset.tog)
+  it.ok=t.checked; render()
+  toast(it.ok?`“${it.name}” đã bật lại`:`“${it.name}” đã đánh dấu hết món`)
+})
+
+function openForm(it){
+  const m=document.getElementById('modal')
+  m.innerHTML=`<div class="modal-body">
+    <h2>${it?'Sửa món':'Thêm món mới'}</h2>
+    <label class="field"><span class="lbl">Danh mục</span>
+      <select class="select">${CATS.map(c=>`<option ${it&&it.cat===c.id?'selected':''}>${c.name}</option>`).join('')}</select></label>
+    <label class="field"><span class="lbl">Tên món *</span>
+      <input class="input" value="${it?it.name:''}" placeholder="Ví dụ: Phở bò tái nạm"></label>
+    <label class="field"><span class="lbl">Mô tả</span>
+      <textarea class="textarea" rows="2" placeholder="Mô tả ngắn hiện dưới tên món">${it?it.desc:''}</textarea></label>
+    <label class="field"><span class="lbl">Giá (VNĐ)</span>
+      <input class="input num" id="pr" type="number" step="1000" value="${it?it.price:''}" placeholder="45000">
+      <span class="hint">Hiển thị cho khách: <b class="num" id="prv">${it?fmt(it.price):'—'}</b></span></label>
+    <label class="field"><span class="lbl">Ảnh món</span>
+      <input class="input" value="${it&&it.slug?`menu-images/${it.slug}.jpg`:''}" placeholder="menu-images/pho-bo.jpg">
+      <span class="hint">Giai đoạn này nhập đường dẫn. Upload ảnh thật là task BE-09.</span></label>
+    <label class="switch" style="margin-bottom:var(--s6)">
+      <input type="checkbox" ${!it||it.ok?'checked':''}><span class="track"></span>
+      <span class="knob"></span><span class="txt">Còn hàng</span></label>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" id="no">Huỷ</button>
+      <button class="btn btn-primary" id="yes">Lưu món</button></div></div>`
+  m.classList.add('on'); document.getElementById('scrim').classList.add('on')
+  const pr=m.querySelector('#pr')
+  pr.oninput=()=>m.querySelector('#prv').textContent = pr.value?fmt(+pr.value):'—'
+  m.querySelector('#no').onclick=close
+  m.querySelector('#yes').onclick=()=>{ close(); toast('Đã lưu món') }
+}
+function askDelete(it){
+  const m=document.getElementById('modal')
+  m.innerHTML=`<div class="modal-body">
+    <h2>Xoá “${it.name}”?</h2>
+    <p>Món sẽ không còn hiện trong thực đơn của khách.
+       <b>Đơn cũ không bị ảnh hưởng</b> vì bill đã lưu tên và giá tại thời điểm gọi.</p>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" id="no">Không</button>
+      <button class="btn btn-danger" id="yes">Xoá món</button></div></div>`
+  m.classList.add('on'); document.getElementById('scrim').classList.add('on')
+  m.querySelector('#no').onclick=close
+  m.querySelector('#yes').onclick=()=>{ close(); toast('Đã xoá '+it.name) }
+}
+function close(){ document.getElementById('modal').classList.remove('on')
+  document.getElementById('scrim').classList.remove('on') }
+document.getElementById('scrim').onclick=close
+document.addEventListener('keydown',e=>{ if(e.key==='Escape') close() })
+document.getElementById('additem').onclick=()=>openForm(null)
+document.getElementById('addcat').onclick=()=>toast('Thêm danh mục — AD-02')
+
+render()
+</script>
+</body>
+</html>

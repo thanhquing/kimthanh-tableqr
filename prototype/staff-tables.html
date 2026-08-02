@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Sơ đồ bàn — Bếp</title>
+<link rel="stylesheet" href="_shared.css">
+<style>
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:var(--s4)}
+.t{position:relative;display:block;text-align:left;padding:var(--s5);border-radius:var(--r-lg);
+  border:1px solid var(--line-200);background:var(--surface);box-shadow:var(--sh-sm);
+  transition:transform var(--fast) var(--ease)}
+.t:hover{transform:translateY(-2px)}
+.t.empty{background:var(--surface-sunken);border-style:dashed;box-shadow:none}
+.t.busy{border-color:var(--brand-100);background:var(--brand-50)}
+.t-nm{font-size:26px;font-weight:800;margin:0 0 var(--s1);line-height:1.1}
+.t-st{font-size:14px;font-weight:700;margin:0 0 var(--s4)}
+.t.empty .t-st{color:var(--ink-600)}
+.t.busy .t-st{color:var(--brand-700)}
+.t-rows{display:grid;gap:6px;font-size:14px}
+.t-row{display:flex;justify-content:space-between;color:var(--ink-700)}
+.t-row b{font-weight:700}
+.t-tot{margin-top:var(--s3);padding-top:var(--s3);border-top:1px solid var(--brand-100);
+  display:flex;justify-content:space-between;align-items:baseline}
+.t-tot span{font-size:14px;color:var(--ink-600)}
+.t-tot b{font-size:21px;font-weight:800}
+.t-empty-hint{font-size:14px;color:var(--ink-500);margin:0}
+/* Cham do khi ban co StaffCall dang PENDING */
+.t-call{position:absolute;top:14px;right:14px;display:flex;align-items:center;gap:6px;
+  padding:4px 10px;border-radius:var(--r-pill);background:var(--danger);color:#fff;
+  font-size:12px;font-weight:700}
+.t-call::before{content:"";width:7px;height:7px;border-radius:50%;background:#fff;
+  animation:pl 1.3s infinite}
+@keyframes pl{50%{opacity:.3}}
+.legend{display:flex;gap:var(--s5);margin-bottom:var(--s5);font-size:14px;color:var(--ink-600)}
+.legend i{display:inline-block;width:13px;height:13px;border-radius:4px;margin-right:6px;
+  vertical-align:-1px}
+</style>
+</head>
+<body>
+<div class="staff">
+  <header class="s-hdr">
+    <span class="s-brand">Kim Thành · Bếp</span>
+    <nav class="s-nav">
+      <a href="staff-orders.html">Đơn hàng</a>
+      <a href="staff-tables.html" class="on">Sơ đồ bàn</a>
+    </nav>
+    <button class="s-icon" aria-label="Khách gọi nhân viên">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+        stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg>
+      <span class="s-dot num">2</span></button>
+  </header>
+
+  <main class="s-main">
+    <h1 class="s-h1">Sơ đồ bàn</h1>
+    <p class="legend">
+      <span><i style="background:var(--brand-50);border:1px solid var(--brand-100)"></i>Có khách</span>
+      <span><i style="background:var(--surface-sunken);border:1px dashed var(--line-300)"></i>Bàn trống</span>
+      <span><i style="background:var(--danger)"></i>Khách đang gọi</span>
+    </p>
+    <div class="grid" id="grid"></div>
+  </main>
+</div>
+
+<script src="_data.js"></script>
+<script>
+protobar()
+
+const S = [
+  {t:'Bàn 1', busy:1, mins:38, orders:2, total:145000, call:null},
+  {t:'Bàn 2', busy:1, mins:15, orders:3, total:268000, call:null},
+  {t:'Bàn 3', busy:1, mins:52, orders:2, total:96000, call:'Xin tính tiền'},
+  {t:'Bàn 4', busy:0},
+  {t:'Bàn 5', busy:1, mins:8,  orders:1, total:90000, call:null},
+  {t:'Bàn 6', busy:1, mins:71, orders:4, total:415000, call:'Gọi nhân viên'},
+  {t:'Bàn 7', busy:1, mins:22, orders:1, total:420000, call:null},
+  {t:'Bàn 8', busy:0},
+]
+const mm = m => m<60 ? m+' phút' : Math.floor(m/60)+' giờ '+(m%60?m%60+' phút':'')
+
+document.getElementById('grid').innerHTML = S.map(s => s.busy
+  ? `<a class="t busy" href="staff-session.html">
+      ${s.call?`<span class="t-call">${s.call}</span>`:''}
+      <p class="t-nm">${s.t}</p>
+      <p class="t-st">Có khách</p>
+      <div class="t-rows">
+        <span class="t-row">Đã ngồi <b class="num">${mm(s.mins)}</b></span>
+        <span class="t-row">Số lần gọi <b class="num">${s.orders}</b></span>
+      </div>
+      <div class="t-tot"><span>Tạm tính</span><b class="num">${fmt(s.total)}</b></div>
+    </a>`
+  : `<div class="t empty">
+      <p class="t-nm">${s.t}</p>
+      <p class="t-st">Bàn trống</p>
+      <p class="t-empty-hint">Sẵn sàng đón khách</p>
+    </div>`).join('')
+</script>
+</body>
+</html>

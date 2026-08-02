@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Đơn của bàn — Bàn 1</title>
+<link rel="stylesheet" href="_shared.css">
+<style>
+.wrap{padding:var(--s4) var(--s4) 200px}
+.card{background:var(--surface);border:1px solid var(--line-200);border-radius:var(--r-lg);
+  margin-bottom:var(--s3);overflow:hidden}
+.card-hd{display:flex;align-items:center;gap:var(--s3);padding:var(--s4);
+  border-bottom:1px solid var(--line-200)}
+.card-no{font-size:16px;font-weight:700;flex:1}
+.card-tm{font-size:13px;color:var(--ink-600)}
+.li{display:flex;gap:var(--s3);padding:var(--s3) var(--s4);align-items:baseline}
+.li + .li{border-top:1px solid var(--line-200)}
+.li-q{flex:0 0 30px;font-size:15px;font-weight:700;color:var(--ink-600)}
+.li-b{flex:1;min-width:0}
+.li-n{font-size:15px;font-weight:600;margin:0}
+.li-note{font-size:13px;color:var(--warning);font-weight:600;margin:2px 0 0}
+.li-p{font-size:15px;font-weight:600;white-space:nowrap}
+.card-ft{display:flex;justify-content:space-between;padding:var(--s3) var(--s4);
+  background:var(--surface-sunken);font-size:15px}
+.card-ft b{font-weight:700}
+.grand{background:var(--surface);border:1px solid var(--line-300);border-radius:var(--r-lg);
+  padding:var(--s5);margin-top:var(--s5);text-align:center}
+.grand small{display:block;font-size:14px;color:var(--ink-600);margin-bottom:var(--s1)}
+.grand strong{font-size:32px;font-weight:700;line-height:1.15}
+.grand em{display:block;font-style:normal;font-size:13px;color:var(--ink-600);margin-top:var(--s2)}
+.foot{position:fixed;left:50%;transform:translateX(-50%);bottom:0;width:100%;max-width:480px;
+  display:flex;gap:var(--s3);padding:var(--s4);background:var(--surface);
+  border-top:1px solid var(--line-200);box-shadow:var(--sh-sheet);z-index:40;
+  padding-bottom:calc(var(--s4) + env(safe-area-inset-bottom))}
+.foot .btn{flex:1}
+</style>
+</head>
+<body>
+<div class="guest">
+  <header class="g-hdr">
+    <a href="guest-menu.html" class="g-back" aria-label="Quay lại thực đơn">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+        stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+    </a>
+    <span class="g-title">Đơn của bàn</span>
+    <span class="g-table">Bàn 1</span>
+  </header>
+  <main class="wrap" id="main"></main>
+</div>
+
+<div class="foot">
+  <a class="btn btn-secondary" href="#" id="bill">Xin tính tiền</a>
+  <a class="btn btn-primary" href="guest-menu.html">Gọi thêm món</a>
+</div>
+
+<script src="_data.js"></script>
+<script>
+protobar()
+
+function render(){
+  document.getElementById('main').innerHTML = ORDERS.map(o=>`
+    <section class="card">
+      <div class="card-hd">
+        <span class="card-no">Lần gọi #${o.no}</span>
+        <span class="card-tm num">${clockLabel(o.ago)}</span>
+        <span class="badge st-${o.status}">${ST_LABEL[o.status]}</span>
+      </div>
+      ${o.items.map(i=>{const it=byId(i.id);return `
+        <div class="li">
+          <span class="li-q num">${i.n}×</span>
+          <span class="li-b">
+            <p class="li-n">${it.name}</p>
+            ${i.note?`<p class="li-note">↳ ${i.note}</p>`:''}
+          </span>
+          <span class="li-p num">${fmt(it.price*i.n)}</span>
+        </div>`}).join('')}
+      <div class="card-ft"><span>Tiền lần này</span>
+        <b class="num">${fmt(orderTotal(o))}</b></div>
+    </section>`).join('') + `
+    <div class="grand">
+      <small>Tổng cộng cả bàn</small>
+      <strong class="num">${fmt(sessionTotal(ORDERS))}</strong>
+      <em>${ORDERS.length} lần gọi · thanh toán khi ra về</em>
+    </div>`
+}
+
+/* Xin tinh tien — bam lai trong 30s khong tao thong bao thu hai */
+let called = false
+document.getElementById('bill').addEventListener('click', e=>{
+  e.preventDefault()
+  if (called) return
+  called = true
+  e.currentTarget.textContent = 'Đã báo nhân viên ✓'
+  e.currentTarget.classList.add('btn-secondary')
+  e.currentTarget.style.color = 'var(--st-served-fg)'
+  e.currentTarget.style.background = 'var(--st-served-bg)'
+  e.currentTarget.style.borderColor = 'var(--st-served-bg)'
+  toast('Đã báo nhân viên tới tính tiền')
+})
+
+render()
+</script>
+</body>
+</html>

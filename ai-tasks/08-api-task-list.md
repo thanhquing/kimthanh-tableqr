@@ -1,0 +1,82 @@
+# 08 — `tableqr-api` (M6–M7)
+
+> # 🔒 BLOCKED
+>
+> **Không bắt đầu bất kỳ task nào trong file này cho tới khi M5 đạt.**
+>
+> Người dùng yêu cầu rõ: *"Gòy dựng UI trước. xong hết r mới bắt đầu làm BE."*
+>
+> Cụ thể, cho tới khi M5 xong: **không** tạo thư mục `tableqr-api/`, **không** viết Prisma schema, **không** thêm dependency backend nào vào workspace. Kể cả khi thấy "làm luôn cho tiện".
+>
+> Điều kiện mở khoá: xem cổng M5 → M6 ở [01-milestones.md](01-milestones.md).
+
+File này viết sẵn để biết đích đến, giúp các quyết định ở M1–M5 không tự bắn vào chân mình.
+
+---
+
+## M6 — Dựng backend
+
+### `BE-00` — Khởi tạo NestJS + Prisma + Postgres · BLOCKED
+`tableqr-api/` theo pattern `kimthanh-tutor/tutor-api`: NestJS 10, prefix `/api/v1`, `docker-compose.yml` (PostgreSQL 15 + api), `.env.example`, `GET /healthz` + `GET /readyz` (readyz kiểm tra DB).
+
+### `BE-01` — Prisma schema + migration · BLOCKED
+Dựng theo `ai-docs/03-domain-model.md`. Bảng `snake_case`. Bắt buộc:
+- **Partial unique index** bảo đảm mỗi bàn tối đa một `TableSession` `OPEN`
+- Unique `dining_table.code`, unique `dining_table.qr_token`
+- Unique `(session_id, sequence_no)` trên `order`
+- Tiền là `INTEGER`, **không** dùng float/decimal
+- Index `order(created_at)` cho màn hình bếp
+
+### `BE-02` — Seed · BLOCKED
+Dùng lại đúng fixture của `packages/mock` để dữ liệu dev giống hệt giai đoạn UI.
+
+### `BE-03` — Auth · BLOCKED
+PIN cho `staff`, email+mật khẩu cho `owner`. JWT, guard theo role. Mật khẩu/PIN băm bằng argon2 hoặc bcrypt — **không lưu thô**. Rate limit endpoint đăng nhập.
+
+### `BE-04` — Guest module · BLOCKED
+4 endpoint `/guest/*`. Điểm cần cẩn thận:
+- `GET /guest/tables/:qrToken` mở phiên: **transaction + xử lý đua** khi hai điện thoại quét cùng lúc — phải ra một session, không phải hai
+- `POST .../orders`: snapshot `nameSnapshot` + `unitPriceVndSnapshot` **phía server**; không bao giờ tin giá client gửi lên
+- Cấp `sequenceNo` trong transaction
+- Idempotency theo `X-Request-Id`, cửa sổ 60s
+- Rate limit theo `qrToken` — chặn spam đơn
+
+### `BE-05` — Staff module · BLOCKED
+9 endpoint `/staff/*`. Bảng chuyển trạng thái đơn thực thi **phía server**, không tin UI. `close` session = đặt `CLOSED` + `closedAt`, **không xoá đơn**.
+
+### `BE-06` — Admin module · BLOCKED
+CRUD danh mục / món / bàn / thông tin quán. Sinh `qrToken` bằng CSPRNG ≥ 16 ký tự. **Chặn mọi đường đổi `qrToken`.** Xoá món = soft delete. Chặn xoá bàn đang có session `OPEN`, chặn xoá danh mục còn món.
+
+### `BE-07` — Xử lý lỗi thống nhất · BLOCKED
+Exception filter trả đúng shape `{ error: { code, message, details } }` với `message` **tiếng Việt** như đã ghi ở `ai-docs/04`.
+
+### `BE-08` — Logic tính tiền dùng chung · BLOCKED
+API import `calcOrderTotal` / `calcSessionTotal` từ `packages/contracts` — **không viết lại**. FE và BE không được phép cộng ra hai con số khác nhau.
+
+### `BE-09` — Upload ảnh món · BLOCKED
+Nhận file, resize (sharp), lưu đĩa hoặc S3-compatible. Giới hạn dung lượng và MIME type. Thay ô nhập URL ở `AD-04`.
+
+### `BE-10` — Script verify cURL · BLOCKED
+`scripts/verify-flow-*.sh` chạy hết luồng: mở phiên → gửi đơn → gọi thêm → gọi nhân viên → bếp đổi trạng thái → thanh toán → reset bàn → quét lại thấy phiên sạch. Theo pattern `tutor-api/scripts/`.
+
+---
+
+## M7 — Nối FE ↔ BE
+
+### `BE-11` — SSE realtime · BLOCKED
+`GET /staff/stream`. Event: `order.created`, `order.status_changed`, `call.created`, `session.closed`. Client thay implementation trong `useOrderStream()` — **không sửa component nào**. Fallback về polling nếu SSE lỗi 3 lần liên tiếp.
+
+### `BE-12a` — **M7a**: nối lát cắt dọc — chỉ luồng khách · BLOCKED
+Chỉ `tableqr-guest` đặt `VITE_USE_MOCK=false`. Staff và admin **vẫn chạy mock**.
+
+Đi hết: quét QR → mở phiên → xem menu → gửi đơn → gọi thêm → xin tính tiền, trên API thật.
+
+Đây là nơi mọi lệch contract lộ ra. Nối một app tại một thời điểm để biết chính xác lỗi ở đâu; nối cả ba cùng lúc thì ba app cùng hỏng.
+
+> Nếu phải sửa component ở bước này thì tầng mock ở M1 đã làm sai contract. Sửa cho khớp `ai-docs/04`, **và ghi lại nguyên nhân** — cùng loại lỗi đó gần như chắc chắn còn nằm ở hai app kia.
+
+### `BE-12b` — **M7b**: nối nốt staff + admin · BLOCKED
+Sau khi `BE-12a` sạch. Xác nhận MSW **không** lọt vào production bundle của cả ba app.
+
+### `BE-13` — Verify thiết bị thật · BLOCKED
+In mã QR ra giấy, dán lên bàn. Điện thoại thật quét; tablet mở màn bếp. Đơn phải hiện trên bếp **< 2s, không refresh**. Thử với mạng 4G thật, không phải wifi.

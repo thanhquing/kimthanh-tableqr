@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Cài đặt — Quản trị</title>
+<link rel="stylesheet" href="_shared.css">
+<style>
+.cols{display:grid;grid-template-columns:1fr 320px;gap:var(--s5);align-items:start}
+@media(max-width:900px){.cols{grid-template-columns:1fr}}
+.pbody{padding:var(--s5)}
+.logo{display:flex;align-items:center;gap:var(--s4);margin-bottom:var(--s4)}
+.logo-ph{width:64px;height:64px;border-radius:var(--r-md);background:var(--brand-600);
+  color:#fff;display:grid;place-items:center;font-size:26px;font-weight:800;flex:0 0 64px}
+.prev{background:var(--surface);border:1px solid var(--line-200);border-radius:var(--r-lg);
+  overflow:hidden;box-shadow:var(--sh-sm)}
+.prev-hd{padding:var(--s3) var(--s4);font-size:12px;font-weight:700;color:var(--ink-600);
+  text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid var(--line-200);
+  background:var(--surface-sunken)}
+.phone{margin:var(--s4);border:1px solid var(--line-300);border-radius:var(--r-lg);
+  overflow:hidden}
+.phone-hd{height:52px;display:flex;align-items:center;gap:var(--s3);padding:0 var(--s4);
+  border-bottom:1px solid var(--line-200)}
+.phone-nm{font-size:15px;font-weight:700;flex:1;overflow:hidden;text-overflow:ellipsis;
+  white-space:nowrap}
+.phone-tb{padding:4px 10px;border-radius:var(--r-pill);background:var(--brand-600);color:#fff;
+  font-size:12px;font-weight:700}
+.phone-b{padding:var(--s4);font-size:13px;color:var(--ink-500);text-align:center}
+.savebar{display:flex;gap:var(--s3);justify-content:flex-end;padding:var(--s4) var(--s5);
+  border-top:1px solid var(--line-200);background:var(--surface-sunken)}
+</style>
+</head>
+<body>
+<div class="admin">
+  <aside class="a-side">
+    <div class="a-brand">Kim Thành<small>Quản trị quán</small></div>
+    <a href="admin-menu.html">Thực đơn</a>
+    <a href="admin-tables.html">Bàn &amp; mã QR</a>
+    <a href="admin-settings.html" class="on">Cài đặt</a>
+  </aside>
+
+  <div class="a-main">
+    <header class="a-top"><h1>Cài đặt quán</h1></header>
+    <div class="a-body">
+      <div class="cols">
+        <div class="panel">
+          <div class="panel-hd"><h2>Thông tin quán</h2></div>
+          <div class="pbody">
+            <div class="logo">
+              <div class="logo-ph" id="lg">K</div>
+              <div>
+                <button class="btn btn-secondary" style="height:36px;font-size:14px"
+                  onclick="toast('Upload logo — task BE-09')">Đổi logo</button>
+                <p class="hint" style="margin-top:6px">PNG hoặc JPG, nên là hình vuông</p>
+              </div>
+            </div>
+            <label class="field"><span class="lbl">Tên quán *</span>
+              <input class="input" id="nm" value="Quán Cơm Kim Thành">
+              <span class="hint">Hiện trên đầu trang menu của khách và trên bản in mã QR</span></label>
+            <label class="field"><span class="lbl">Địa chỉ</span>
+              <input class="input" value="128 Nguyễn Thái Học, Quận 1, TP.HCM"></label>
+            <label class="field" style="margin-bottom:0"><span class="lbl">Số điện thoại</span>
+              <input class="input num" value="0909 123 456"></label>
+          </div>
+          <div class="savebar">
+            <button class="btn btn-secondary" style="height:38px;font-size:14px">Huỷ</button>
+            <button class="btn btn-primary" style="height:38px;font-size:14px"
+              onclick="toast('Đã lưu thông tin quán')">Lưu thay đổi</button>
+          </div>
+        </div>
+
+        <div class="prev">
+          <div class="prev-hd">Khách sẽ thấy</div>
+          <div class="phone">
+            <div class="phone-hd">
+              <span class="phone-nm" id="pv">Quán Cơm Kim Thành</span>
+              <span class="phone-tb">Bàn 1</span>
+            </div>
+            <div class="phone-b">— thực đơn hiện ở đây —</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="_data.js"></script>
+<script>
+protobar()
+const nm=document.getElementById('nm')
+nm.addEventListener('input',()=>{
+  document.getElementById('pv').textContent = nm.value || 'Tên quán'
+  document.getElementById('lg').textContent = (nm.value.trim()[0] || 'K').toUpperCase()
+})
+</script>
+</body>
+</html>

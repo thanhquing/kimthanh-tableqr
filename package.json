@@ -1,0 +1,21 @@
+{
+  "name": "kimthanh-tableqr",
+  "version": "0.1.0",
+  "private": true,
+  "description": "He thong goi mon bang ma QR tai ban: khach quet QR -> chon mon -> don gui thang vao man hinh bep.",
+  "engines": {
+    "node": ">=20.19",
+    "pnpm": ">=10"
+  },
+  "packageManager": "pnpm@10.13.1",
+  "scripts": {
+    "build": "pnpm -r --if-present build",
+    "test": "pnpm -r --if-present test",
+    "lint": "pnpm -r --if-present lint",
+    "typecheck": "pnpm -r --if-present typecheck",
+    "dev:guest": "pnpm --filter tableqr-guest dev",
+    "dev:staff": "pnpm --filter tableqr-staff dev",
+    "dev:admin": "pnpm --filter tableqr-admin dev",
+    "build:packages": "pnpm --filter \"./packages/**\" build"
+  }
+}

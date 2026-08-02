@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Bàn & mã QR — Quản trị</title>
+<link rel="stylesheet" href="_shared.css">
+<style>
+.pill{display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:var(--r-pill);
+  font-size:12px;font-weight:700}
+.pill.busy{background:var(--brand-50);color:var(--brand-700)}
+.pill.free{background:var(--st-new-bg);color:var(--ink-600)}
+.pill.off{background:var(--st-cancel-bg);color:var(--st-cancel-fg)}
+.tok{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;color:var(--ink-600)}
+.rowacts{display:flex;gap:var(--s2);justify-content:flex-end}
+.qrbox{text-align:center}
+.qrbox .frame{display:inline-block;padding:var(--s4);border:1px solid var(--line-200);
+  border-radius:var(--r-md);background:#fff;margin-bottom:var(--s3)}
+.qrbox h3{font-size:20px;margin:0 0 var(--s1)}
+.qrbox .u{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;
+  color:var(--ink-600);word-break:break-all;margin:0 0 var(--s5)}
+.note{display:flex;gap:var(--s2);text-align:left;padding:var(--s3);border-radius:var(--r-md);
+  background:var(--st-prep-bg);color:var(--st-prep-fg);font-size:13px;font-weight:600;
+  line-height:1.5;margin-bottom:var(--s5)}
+.lock{display:inline-flex;align-items:center;gap:5px;font-size:12px;color:var(--ink-500)}
+</style>
+</head>
+<body>
+<div class="admin">
+  <aside class="a-side">
+    <div class="a-brand">Kim Thành<small>Quản trị quán</small></div>
+    <a href="admin-menu.html">Thực đơn</a>
+    <a href="admin-tables.html" class="on">Bàn &amp; mã QR</a>
+    <a href="admin-settings.html">Cài đặt</a>
+  </aside>
+
+  <div class="a-main">
+    <header class="a-top">
+      <h1>Bàn &amp; mã QR</h1>
+      <a class="btn btn-secondary" style="height:36px;font-size:14px" href="admin-print.html">In tất cả mã QR</a>
+      <button class="btn btn-primary" style="height:36px;font-size:14px" id="add">+ Thêm bàn</button>
+    </header>
+
+    <div class="a-body">
+      <div class="panel">
+        <div class="panel-hd"><h2>8 bàn</h2>
+          <span class="lock">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+              stroke-width="2.2"><rect x="4" y="11" width="16" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+            Mã QR không đổi khi sửa tên bàn</span>
+        </div>
+        <table class="tbl">
+          <thead><tr>
+            <th style="width:80px">Mã</th><th>Tên hiển thị</th><th style="width:200px">QR token</th>
+            <th style="width:130px">Trạng thái</th><th style="width:190px"></th>
+          </tr></thead>
+          <tbody id="rows"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="scrim" id="scrim"></div>
+<div class="modal" id="modal" role="dialog" aria-modal="true"></div>
+
+<script src="_data.js"></script>
+<script src="_qr.js"></script>
+<script>
+protobar()
+const ST = {B01:'busy',B02:'busy',B03:'busy',B04:'free',B05:'busy',B06:'busy',B07:'busy',B08:'off'}
+const LBL = {busy:'Có khách',free:'Trống',off:'Đã tắt'}
+
+document.getElementById('rows').innerHTML = TABLES.map(t=>`
+  <tr>
+    <td><b>${t.code}</b></td>
+    <td>${t.name}</td>
+    <td><span class="tok">${t.qr}</span></td>
+    <td><span class="pill ${ST[t.code]}">${LBL[ST[t.code]]}</span></td>
+    <td><span class="rowacts">
+      <button class="btn btn-secondary" style="height:32px;font-size:13px;padding:0 12px"
+        data-qr="${t.code}">Xem mã QR</button>
+      <button class="btn btn-ghost" style="height:32px;font-size:13px;padding:0 10px"
+        data-ed="${t.code}">Sửa</button>
+    </span></td>
+  </tr>`).join('')
+
+document.getElementById('rows').addEventListener('click',e=>{
+  const q=e.target.closest('[data-qr]'); if(q) return showQr(TABLES.find(t=>t.code===q.dataset.qr))
+  const d=e.target.closest('[data-ed]'); if(d) return editTable(TABLES.find(t=>t.code===d.dataset.ed))
+})
+
+function showQr(t){
+  const m=document.getElementById('modal')
+  m.innerHTML=`<div class="modal-body qrbox">
+    <h3>${t.name}</h3>
+    <p class="u">http://localhost:5173/t/${t.qr}</p>
+    <div class="frame">${fakeQr(t.qr, 190)}</div>
+    <div class="note">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+        stroke-width="2.2" stroke-linecap="round" style="flex:0 0 16px;margin-top:1px">
+        <circle cx="12" cy="12" r="9"/><path d="M12 8v4.5M12 16h.01"/></svg>
+      <span><b>Mã minh hoạ — chưa quét được.</b> Prototype chưa mã hoá dữ liệu thật;
+        mã QR quét được sinh bằng <code>qrcode.react</code> ở task AD-06.</span></div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="close()">Đóng</button>
+      <button class="btn btn-primary" onclick="toast('Tải PNG — AD-06')">Tải PNG</button></div></div>`
+  open_()
+}
+function editTable(t){
+  const m=document.getElementById('modal')
+  m.innerHTML=`<div class="modal-body">
+    <h2>Sửa ${t.name}</h2>
+    <label class="field"><span class="lbl">Mã bàn</span>
+      <input class="input" value="${t.code}"></label>
+    <label class="field"><span class="lbl">Tên hiển thị</span>
+      <input class="input" value="${t.name}"></label>
+    <label class="field"><span class="lbl">QR token</span>
+      <input class="input tok" value="${t.qr}" disabled>
+      <span class="hint">Không sửa được — mã QR đã in và dán lên bàn, đổi là hỏng mã.</span></label>
+    <label class="switch" style="margin-bottom:var(--s6)">
+      <input type="checkbox" ${ST[t.code]!=='off'?'checked':''}><span class="track"></span>
+      <span class="knob"></span><span class="txt">Bàn đang sử dụng</span></label>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="close()">Huỷ</button>
+      <button class="btn btn-primary" onclick="close();toast('Đã lưu ${t.name}')">Lưu</button></div></div>`
+  open_()
+}
+document.getElementById('add').onclick=()=>{
+  const m=document.getElementById('modal')
+  m.innerHTML=`<div class="modal-body">
+    <h2>Thêm bàn mới</h2>
+    <label class="field"><span class="lbl">Mã bàn *</span>
+      <input class="input" placeholder="B09"></label>
+    <label class="field"><span class="lbl">Tên hiển thị *</span>
+      <input class="input" placeholder="Bàn 9"></label>
+    <p style="font-size:13px;color:var(--ink-600);margin:0 0 var(--s6)">
+      Hệ thống tự sinh mã QR cho bàn này. In và dán lên bàn trước khi phục vụ.</p>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="close()">Huỷ</button>
+      <button class="btn btn-primary" onclick="close();toast('Đã thêm bàn — nhớ in mã QR')">Thêm bàn</button></div></div>`
+  open_()
+}
+function open_(){ document.getElementById('modal').classList.add('on')
+  document.getElementById('scrim').classList.add('on') }
+function close(){ document.getElementById('modal').classList.remove('on')
+  document.getElementById('scrim').classList.remove('on') }
+document.getElementById('scrim').onclick=close
+document.addEventListener('keydown',e=>{ if(e.key==='Escape') close() })
+</script>
+</body>
+</html>

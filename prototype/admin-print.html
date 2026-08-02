@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>In mã QR — Quản trị</title>
+<link rel="stylesheet" href="_shared.css">
+<style>
+.bar{display:flex;align-items:center;gap:var(--s4);padding:var(--s4) var(--s6);
+  background:var(--surface);border-bottom:1px solid var(--line-200);position:sticky;top:0;z-index:20}
+.bar h1{font-size:18px;margin:0;flex:1}
+.warnbar{display:flex;gap:var(--s3);align-items:flex-start;padding:var(--s4) var(--s6);
+  background:var(--st-cancel-bg);color:var(--st-cancel-fg);font-size:14px;font-weight:600;
+  line-height:1.55}
+/* Trang A4 rong co dinh 210mm — man hep thi CUON TRONG stage, khong tran ca trang */
+.stage{padding:var(--s6);display:flex;justify-content:center;background:#78716C;
+  overflow-x:auto}
+
+/* Trang A4: 210x297mm, luoi 3x4 = 12 o moi trang */
+.sheet{width:210mm;min-height:297mm;padding:12mm;background:#fff;box-shadow:var(--sh-md);
+  display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(4,1fr);
+  gap:6mm;page-break-after:always}
+.cellqr{border:1px dashed #D6D3D1;border-radius:3mm;padding:5mm 3mm;text-align:center;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2mm;
+  position:relative;overflow:hidden}
+.cellqr .shop{font-size:9pt;font-weight:700;color:#57534E;letter-spacing:.02em}
+.cellqr svg{display:block}
+.cellqr .tname{font-size:17pt;font-weight:800;line-height:1;margin-top:1mm}
+.cellqr .cta{font-size:8pt;color:#57534E;line-height:1.35;max-width:44mm}
+/* Dau hieu KHONG THE BO QUA — chan in nham ban gia dan len ban */
+.cellqr::after{content:"MÃ MINH HOẠ";position:absolute;top:50%;left:50%;
+  transform:translate(-50%,-50%) rotate(-24deg);font-size:13pt;font-weight:800;
+  color:rgba(185,28,28,.22);letter-spacing:.1em;pointer-events:none;white-space:nowrap}
+
+@media print{
+  .protobar,.bar,.warnbar{display:none!important}
+  .stage{padding:0;background:#fff;display:block}
+  .sheet{width:auto;min-height:auto;box-shadow:none;margin:0;padding:10mm}
+  body{background:#fff}
+}
+</style>
+</head>
+<body>
+<div class="bar">
+  <h1>In mã QR cho bàn</h1>
+  <span style="font-size:14px;color:var(--ink-600)">8 bàn · 1 trang A4</span>
+  <a class="btn btn-secondary" style="height:36px;font-size:14px" href="admin-tables.html">Quay lại</a>
+  <button class="btn btn-primary" style="height:36px;font-size:14px" onclick="window.print()">In</button>
+</div>
+
+<div class="warnbar">
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+    stroke-width="2.2" stroke-linecap="round" style="flex:0 0 18px;margin-top:1px">
+    <circle cx="12" cy="12" r="9"/><path d="M12 8v4.5M12 16h.01"/></svg>
+  <span><b>Đây là bản dựng thử — mã QR trên trang này KHÔNG quét được.</b>
+    Trang dùng để duyệt bố cục bản in (kích thước ô, cỡ chữ tên bàn, lề cắt).
+    Mã QR thật được sinh bằng <code>qrcode.react</code> ở task <b>AD-06</b>;
+    chỉ in để dán lên bàn sau khi task đó xong.</span>
+</div>
+
+<div class="stage"><div class="sheet" id="sheet" style="flex:0 0 auto"></div></div>
+
+<script src="_data.js"></script>
+<script src="_qr.js"></script>
+<script>
+protobar()
+document.getElementById('sheet').innerHTML = TABLES.map(t=>`
+  <div class="cellqr">
+    <span class="shop">QUÁN CƠM KIM THÀNH</span>
+    ${fakeQr(t.qr, 120)}
+    <span class="tname">${t.name}</span>
+    <span class="cta">Quét mã để xem thực đơn và gọi món</span>
+  </div>`).join('') +
+  /* O trong cho du 12 o — de nhin duoc luoi day du khi duyet ban in */
+  Array.from({length:4},()=>`<div class="cellqr" style="border-color:#EFEBE7">
+    <span style="font-size:8pt;color:#A8A29E">(ô trống)</span></div>`).join('')
+</script>
+</body>
+</html>

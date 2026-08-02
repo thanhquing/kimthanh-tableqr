@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Bảng đơn — Bếp</title>
+<link rel="stylesheet" href="_shared.css">
+<style>
+.cols{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--s4);align-items:start}
+@media(max-width:900px){.cols{grid-template-columns:1fr}}
+.col-hd{display:flex;align-items:center;gap:var(--s2);padding:0 var(--s1) var(--s3);
+  position:sticky;top:64px;background:var(--surface-sunken);z-index:10}
+.col-hd h2{font-size:15px;font-weight:700;margin:0;text-transform:uppercase;letter-spacing:.05em;
+  color:var(--ink-600)}
+.col-n{padding:2px 9px;border-radius:var(--r-pill);background:var(--line-200);
+  font-size:13px;font-weight:700;color:var(--ink-700)}
+.ord{background:var(--surface);border:1px solid var(--line-200);border-radius:var(--r-lg);
+  margin-bottom:var(--s3);overflow:hidden;box-shadow:var(--sh-sm)}
+.ord.fresh{border-color:var(--brand-600);box-shadow:0 0 0 3px var(--brand-50),var(--sh-sm);
+  animation:bl 1s 3}
+@keyframes bl{0%,100%{box-shadow:0 0 0 3px var(--brand-50),var(--sh-sm)}
+  50%{box-shadow:0 0 0 7px var(--brand-50),var(--sh-sm)}}
+.ord-hd{display:flex;align-items:baseline;gap:var(--s3);padding:var(--s4) var(--s4) var(--s2)}
+/* So ban la chu TO NHAT tren the — nhin tu 80cm phai doc duoc ngay */
+.ord-tbl{font-size:32px;font-weight:800;line-height:1;letter-spacing:-.01em}
+.ord-seq{font-size:15px;font-weight:600;color:var(--ink-600);flex:1}
+.ord-tm{display:flex;gap:var(--s2);align-items:baseline;padding:0 var(--s4) var(--s3);
+  font-size:14px;color:var(--ink-600)}
+.ord-tm .late{color:var(--danger);font-weight:700}
+.ord-items{border-top:1px solid var(--line-200);border-bottom:1px solid var(--line-200)}
+.oi{display:flex;gap:var(--s3);padding:var(--s3) var(--s4);align-items:baseline}
+.oi + .oi{border-top:1px solid var(--line-200)}
+.oi-q{flex:0 0 34px;font-size:19px;font-weight:800}
+.oi-n{flex:1;font-size:17px;font-weight:600;margin:0}
+/* Ghi chu phai NOI — day la thu hay lam sai don nhat */
+.oi-note{margin:3px 0 0;font-size:15px;font-weight:700;color:var(--warning);
+  background:var(--st-prep-bg);display:inline-block;padding:2px 8px;border-radius:var(--r-sm)}
+.ord-ft{display:flex;align-items:center;gap:var(--s3);padding:var(--s3) var(--s4) var(--s4)}
+.ord-tot{flex:1;font-size:17px;font-weight:700}
+.ord-ft .btn{height:56px;font-size:16px}   /* vung cham 56px — tay bung be */
+.more{width:56px;height:56px;border-radius:var(--r-md);display:grid;place-items:center;
+  color:var(--ink-600);border:1px solid var(--line-300)}
+.more:hover{background:var(--surface-sunken)}
+.col-empty{padding:var(--s8) var(--s4);text-align:center;color:var(--ink-600);font-size:15px;
+  border:1px dashed var(--line-300);border-radius:var(--r-lg)}
+</style>
+</head>
+<body>
+<div class="staff">
+  <header class="s-hdr">
+    <span class="s-brand">Kim Thành · Bếp</span>
+    <nav class="s-nav">
+      <a href="staff-orders.html" class="on">Đơn hàng</a>
+      <a href="staff-tables.html">Sơ đồ bàn</a>
+    </nav>
+    <button class="s-icon" id="sound" aria-label="Tắt âm báo" title="Âm báo đơn mới">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+        stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M11 5 6 9H2v6h4l5 4V5Z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/></svg>
+    </button>
+    <button class="s-icon" id="calls" aria-label="Khách gọi nhân viên">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+        stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg>
+      <span class="s-dot num">2</span>
+    </button>
+  </header>
+
+  <main class="s-main">
+    <h1 class="s-h1">Đơn hàng</h1>
+    <div class="cols" id="cols"></div>
+  </main>
+</div>
+
+<div class="scrim" id="scrim"></div>
+<div class="modal" id="modal" role="dialog" aria-modal="true"></div>
+
+<script src="_data.js"></script>
+<script>
+protobar()
+
+let seq = 100
+let O = [
+  {id:1, tbl:'Bàn 3', seq:2, st:'NEW', ago:12, fresh:false,
+   items:[{id:'item-com-tam-suon',n:1,note:'không mỡ hành'},{id:'item-tra-da',n:2,note:''}]},
+  {id:2, tbl:'Bàn 1', seq:1, st:'NEW', ago:4, fresh:false,
+   items:[{id:'item-pho-bo',n:2,note:'ít hành'},{id:'item-ca-phe-sua-da',n:1,note:'ít đá'}]},
+  {id:3, tbl:'Bàn 7', seq:1, st:'PREPARING', ago:9, fresh:false,
+   items:[{id:'item-lau-thai',n:1,note:'ít cay'},{id:'item-goi-cuon',n:2,note:''}]},
+  {id:4, tbl:'Bàn 2', seq:3, st:'PREPARING', ago:5, fresh:false,
+   items:[{id:'item-bun-bo-hue',n:1,note:''}]},
+  {id:5, tbl:'Bàn 5', seq:1, st:'SERVED', ago:22, fresh:false,
+   items:[{id:'item-banh-mi-thit',n:2,note:'không rau'},{id:'item-nuoc-mia',n:2,note:''}]},
+]
+const COLS = [['NEW','Đơn mới'],['PREPARING','Đang làm'],['SERVED','Đã phục vụ']]
+const NEXT = {NEW:['PREPARING','Bắt đầu làm'], PREPARING:['SERVED','Đã phục vụ']}
+
+function card(o){
+  const late = o.st==='NEW' && o.ago>10
+  const nx = NEXT[o.st]
+  return `<article class="ord ${o.fresh?'fresh':''}">
+    <div class="ord-hd">
+      <span class="ord-tbl">${o.tbl}</span>
+      <span class="ord-seq">lần gọi #${o.seq}</span>
+    </div>
+    <div class="ord-tm">
+      <span class="num">${clockLabel(o.ago)}</span><span>·</span>
+      <span class="num ${late?'late':''}">${agoLabel(o.ago)}${late?' — quá lâu':''}</span>
+    </div>
+    <div class="ord-items">
+      ${o.items.map(i=>{const it=byId(i.id);return `<div class="oi">
+        <span class="oi-q num">${i.n}×</span>
+        <span style="flex:1"><p class="oi-n">${it.name}</p>
+          ${i.note?`<p class="oi-note">↳ ${i.note}</p>`:''}</span>
+      </div>`}).join('')}
+    </div>
+    <div class="ord-ft">
+      <span class="ord-tot num">${fmt(o.items.reduce((s,i)=>s+i.n*byId(i.id).price,0))}</span>
+      ${nx?`<button class="btn btn-primary" data-next="${o.id}">${nx[1]}</button>`:''}
+      ${o.st!=='SERVED'?`<button class="more" data-cancel="${o.id}" aria-label="Thêm tuỳ chọn">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+        <circle cx="5" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="19" cy="12" r="1.8"/></svg>
+      </button>`:''}
+    </div></article>`
+}
+
+function render(){
+  document.getElementById('cols').innerHTML = COLS.map(([k,label])=>{
+    /* Sap xep cu nhat truoc — ai gui truoc hien truoc */
+    const list = O.filter(o=>o.st===k).sort((a,b)=>b.ago-a.ago)
+    return `<section>
+      <div class="col-hd"><h2>${label}</h2><span class="col-n num">${list.length}</span></div>
+      ${list.length ? list.map(card).join('')
+        : `<div class="col-empty">Chưa có đơn nào</div>`}
+    </section>`
+  }).join('')
+}
+
+document.getElementById('cols').addEventListener('click',e=>{
+  const n=e.target.closest('[data-next]'), c=e.target.closest('[data-cancel]')
+  if(n){ const o=O.find(x=>x.id==n.dataset.next)
+    o.st = NEXT[o.st][0]; o.fresh=false; render()   // cap nhat lac quan
+    toast(o.tbl+' → '+ST_LABEL[o.st]); return }
+  if(c) confirmCancel(O.find(x=>x.id==c.dataset.cancel))
+})
+
+function confirmCancel(o){
+  const m=document.getElementById('modal')
+  m.innerHTML=`<div class="modal-body">
+    <h2>Huỷ đơn ${o.tbl} — lần gọi #${o.seq}?</h2>
+    <p>Đơn sẽ không được tính vào tổng tiền của bàn. Thao tác này không hoàn tác được;
+       nếu bấm nhầm, khách cần gọi lại món.</p>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" id="no">Không</button>
+      <button class="btn btn-danger" id="yes">Huỷ đơn</button></div></div>`
+  m.classList.add('on'); document.getElementById('scrim').classList.add('on')
+  m.querySelector('#no').onclick=close
+  m.querySelector('#yes').onclick=()=>{ O=O.filter(x=>x.id!==o.id); render(); close()
+    toast('Đã huỷ đơn '+o.tbl) }
+  m.querySelector('#no').focus()
+}
+function close(){ document.getElementById('modal').classList.remove('on')
+  document.getElementById('scrim').classList.remove('on') }
+document.getElementById('scrim').onclick=close
+document.addEventListener('keydown',e=>{ if(e.key==='Escape') close() })
+
+document.getElementById('sound').onclick=function(){
+  this.classList.toggle('on')
+  toast(this.classList.contains('on')?'Đã tắt âm báo':'Đã bật âm báo')
+}
+document.getElementById('calls').onclick=()=>{
+  const m=document.getElementById('modal')
+  m.innerHTML=`<div class="modal-body">
+    <h2>Khách gọi nhân viên</h2>
+    <div style="border:1px solid var(--line-200);border-radius:var(--r-md);overflow:hidden;margin-bottom:var(--s5)">
+      <div style="display:flex;align-items:center;gap:var(--s3);padding:var(--s4);
+        border-bottom:1px solid var(--line-200);background:var(--st-prep-bg)">
+        <b style="font-size:19px;flex:0 0 auto">Bàn 3</b>
+        <span style="flex:1"><b>Xin tính tiền</b><br>
+          <small style="color:var(--ink-600)">1 phút trước</small></span>
+        <button class="btn btn-secondary" onclick="toast('Đã xử lý Bàn 3');close()">Đã xử lý</button>
+      </div>
+      <div style="display:flex;align-items:center;gap:var(--s3);padding:var(--s4)">
+        <b style="font-size:19px;flex:0 0 auto">Bàn 6</b>
+        <span style="flex:1">Gọi nhân viên<br>
+          <small style="color:var(--ink-600)">4 phút trước</small></span>
+        <button class="btn btn-secondary" onclick="toast('Đã xử lý Bàn 6');close()">Đã xử lý</button>
+      </div></div>
+    <div class="modal-actions"><button class="btn btn-secondary" onclick="close()">Đóng</button></div>
+  </div>`
+  m.classList.add('on'); document.getElementById('scrim').classList.add('on')
+}
+
+/* Nut dev — mock store khong chia se giua cac origin nen khong demo duoc
+   luong khach -> bep truoc M7 (xem ai-docs/06 §Realtime) */
+document.body.insertAdjacentHTML('beforeend',`
+  <button class="btn btn-secondary" style="position:fixed;left:12px;bottom:12px;z-index:90;
+    height:36px;font-size:12px;padding:0 14px" id="sim">+ Giả lập đơn mới</button>`)
+document.getElementById('sim').onclick=()=>{
+  const t = TABLES[Math.floor(Math.random()*8)].name
+  O.forEach(o=>o.fresh=false)
+  O.unshift({id:++seq, tbl:t, seq:1, st:'NEW', ago:0, fresh:true,
+    items:[{id:'item-pho-bo',n:1,note:'ít hành'},{id:'item-tra-da',n:1,note:''}]})
+  render(); toast('Đơn mới từ '+t)
+}
+
+render()
+</script>
+</body>
+</html>

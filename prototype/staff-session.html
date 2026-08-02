@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Bàn 1 — Chi tiết phiên</title>
+<link rel="stylesheet" href="_shared.css">
+<style>
+.lay{display:grid;grid-template-columns:1fr 340px;gap:var(--s5);align-items:start}
+@media(max-width:900px){.lay{grid-template-columns:1fr}}
+.crumb{display:flex;align-items:center;gap:var(--s2);margin-bottom:var(--s3);
+  font-size:15px;color:var(--ink-600)}
+.ord{background:var(--surface);border:1px solid var(--line-200);border-radius:var(--r-lg);
+  margin-bottom:var(--s4);overflow:hidden}
+.ord-hd{display:flex;align-items:center;gap:var(--s3);padding:var(--s4) var(--s5);
+  border-bottom:1px solid var(--line-200)}
+.ord-hd h3{font-size:17px;font-weight:700;margin:0;flex:1}
+.oi{display:flex;gap:var(--s3);padding:var(--s3) var(--s5);align-items:baseline}
+.oi + .oi{border-top:1px solid var(--line-200)}
+.oi-q{flex:0 0 32px;font-size:17px;font-weight:800;color:var(--ink-600)}
+.oi-n{flex:1;font-size:16px;font-weight:600;margin:0}
+.oi-note{margin:2px 0 0;font-size:14px;font-weight:600;color:var(--warning)}
+.oi-p{font-size:16px;font-weight:600;white-space:nowrap}
+.ord-ft{display:flex;justify-content:space-between;padding:var(--s3) var(--s5);
+  background:var(--surface-sunken);font-size:16px;font-weight:700}
+.ord.void .oi-n,.ord.void .oi-p{text-decoration:line-through;color:var(--ink-500)}
+.ord.void .ord-ft{color:var(--ink-500)}
+
+.side{position:sticky;top:84px}
+.bill{background:var(--surface);border:1px solid var(--line-300);border-radius:var(--r-lg);
+  padding:var(--s5);box-shadow:var(--sh-sm);margin-bottom:var(--s4)}
+.bill small{display:block;font-size:14px;color:var(--ink-600)}
+/* Tong bill CHU RAT TO — nhan vien doc so nay de thu tien */
+.bill .big{font-size:40px;font-weight:800;line-height:1.1;margin:var(--s1) 0 var(--s3);
+  letter-spacing:-.02em}
+.bill dl{margin:0;padding-top:var(--s3);border-top:1px solid var(--line-200);
+  display:grid;gap:7px;font-size:14px}
+.bill dl div{display:flex;justify-content:space-between}
+.bill dt{color:var(--ink-600)}
+.bill dd{margin:0;font-weight:600}
+.acts{display:grid;gap:var(--s3)}
+.acts .btn{height:56px;font-size:16px;width:100%}
+.paid-mark{display:flex;align-items:center;justify-content:center;gap:var(--s2);height:56px;
+  border-radius:var(--r-md);background:var(--st-served-bg);color:var(--st-served-fg);
+  font-size:16px;font-weight:700}
+.hint-lock{font-size:13px;color:var(--ink-600);text-align:center;margin:0}
+.warn-red{display:flex;gap:var(--s2);padding:var(--s3);border-radius:var(--r-md);
+  background:var(--st-cancel-bg);color:var(--st-cancel-fg);font-size:13px;font-weight:600;
+  line-height:1.5}
+</style>
+</head>
+<body>
+<div class="staff">
+  <header class="s-hdr">
+    <span class="s-brand">Kim Thành · Bếp</span>
+    <nav class="s-nav">
+      <a href="staff-orders.html">Đơn hàng</a>
+      <a href="staff-tables.html" class="on">Sơ đồ bàn</a>
+    </nav>
+  </header>
+
+  <main class="s-main">
+    <p class="crumb"><a href="staff-tables.html">Sơ đồ bàn</a> › <b>Bàn 1</b></p>
+    <h1 class="s-h1">Bàn 1 · đã ngồi 38 phút</h1>
+
+    <div class="lay">
+      <div id="orders"></div>
+      <aside class="side">
+        <div class="bill">
+          <small>Tổng bill cả bàn</small>
+          <div class="big num" id="tot"></div>
+          <dl>
+            <div><dt>Số lần gọi</dt><dd class="num" id="cnt"></dd></div>
+            <div><dt>Mở phiên lúc</dt><dd class="num">10:42</dd></div>
+            <div><dt>Thanh toán</dt><dd id="pst">Chưa</dd></div>
+          </dl>
+        </div>
+        <div class="acts" id="acts"></div>
+      </aside>
+    </div>
+  </main>
+</div>
+
+<div class="scrim" id="scrim"></div>
+<div class="modal" id="modal" role="dialog" aria-modal="true"></div>
+
+<script src="_data.js"></script>
+<script>
+protobar()
+
+/* Don thu 3 bi HUY — de kiem tong bill loai dung don do */
+const OS = [
+  {no:1, st:'SERVED', ago:36, items:[
+    {id:'item-ca-phe-sua-da',n:2,note:'ít đá'},{id:'item-goi-cuon',n:1,note:''}]},
+  {no:2, st:'PREPARING', ago:11, items:[
+    {id:'item-com-tam-suon',n:1,note:'không mỡ hành'},{id:'item-tra-da',n:2,note:''}]},
+  {no:3, st:'CANCELLED', ago:20, items:[{id:'item-banh-xeo',n:1,note:''}]},
+]
+let paid = false
+
+function render(){
+  document.getElementById('orders').innerHTML = OS.map(o=>`
+    <section class="ord ${o.st==='CANCELLED'?'void':''}">
+      <div class="ord-hd">
+        <h3>Lần gọi #${o.no}</h3>
+        <span class="num" style="color:var(--ink-600);font-size:15px">${clockLabel(o.ago)}</span>
+        <span class="badge st-${o.st}">${ST_LABEL[o.st]}</span>
+      </div>
+      ${o.items.map(i=>{const it=byId(i.id);return `<div class="oi">
+        <span class="oi-q num">${i.n}×</span>
+        <span style="flex:1"><p class="oi-n">${it.name}</p>
+          ${i.note?`<p class="oi-note">↳ ${i.note}</p>`:''}</span>
+        <span class="oi-p num">${fmt(it.price*i.n)}</span></div>`}).join('')}
+      <div class="ord-ft"><span>${o.st==='CANCELLED'?'Đã huỷ — không tính tiền':'Tiền lần này'}</span>
+        <span class="num">${fmt(orderTotal(o))}</span></div>
+    </section>`).join('')
+
+  document.getElementById('tot').textContent = fmt(sessionTotal(OS))
+  document.getElementById('cnt').textContent =
+    OS.filter(o=>o.st!=='CANCELLED').length + ' lần'
+  document.getElementById('pst').textContent = paid ? 'Đã thanh toán' : 'Chưa'
+
+  document.getElementById('acts').innerHTML = paid
+    ? `<div class="paid-mark">
+         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+           stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="m4 12.5 5.5 5.5L20 7"/></svg>
+         Đã thanh toán</div>
+       <button class="btn btn-primary" id="reset">Reset bàn</button>`
+    : `<button class="btn btn-primary" id="pay">Đã thanh toán</button>
+       <button class="btn btn-secondary" id="reset">Reset bàn</button>
+       <p class="hint-lock">Nên bấm “Đã thanh toán” trước khi reset</p>`
+}
+
+document.getElementById('acts').addEventListener('click',e=>{
+  if(e.target.closest('#pay')){ paid=true; render(); toast('Đã ghi nhận thanh toán'); return }
+  if(e.target.closest('#reset')) askReset()
+})
+
+function askReset(){
+  const m=document.getElementById('modal')
+  m.innerHTML=`<div class="modal-body">
+    <h2>Reset Bàn 1?</h2>
+    <p>Bàn sẽ về trạng thái trống, khách mới quét mã sẽ bắt đầu phiên mới.
+       <b>Đơn cũ vẫn được lưu lại</b> để đối soát cuối ngày.</p>
+    ${!paid?`<div class="warn-red" style="margin-bottom:var(--s5)">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+        stroke-width="2.2" stroke-linecap="round" style="flex:0 0 17px;margin-top:1px">
+        <circle cx="12" cy="12" r="9"/><path d="M12 8v4.5M12 16h.01"/></svg>
+      <span>Bàn này <b>chưa được đánh dấu đã thanh toán</b> (${fmt(sessionTotal(OS))}).
+        Vẫn reset nếu khách đã rời đi.</span></div>`:''}
+    <div class="modal-actions">
+      <button class="btn btn-secondary" id="no">Không</button>
+      <button class="btn ${paid?'btn-primary':'btn-danger'}" id="yes">Reset bàn</button></div></div>`
+  m.classList.add('on'); document.getElementById('scrim').classList.add('on')
+  m.querySelector('#no').onclick=close
+  m.querySelector('#yes').onclick=()=>{ close()
+    toast('Bàn 1 đã về trạng thái trống')
+    setTimeout(()=>location.href='staff-tables.html',900) }
+  m.querySelector('#no').focus()
+}
+function close(){ document.getElementById('modal').classList.remove('on')
+  document.getElementById('scrim').classList.remove('on') }
+document.getElementById('scrim').onclick=close
+document.addEventListener('keydown',e=>{ if(e.key==='Escape') close() })
+
+render()
+</script>
+</body>
+</html>

@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Đã gửi đơn — Bàn 1</title>
+<link rel="stylesheet" href="_shared.css">
+<style>
+.ok{padding:var(--s10) var(--s5) var(--s6);text-align:center}
+.tick{width:76px;height:76px;margin:0 auto var(--s5);border-radius:50%;
+  background:var(--st-served-bg);color:var(--st-served-fg);display:grid;place-items:center;
+  animation:pop .34s var(--ease)}
+@keyframes pop{0%{transform:scale(.6);opacity:0}100%{transform:scale(1);opacity:1}}
+.ok h1{font-size:22px;margin:0 0 var(--s2)}
+.ok p{color:var(--ink-600);margin:0 0 var(--s6);font-size:15px}
+.recap{text-align:left;background:var(--surface-sunken);border:1px solid var(--line-200);
+  border-radius:var(--r-lg);overflow:hidden;margin-bottom:var(--s5)}
+.recap-hd{padding:var(--s3) var(--s4);font-size:13px;font-weight:700;color:var(--ink-600);
+  text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid var(--line-200)}
+.r-li{display:flex;gap:var(--s3);padding:var(--s3) var(--s4);align-items:baseline}
+.r-li + .r-li{border-top:1px solid var(--line-200)}
+.r-q{flex:0 0 28px;font-weight:700;color:var(--ink-600)}
+.r-b{flex:1;min-width:0}
+.r-n{margin:0;font-size:15px;font-weight:600}
+.r-note{margin:2px 0 0;font-size:13px;color:var(--warning);font-weight:600}
+.r-p{font-weight:600;white-space:nowrap}
+.r-ft{display:flex;justify-content:space-between;padding:var(--s3) var(--s4);
+  background:var(--surface);border-top:1px solid var(--line-300);font-weight:700}
+.cd{font-size:13px;color:var(--ink-600);margin-top:var(--s4)}
+</style>
+</head>
+<body>
+<div class="guest">
+  <header class="g-hdr">
+    <span class="g-title">Đã gửi đơn</span>
+    <span class="g-table">Bàn 1</span>
+  </header>
+
+  <main class="ok">
+    <div class="tick">
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+        stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="m4 12.5 5.5 5.5L20 7"/></svg>
+    </div>
+    <h1>Đã gửi đơn tới bếp</h1>
+    <p>Bếp đã nhận đơn của Bàn 1. Món sẽ được mang ra bàn, bạn không cần làm gì thêm.</p>
+
+    <div class="recap" id="recap"></div>
+
+    <a class="btn btn-primary btn-lg btn-block" href="guest-orders.html">Xem đơn của bàn</a>
+    <p class="cd">Tự chuyển sau <span id="cd" class="num">3</span> giây</p>
+  </main>
+</div>
+
+<script src="_data.js"></script>
+<script>
+protobar()
+
+/* Don vua gui = gio hang truoc do; neu trong thi dung mau de xem duoc man hinh */
+const sent = getCart().length ? getCart() : [
+  { id:'item-ca-phe-sua-da', n:2, note:'ít đá' },
+  { id:'item-com-tam-suon', n:1, note:'không mỡ hành' },
+]
+const total = sent.reduce((s,l)=>s+l.n*byId(l.id).price,0)
+
+document.getElementById('recap').innerHTML =
+  `<div class="recap-hd">Lần gọi #3 · ${sent.reduce((s,l)=>s+l.n,0)} món</div>` +
+  sent.map(l=>{const it=byId(l.id);return `
+    <div class="r-li"><span class="r-q num">${l.n}×</span>
+      <span class="r-b"><p class="r-n">${it.name}</p>
+        ${l.note?`<p class="r-note">↳ ${l.note}</p>`:''}</span>
+      <span class="r-p num">${fmt(it.price*l.n)}</span></div>`}).join('') +
+  `<div class="r-ft"><span>Tiền lần này</span><span class="num">${fmt(total)}</span></div>`
+
+setCart([])   // gui xong thi xoa gio
+
+let n = 3
+const t = setInterval(()=>{
+  n--; document.getElementById('cd').textContent = n
+  if (n <= 0){ clearInterval(t); location.href = 'guest-orders.html' }
+}, 1000)
+</script>
+</body>
+</html>

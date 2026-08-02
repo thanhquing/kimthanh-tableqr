@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Đăng nhập — Bếp</title>
+<link rel="stylesheet" href="_shared.css">
+<style>
+.mid{min-height:100vh;display:grid;place-items:center;padding:var(--s5);
+  background:var(--surface-sunken)}
+.box{width:min(400px,100%);background:var(--surface);border:1px solid var(--line-200);
+  border-radius:var(--r-lg);box-shadow:var(--sh-md);padding:var(--s8) var(--s6)}
+.box h1{font-size:21px;margin:0 0 var(--s1);text-align:center}
+.box p{color:var(--ink-600);margin:0 0 var(--s6);text-align:center;font-size:15px}
+.dots{display:flex;gap:var(--s3);justify-content:center;margin-bottom:var(--s6)}
+.dot{width:15px;height:15px;border-radius:50%;border:2px solid var(--line-300)}
+.dot.on{background:var(--brand-600);border-color:var(--brand-600)}
+.dots.bad .dot{border-color:var(--danger);animation:shk .3s}
+@keyframes shk{25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+.pad{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--s3)}
+/* Nut so 64px — nhan vien bam voi tay ban, nut nho la bam nham */
+.pad button{height:64px;border-radius:var(--r-md);border:1px solid var(--line-300);
+  background:var(--surface);font-size:24px;font-weight:700}
+.pad button:hover{background:var(--surface-sunken)}
+.pad button:active{background:var(--brand-50);border-color:var(--brand-100)}
+.pad button.fn{font-size:15px;font-weight:600;color:var(--ink-600)}
+.err{text-align:center;color:var(--danger);font-size:14px;font-weight:600;
+  min-height:20px;margin:0 0 var(--s3)}
+.hint{margin-top:var(--s5);padding:var(--s3);border-radius:var(--r-md);
+  background:var(--surface-sunken);font-size:13px;color:var(--ink-600);text-align:center}
+</style>
+</head>
+<body>
+<div class="mid">
+  <div class="box">
+    <h1>Kim Thành · Bếp</h1>
+    <p>Nhập mã PIN của quán</p>
+    <div class="dots" id="dots"></div>
+    <p class="err" id="err"></p>
+    <div class="pad" id="pad"></div>
+    <p class="hint">PIN demo: <b class="num">246810</b></p>
+  </div>
+</div>
+
+<script src="_data.js"></script>
+<script>
+protobar()
+let pin = ''
+const PIN = '246810'
+
+function draw(){
+  document.getElementById('dots').innerHTML =
+    Array.from({length:6},(_,i)=>`<span class="dot ${i<pin.length?'on':''}"></span>`).join('')
+}
+document.getElementById('pad').innerHTML =
+  [1,2,3,4,5,6,7,8,9].map(n=>`<button data-k="${n}">${n}</button>`).join('') +
+  `<button class="fn" data-k="clear">Xoá hết</button>
+   <button data-k="0">0</button>
+   <button class="fn" data-k="back" aria-label="Xoá một số">←</button>`
+
+document.getElementById('pad').addEventListener('click',e=>{
+  const b=e.target.closest('[data-k]'); if(!b) return
+  const k=b.dataset.k
+  document.getElementById('dots').classList.remove('bad')
+  document.getElementById('err').textContent=''
+  if(k==='clear') pin=''
+  else if(k==='back') pin=pin.slice(0,-1)
+  else if(pin.length<6) pin+=k
+  draw()
+  if(pin.length===6){
+    setTimeout(()=>{
+      if(pin===PIN){ toast('Đăng nhập thành công')
+        setTimeout(()=>location.href='staff-orders.html',600) }
+      else{ document.getElementById('dots').classList.add('bad')
+        document.getElementById('err').textContent='Mã PIN không đúng. Thử lại.'
+        pin=''; setTimeout(draw,320) }
+    },160)
+  }
+})
+document.addEventListener('keydown',e=>{
+  if(/^[0-9]$/.test(e.key)) document.querySelector(`[data-k="${e.key}"]`)?.click()
+  if(e.key==='Backspace') document.querySelector('[data-k="back"]').click()
+})
+draw()
+</script>
+</body>
+</html>

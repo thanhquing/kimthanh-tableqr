@@ -1,0 +1,391 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Thực đơn — Bàn 1</title>
+<link rel="stylesheet" href="_shared.css">
+<style>
+/* Khung app — mobile-first, gioi han 480 va can giua tren man rong */
+.app{max-width:480px;margin:0 auto;background:var(--surface);min-height:100vh;position:relative;
+     box-shadow:0 0 0 1px var(--line-200)}
+
+/* ---------------------------------------------------- 1. Header dinh */
+.hdr{position:sticky;top:0;z-index:30;height:56px;display:flex;align-items:center;
+     gap:var(--s3);padding:0 var(--s4);background:var(--surface);
+     border-bottom:1px solid var(--line-200)}
+.hdr-name{font-size:17px;font-weight:700;flex:1;min-width:0;overflow:hidden;
+          text-overflow:ellipsis;white-space:nowrap}
+.hdr-table{flex:0 0 auto;padding:5px 12px;border-radius:var(--r-pill);
+           background:var(--brand-600);color:#fff;font-size:14px;font-weight:700}
+
+/* ------------------------------------------------- 2. Tim kiem + 3. Chip */
+.stick{position:sticky;top:56px;z-index:20;background:var(--surface);
+       border-bottom:1px solid var(--line-200)}
+.search{padding:var(--s3) var(--s4) var(--s2)}
+.search-box{display:flex;align-items:center;gap:var(--s2);height:44px;padding:0 var(--s3);
+            border:1px solid var(--line-300);border-radius:var(--r-md);background:var(--surface)}
+.search-box:focus-within{border-color:var(--brand-600);box-shadow:0 0 0 3px var(--brand-50)}
+.search-box svg{flex:0 0 18px;color:var(--ink-500)}
+.search-box input{flex:1;min-width:0;border:0;outline:0;background:none;font-size:15px}
+.search-box input::placeholder{color:var(--ink-500)}
+.search-clear{display:none;flex:0 0 28px;height:28px;border-radius:var(--r-pill);color:var(--ink-600)}
+.search-box.has-value .search-clear{display:grid;place-items:center}
+
+.chips{display:flex;gap:var(--s2);padding:0 var(--s4) var(--s3);overflow-x:auto;
+       scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:0 0 auto;height:36px;padding:0 var(--s4);border-radius:var(--r-pill);
+      border:1px solid var(--line-300);background:var(--surface);color:var(--ink-700);
+      font-size:14px;font-weight:600;white-space:nowrap;transition:all var(--fast) var(--ease)}
+.chip[aria-selected="true"]{background:var(--brand-50);border-color:var(--brand-100);
+      color:var(--brand-700)}
+
+/* ------------------------------------------------------- 4. Danh sach mon */
+.menu{padding-bottom:180px}
+.grp-hd{padding:var(--s5) var(--s4) var(--s2);font-size:13px;font-weight:700;
+        letter-spacing:.06em;text-transform:uppercase;color:var(--ink-600);
+        background:var(--surface-sunken);border-block:1px solid var(--line-200)}
+
+/* Danh sach ke dong — KHONG phai card co bong. Doc nhanh hon va nhuong cho anh. */
+.item{display:flex;gap:var(--s3);width:100%;padding:var(--s4);text-align:left;
+      align-items:flex-start;border-bottom:1px solid var(--line-200);
+      background:var(--surface);transition:background var(--fast) var(--ease)}
+.item:active{background:var(--surface-sunken)}
+.thumb{position:relative;flex:0 0 88px;width:88px;height:88px;border-radius:var(--r-lg);
+       overflow:hidden;background:var(--img-ph)}
+.thumb img{width:100%;height:100%;object-fit:cover;display:block}
+/* Mon khong co anh -> chu cai dau, KHONG dung icon "anh vo" */
+.thumb-ph{width:100%;height:100%;display:grid;place-items:center;color:var(--ink-500);
+          font-size:30px;font-weight:700}
+.info{flex:1;min-width:0;padding-top:2px}
+.nm{font-size:17px;font-weight:600;line-height:1.35;margin:0 0 3px;
+    display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.ds{font-size:13px;color:var(--ink-600);margin:0 0 var(--s2);
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.row{display:flex;align-items:center;gap:var(--s3)}
+.pr{font-size:17px;font-weight:700;flex:1}
+.add{flex:0 0 44px;height:44px;border-radius:var(--r-pill);background:var(--brand-600);
+     color:#fff;display:grid;place-items:center;box-shadow:var(--sh-sm)}
+.add:active{background:var(--brand-700);transform:scale(.94)}
+.qty-badge{position:absolute;top:-6px;right:-6px;min-width:22px;height:22px;padding:0 6px;
+  border-radius:var(--r-pill);background:var(--ink-900);color:#fff;font-size:12px;font-weight:700;
+  display:grid;place-items:center;border:2px solid var(--surface)}
+.add-wrap{position:relative;flex:0 0 44px}
+
+/* Het mon */
+.item.out{pointer-events:none}
+.item.out .thumb img{filter:grayscale(1);opacity:.45}
+.item.out .nm,.item.out .ds,.item.out .pr{color:var(--ink-500)}
+.tag-out{display:inline-block;padding:3px 8px;border-radius:var(--r-sm);
+  background:var(--st-cancel-bg);color:var(--st-cancel-fg);font-size:12px;font-weight:700}
+
+/* ------------------------------------------- 6. Thanh gio + 7. Nut chuong */
+.cartbar{position:fixed;left:50%;transform:translateX(-50%) translateY(120%);bottom:0;
+  width:100%;max-width:480px;height:64px;display:flex;align-items:center;gap:var(--s3);
+  padding:0 var(--s4);background:var(--surface);border-top:1px solid var(--line-200);
+  box-shadow:var(--sh-sheet);transition:transform var(--base) var(--ease);z-index:40;
+  padding-bottom:env(safe-area-inset-bottom)}
+.cartbar.on{transform:translateX(-50%) translateY(0)}
+.cart-txt{flex:1;min-width:0}
+.cart-n{font-size:13px;color:var(--ink-600)}
+.cart-t{font-size:18px;font-weight:700}
+.btn-primary{height:44px;padding:0 var(--s5);border-radius:var(--r-md);
+  background:var(--brand-600);color:#fff;font-size:15px;font-weight:700}
+.btn-primary:active{background:var(--brand-700)}
+
+.bell{position:fixed;right:calc(50% - 240px + 16px);bottom:84px;width:56px;height:56px;
+  border-radius:var(--r-pill);background:var(--surface);color:var(--brand-700);
+  border:1px solid var(--line-300);box-shadow:var(--sh-md);display:grid;place-items:center;
+  z-index:39;transition:bottom var(--base) var(--ease)}
+.bell.up{bottom:148px}
+.bell.done{background:var(--st-served-bg);color:var(--st-served-fg);border-color:var(--st-served-bg)}
+@media(max-width:512px){.bell{right:16px}}
+
+/* --------------------------------------------------------- Bottom sheet */
+.scrim{position:fixed;inset:0;background:rgba(28,25,23,.5);opacity:0;pointer-events:none;
+  transition:opacity var(--base) var(--ease);z-index:50}
+.scrim.on{opacity:1;pointer-events:auto}
+.sheet{position:fixed;left:50%;transform:translateX(-50%) translateY(100%);bottom:0;
+  width:100%;max-width:480px;max-height:88vh;overflow-y:auto;background:var(--surface);
+  border-radius:16px 16px 0 0;box-shadow:var(--sh-sheet);z-index:51;
+  transition:transform var(--base) var(--ease);padding-bottom:env(safe-area-inset-bottom)}
+.sheet.on{transform:translateX(-50%) translateY(0)}
+.grab{width:36px;height:4px;border-radius:var(--r-pill);background:var(--line-300);
+  margin:var(--s3) auto var(--s2)}
+.sheet-img{width:100%;aspect-ratio:16/9;object-fit:cover;display:block;background:var(--img-ph)}
+.sheet-body{padding:var(--s5) var(--s4) var(--s4)}
+.sheet-nm{font-size:20px;font-weight:700;margin:0 0 var(--s2)}
+.sheet-ds{font-size:15px;color:var(--ink-600);margin:0 0 var(--s5)}
+.lbl{font-size:13px;font-weight:700;color:var(--ink-700);margin-bottom:var(--s2)}
+.stepper{display:inline-flex;align-items:center;gap:var(--s2);border:1px solid var(--line-300);
+  border-radius:var(--r-md);padding:var(--s1)}
+.stepper button{width:40px;height:40px;border-radius:var(--r-sm);display:grid;place-items:center;
+  font-size:22px;font-weight:600;color:var(--brand-700)}
+.stepper button:disabled{color:var(--line-300)}
+.stepper span{min-width:32px;text-align:center;font-size:17px;font-weight:700}
+.note{width:100%;min-height:44px;padding:var(--s3);border:1px solid var(--line-300);
+  border-radius:var(--r-md);font:inherit;font-size:15px;resize:vertical;margin-bottom:var(--s3)}
+.note:focus{outline:0;border-color:var(--brand-600);box-shadow:0 0 0 3px var(--brand-50)}
+.sugg{display:flex;flex-wrap:wrap;gap:var(--s2);margin-bottom:var(--s6)}
+.sugg button{padding:7px 12px;border-radius:var(--r-pill);border:1px solid var(--line-300);
+  font-size:14px;color:var(--ink-700)}
+.sugg button[aria-pressed="true"]{background:var(--brand-50);border-color:var(--brand-100);
+  color:var(--brand-700);font-weight:600}
+.sheet-cta{width:100%;height:52px;border-radius:var(--r-md);background:var(--brand-600);
+  color:#fff;font-size:16px;font-weight:700}
+
+/* ---------------------------------------------------------- 4 trang thai */
+.state{padding:var(--s8) var(--s4);text-align:center}
+.state h2{font-size:18px;margin:0 0 var(--s2)}
+.state p{color:var(--ink-600);margin:0 0 var(--s5);font-size:15px}
+.sk{background:linear-gradient(90deg,#F0EEEC 25%,#F7F5F4 50%,#F0EEEC 75%);
+  background-size:200% 100%;animation:sh 1.4s infinite;border-radius:var(--r-sm)}
+@keyframes sh{0%{background-position:200% 0}100%{background-position:-200% 0}}
+.sk-item{display:flex;gap:var(--s3);padding:var(--s4);border-bottom:1px solid var(--line-200)}
+.btn-ghost{height:44px;padding:0 var(--s5);border-radius:var(--r-md);
+  border:1px solid var(--line-300);font-weight:600}
+
+</style>
+</head>
+<body>
+
+<div class="app">
+  <header class="hdr">
+    <a href="guest-orders.html" style="flex:0 0 40px;height:40px;margin-left:-8px;border-radius:999px;display:grid;place-items:center;color:var(--ink-700)" aria-label="Xem đơn của bàn"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6h11M9 12h11M9 18h11M4.5 6h.01M4.5 12h.01M4.5 18h.01"/></svg></a>
+    <span class="hdr-name">Quán Cơm Kim Thành</span>
+    <span class="hdr-table">Bàn 1</span>
+  </header>
+
+  <div class="stick" id="stick">
+    <div class="search">
+      <div class="search-box" id="sbox">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        <input id="q" type="search" placeholder="Tìm món..." aria-label="Tìm món">
+        <button class="search-clear" id="qclear" aria-label="Xoá tìm kiếm">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+               stroke-width="2.5" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+        </button>
+      </div>
+    </div>
+    <div class="chips" id="chips" role="tablist"></div>
+  </div>
+
+  <main class="menu" id="menu"></main>
+</div>
+
+<div class="cartbar" id="cartbar">
+  <div class="cart-txt">
+    <div class="cart-n num" id="cartN">0 món</div>
+    <div class="cart-t num" id="cartT">0 ₫</div>
+  </div>
+  <a class="btn-primary" href="guest-cart.html" style="display:inline-flex;align-items:center;justify-content:center;text-decoration:none">Xem giỏ</a>
+</div>
+
+<button class="bell" id="bell" aria-label="Gọi nhân viên">
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+       stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg>
+</button>
+
+<div class="scrim" id="scrim"></div>
+<div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="shNm"></div>
+<div class="toast" id="toast"></div>
+
+<script src="_data.js"></script>
+<script src="_state-bar.js"></script>
+<script>
+/* Du lieu + helper: xem _data.js (CATS, IT, byId, fmt, deTone, gio hang) */
+
+let activeCat=CATS[0].id, query='', state='ok';
+
+/* ---------------------------------------------------------------- render */
+function itemHTML(it){
+  const q=getCart().filter(l=>l.id===it.id).reduce((s,l)=>s+l.n,0);
+  const thumb=it.slug
+    ? `<img src="menu-images/${it.slug}.jpg" width="88" height="88" loading="lazy" decoding="async" alt="">`
+    : `<div class="thumb-ph" aria-hidden="true">${it.name[0]}</div>`;
+  return `<button class="item ${it.ok?'':'out'}" data-id="${it.id}" ${it.ok?'':'tabindex="-1" aria-disabled="true"'}>
+    <div class="thumb">${thumb}</div>
+    <div class="info">
+      <p class="nm">${it.name}</p>
+      <p class="ds">${it.desc}</p>
+      <div class="row">
+        <span class="pr num">${fmt(it.price)}</span>
+        ${it.ok
+          ? `<span class="add-wrap"><span class="add" data-add="${it.id}" role="button" aria-label="Thêm ${it.name}">
+               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+             </span>${q?`<span class="qty-badge num">${q}</span>`:''}</span>`
+          : `<span class="tag-out">Hết món</span>`}
+      </div>
+    </div></button>`;
+}
+
+function render(){
+  const menu=document.getElementById('menu');
+  const n=cartCount(getCart());
+  document.getElementById('cartbar').classList.toggle('on', n>0 && state==='ok');
+  document.getElementById('bell').classList.toggle('up', n>0 && state==='ok');
+  document.getElementById('cartN').textContent=n+' món';
+  document.getElementById('cartT').textContent=fmt(cartTotal(getCart()));
+
+  if(state==='loading'){
+    menu.innerHTML=Array.from({length:6},()=>`<div class="sk-item">
+      <div class="sk" style="flex:0 0 88px;height:88px;border-radius:12px"></div>
+      <div style="flex:1">
+        <div class="sk" style="height:17px;width:62%;margin:3px 0 9px"></div>
+        <div class="sk" style="height:13px;width:88%;margin-bottom:14px"></div>
+        <div class="sk" style="height:17px;width:34%"></div>
+      </div></div>`).join('');
+    return;
+  }
+  if(state==='error'){
+    menu.innerHTML=`<div class="state"><h2>Không tải được thực đơn</h2>
+      <p>Kiểm tra kết nối mạng rồi thử lại. Giỏ hàng của bạn vẫn được giữ nguyên.</p>
+      <button class="btn-ghost">Thử lại</button></div>`;
+    return;
+  }
+  if(state==='empty'){
+    menu.innerHTML=`<div class="state"><h2>Quán chưa cập nhật thực đơn</h2>
+      <p>Vui lòng gọi nhân viên để được hỗ trợ gọi món.</p></div>`;
+    return;
+  }
+
+  const shown=IT.filter(it=>!query||deTone(it.name+' '+it.desc).includes(deTone(query)));
+  if(!shown.length){
+    menu.innerHTML=`<div class="state"><h2>Không tìm thấy món nào</h2>
+      <p>Thử từ khoá khác, hoặc xem toàn bộ thực đơn.</p>
+      <button class="btn-ghost" onclick="document.getElementById('q').value='';document.getElementById('q').dispatchEvent(new Event('input'))">Xoá tìm kiếm</button></div>`;
+    return;
+  }
+  menu.innerHTML=CATS.map(c=>{
+    const list=shown.filter(i=>i.cat===c.id);
+    if(!list.length) return '';
+    return `<h2 class="grp-hd" id="g-${c.id}">${c.name}</h2>${list.map(itemHTML).join('')}`;
+  }).join('');
+}
+
+document.getElementById('chips').innerHTML=CATS.map((c,i)=>
+  `<button class="chip" role="tab" aria-selected="${i===0}" data-cat="${c.id}">${c.name}</button>`).join('');
+
+/* ------------------------------------------------------------ tuong tac */
+/* toast() va addLine() nam o _data.js — dung chung voi cac man khac */
+const add=(id,n,note)=>{ addLine(id,n,note); render() }
+
+document.getElementById('menu').addEventListener('click',e=>{
+  const add=e.target.closest('[data-add]');
+  if(add){ e.stopPropagation(); const it=IT.find(i=>i.id===add.dataset.add);
+    add(it.id,1,''); toast('Đã thêm '+it.name); return; }
+  const row=e.target.closest('.item'); if(row) openSheet(row.dataset.id);
+});
+
+document.getElementById('chips').addEventListener('click',e=>{
+  const b=e.target.closest('.chip'); if(!b) return;
+  activeCat=b.dataset.cat;
+  document.querySelectorAll('.chip').forEach(c=>c.setAttribute('aria-selected',c===b));
+  const el=document.getElementById('g-'+activeCat);
+  if(el) window.scrollTo({top:el.offsetTop-150,behavior:'smooth'});
+});
+
+const qi=document.getElementById('q');
+qi.addEventListener('input',()=>{query=qi.value;
+  document.getElementById('sbox').classList.toggle('has-value',!!query); render();});
+document.getElementById('qclear').addEventListener('click',()=>{
+  qi.value='';query='';document.getElementById('sbox').classList.remove('has-value');render();qi.focus();});
+
+/* chip tu sang theo vi tri cuon */
+const io=new IntersectionObserver(es=>{
+  es.forEach(en=>{ if(!en.isIntersecting) return;
+    const id=en.target.id.replace('g-','');
+    document.querySelectorAll('.chip').forEach(c=>c.setAttribute('aria-selected',c.dataset.cat===id));
+  });},{rootMargin:'-150px 0px -70% 0px'});
+new MutationObserver(()=>document.querySelectorAll('.grp-hd').forEach(h=>io.observe(h)))
+  .observe(document.getElementById('menu'),{childList:true});
+
+/* ------------------------------------------------------------ bottom sheet */
+let sheetQty=1, sheetNote='', lastFocus=null;
+const SUGG=['ít đá','không rau','thêm ớt','ít cay','không hành'];
+
+function openSheet(id){
+  const it=IT.find(i=>i.id===id); if(!it||!it.ok) return;
+  lastFocus=document.activeElement; sheetQty=1; sheetNote='';
+  const sh=document.getElementById('sheet');
+  sh.innerHTML=`<div class="grab"></div>
+    ${it.slug?`<img class="sheet-img" src="menu-images/${it.slug}.jpg" width="480" height="270" alt="">`
+              :`<div class="sheet-img" style="display:grid;place-items:center;font-size:56px;color:var(--ink-500);font-weight:700">${it.name[0]}</div>`}
+    <div class="sheet-body">
+      <h2 class="sheet-nm" id="shNm">${it.name}</h2>
+      <p class="sheet-ds">${it.desc}</p>
+      <p class="lbl">Số lượng</p>
+      <div class="stepper" style="margin-bottom:var(--s5)">
+        <button id="mn" aria-label="Giảm">−</button><span class="num" id="qv">1</span>
+        <button id="pl" aria-label="Tăng">+</button>
+      </div>
+      <p class="lbl">Ghi chú cho bếp</p>
+      <textarea class="note" id="nt" rows="2" placeholder="Ví dụ: ít đá, không rau..."></textarea>
+      <div class="sugg">${SUGG.map(s=>`<button data-s="${s}" aria-pressed="false">${s}</button>`).join('')}</div>
+      <button class="sheet-cta num" id="cta">Thêm vào giỏ · ${fmt(it.price)}</button>
+    </div>`;
+  const sync=()=>{
+    document.getElementById('qv').textContent=sheetQty;
+    document.getElementById('mn').disabled=sheetQty<=1;
+    document.getElementById('cta').textContent=`Thêm vào giỏ · ${fmt(it.price*sheetQty)}`;
+  };
+  sh.querySelector('#pl').onclick=()=>{sheetQty++;sync()};
+  sh.querySelector('#mn').onclick=()=>{if(sheetQty>1){sheetQty--;sync()}};
+  const nt=sh.querySelector('#nt');
+  nt.oninput=()=>sheetNote=nt.value;
+  sh.querySelectorAll('.sugg button').forEach(b=>b.onclick=()=>{
+    const s=b.dataset.s, on=b.getAttribute('aria-pressed')==='true';
+    b.setAttribute('aria-pressed',!on);
+    const parts=nt.value.split(',').map(x=>x.trim()).filter(Boolean);
+    nt.value=(on?parts.filter(x=>x!==s):[...parts,s]).join(', ');
+    sheetNote=nt.value;
+  });
+  sh.querySelector('#cta').onclick=()=>{add(it.id,sheetQty,sheetNote);
+    toast('Đã thêm '+it.name); closeSheet();};
+  sync();
+  document.getElementById('scrim').classList.add('on'); sh.classList.add('on');
+  setTimeout(()=>sh.querySelector('#pl').focus(),210);
+}
+function closeSheet(){
+  document.getElementById('scrim').classList.remove('on');
+  document.getElementById('sheet').classList.remove('on');
+  if(lastFocus) lastFocus.focus();
+}
+document.getElementById('scrim').addEventListener('click',closeSheet);
+/* bay focus + Esc dong */
+document.addEventListener('keydown',e=>{
+  const sh=document.getElementById('sheet');
+  if(!sh.classList.contains('on')) return;
+  if(e.key==='Escape'){closeSheet();return}
+  if(e.key!=='Tab') return;
+  const f=[...sh.querySelectorAll('button,textarea,[href]')].filter(x=>!x.disabled);
+  if(!f.length) return;
+  const first=f[0], last=f[f.length-1];
+  if(e.shiftKey && document.activeElement===first){e.preventDefault();last.focus()}
+  else if(!e.shiftKey && document.activeElement===last){e.preventDefault();first.focus()}
+});
+
+/* --------------------------------------------------------- nut goi nhan vien */
+document.getElementById('bell').addEventListener('click',function(){
+  if(this.classList.contains('done')) return;
+  this.classList.add('done');
+  this.innerHTML=`<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+    stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m5 13 4 4L19 7"/></svg>`;
+  toast('Đã báo nhân viên');
+  setTimeout(()=>{this.classList.remove('done');
+    this.innerHTML=`<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg>`;
+  },30000);
+});
+
+stateBar(s=>{ state=s; render() })
+
+protobar()
+render()
+</script>
+</body>
+</html>

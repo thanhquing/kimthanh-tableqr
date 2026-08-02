@@ -1,0 +1,219 @@
+/* ==========================================================================
+   Token + primitive dung chung cho ca 3 app.
+   Nguon: ai-docs/08-design-system.md — MOI hex o day deu da kiem tuong phan
+   bang may, ti le ghi ngay canh. Doi mau thi phai kiem lai.
+   ========================================================================== */
+:root{
+  --brand-50:#FDF3F0; --brand-100:#FADFD8; --brand-500:#E05A3F;
+  --brand-600:#C93D22;  /* nen nut chinh — chu trang 5.03:1 */
+  --brand-700:#A6301A;  /* hover; CHU tren nen trang 6.86:1 */
+  --brand-900:#6B1E10;
+
+  --ink-900:#1C1917;    /* 17.49:1 */
+  --ink-700:#44403C;
+  --ink-600:#57534E;    /* 7.63:1 */
+  --ink-500:#78716C;    /* 4.80:1 — NGUONG DUOI cho chu, khong nhat hon */
+  --line-200:#E7E5E4; --line-300:#D6D3D1;
+  --surface:#FFFFFF; --surface-sunken:#FAF9F7; --img-ph:#EFEBE7;
+
+  --st-new-fg:#44403C;    --st-new-bg:#F5F5F4;      /* 9.42:1 */
+  --st-prep-fg:#B45309;   --st-prep-bg:#FEF3C7;     /* 4.51:1 */
+  --st-served-fg:#15803D; --st-served-bg:#DCFCE7;   /* 4.57:1 */
+  --st-cancel-fg:#B91C1C; --st-cancel-bg:#FEE2E2;   /* 5.30:1 */
+
+  --danger:#B91C1C; --success:#15803D; --warning:#B45309; --focus:#C93D22;
+
+  --s1:4px;--s2:8px;--s3:12px;--s4:16px;--s5:20px;--s6:24px;--s8:32px;--s10:40px;
+  --r-sm:6px; --r-md:8px; --r-lg:12px; --r-pill:999px;
+  --sh-sm:0 1px 2px rgba(28,25,23,.06),0 1px 3px rgba(28,25,23,.08);
+  --sh-md:0 4px 12px rgba(28,25,23,.10);
+  --sh-sheet:0 -8px 32px rgba(28,25,23,.16);
+  --ease:cubic-bezier(.2,0,0,1); --fast:120ms; --base:200ms;
+  --font:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+}
+
+*,*::before,*::after{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{font-family:var(--font);color:var(--ink-900);background:var(--surface-sunken);
+  font-size:16px;line-height:1.5;-webkit-font-smoothing:antialiased;
+  -webkit-tap-highlight-color:transparent}
+button,input,textarea,select{font:inherit;color:inherit}
+button{border:0;background:none;cursor:pointer}
+a{color:var(--brand-700);text-decoration:none}
+:focus-visible{outline:3px solid var(--focus);outline-offset:2px;border-radius:var(--r-sm)}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+/* Moi so tien / so luong — cot so phai thang hang */
+.num{font-variant-numeric:tabular-nums}
+
+/* ------------------------------------------------------------------ nut */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:var(--s2);
+  height:44px;padding:0 var(--s5);border-radius:var(--r-md);font-size:15px;font-weight:700;
+  transition:background var(--fast) var(--ease)}
+.btn-primary{background:var(--brand-600);color:#fff}
+.btn-primary:hover{background:var(--brand-700)}
+.btn-secondary{border:1px solid var(--line-300);background:var(--surface);color:var(--ink-700);
+  font-weight:600}
+.btn-secondary:hover{background:var(--surface-sunken)}
+.btn-ghost{color:var(--brand-700);font-weight:600}
+.btn-ghost:hover{background:var(--brand-50)}
+.btn-danger{background:var(--danger);color:#fff}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn-lg{height:52px;font-size:16px}
+.btn-block{width:100%}
+
+/* --------------------------------------------------------------- badge */
+.badge{display:inline-flex;align-items:center;padding:4px 10px;border-radius:var(--r-sm);
+  font-size:12px;font-weight:700;white-space:nowrap}
+/* Trang thai LUON co chu, khong bao gio chi co mau */
+.st-NEW{background:var(--st-new-bg);color:var(--st-new-fg)}
+.st-PREPARING{background:var(--st-prep-bg);color:var(--st-prep-fg)}
+.st-SERVED{background:var(--st-served-bg);color:var(--st-served-fg)}
+.st-CANCELLED{background:var(--st-cancel-bg);color:var(--st-cancel-fg)}
+
+/* --------------------------------------------------------------- input */
+.field{display:block;margin-bottom:var(--s4)}
+.field > .lbl{display:block;font-size:13px;font-weight:700;color:var(--ink-700);
+  margin-bottom:var(--s2)}
+.input,.textarea,.select{width:100%;min-height:44px;padding:10px var(--s3);
+  border:1px solid var(--line-300);border-radius:var(--r-md);background:var(--surface);
+  font-size:15px}
+.textarea{resize:vertical}
+.input:focus,.textarea:focus,.select:focus{outline:0;border-color:var(--brand-600);
+  box-shadow:0 0 0 3px var(--brand-50)}
+.input::placeholder,.textarea::placeholder{color:var(--ink-500)}
+.hint{font-size:13px;color:var(--ink-600);margin-top:var(--s1)}
+
+/* Cong tac — dung nhieu nhat trong ngay o admin (bat/tat "Con hang") */
+.switch{position:relative;display:inline-flex;align-items:center;gap:var(--s2);cursor:pointer}
+.switch input{position:absolute;opacity:0;width:0;height:0}
+.switch .track{width:44px;height:26px;border-radius:var(--r-pill);background:var(--line-300);
+  transition:background var(--fast) var(--ease);flex:0 0 44px}
+.switch .knob{position:absolute;left:3px;top:3px;width:20px;height:20px;border-radius:50%;
+  background:#fff;box-shadow:var(--sh-sm);transition:transform var(--fast) var(--ease)}
+.switch input:checked ~ .track{background:var(--success)}
+.switch input:checked ~ .knob{transform:translateX(18px)}
+.switch input:focus-visible ~ .track{outline:3px solid var(--focus);outline-offset:2px}
+.switch .txt{font-size:14px;font-weight:600;color:var(--ink-600)}
+
+/* --------------------------------------------------- 4 trang thai man hinh */
+.state{padding:var(--s10) var(--s4);text-align:center}
+.state h2{font-size:18px;margin:0 0 var(--s2)}
+.state p{color:var(--ink-600);margin:0 auto var(--s5);font-size:15px;max-width:44ch}
+.sk{background:linear-gradient(90deg,#F0EEEC 25%,#F7F5F4 50%,#F0EEEC 75%);
+  background-size:200% 100%;animation:sh 1.4s infinite;border-radius:var(--r-sm)}
+@keyframes sh{0%{background-position:200% 0}100%{background-position:-200% 0}}
+
+/* --------------------------------------------------------------- toast */
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:120px;z-index:80;
+  padding:11px 18px;border-radius:var(--r-md);background:var(--ink-900);color:#fff;
+  font-size:14px;font-weight:600;opacity:0;transition:opacity var(--base) var(--ease);
+  pointer-events:none;box-shadow:var(--sh-md)}
+.toast.on{opacity:1}
+
+/* --------------------------------------------------------- modal / sheet */
+.scrim{position:fixed;inset:0;background:rgba(28,25,23,.5);opacity:0;pointer-events:none;
+  transition:opacity var(--base) var(--ease);z-index:60}
+.scrim.on{opacity:1;pointer-events:auto}
+.modal{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%) scale(.97);
+  width:min(440px,calc(100vw - 32px));max-height:86vh;overflow-y:auto;background:var(--surface);
+  border-radius:var(--r-lg);box-shadow:var(--sh-md);z-index:61;opacity:0;pointer-events:none;
+  transition:opacity var(--base) var(--ease),transform var(--base) var(--ease)}
+.modal.on{opacity:1;pointer-events:auto;transform:translate(-50%,-50%) scale(1)}
+.modal-body{padding:var(--s6)}
+.modal h2{margin:0 0 var(--s3);font-size:19px}
+.modal p{margin:0 0 var(--s5);color:var(--ink-600);font-size:15px}
+.modal-actions{display:flex;gap:var(--s3);justify-content:flex-end}
+
+/* ============================ Thanh dieu huong prototype (KHONG co o React) */
+.protobar{position:sticky;top:0;z-index:100;display:flex;align-items:center;gap:6px;
+  padding:7px 12px;background:#1C1917;overflow-x:auto;scrollbar-width:none}
+.protobar::-webkit-scrollbar{display:none}
+.protobar b{color:#A8A29E;font-size:11px;letter-spacing:.06em;margin-right:2px;white-space:nowrap}
+.protobar a,.protobar button{flex:0 0 auto;padding:5px 11px;border-radius:var(--r-sm);
+  background:#44403C;color:#F5F5F4;font-size:12px;font-weight:600;white-space:nowrap}
+.protobar a:hover,.protobar button:hover{background:#57534E}
+.protobar a.on,.protobar button.on{background:var(--brand-600);color:#fff}
+.protobar .sep{width:1px;height:18px;background:#57534E;flex:0 0 1px;margin:0 3px}
+
+/* =================================================== SHELL 1 — app khach */
+/* mobile-first, gioi han 480 va can giua tren man rong */
+.guest{max-width:480px;margin:0 auto;background:var(--surface);min-height:100vh;
+  position:relative;box-shadow:0 0 0 1px var(--line-200)}
+.g-hdr{position:sticky;top:0;z-index:30;height:56px;display:flex;align-items:center;
+  gap:var(--s3);padding:0 var(--s4);background:var(--surface);
+  border-bottom:1px solid var(--line-200)}
+.g-back{flex:0 0 40px;height:40px;margin-left:-8px;border-radius:var(--r-pill);
+  display:grid;place-items:center;color:var(--ink-700)}
+.g-back:hover{background:var(--surface-sunken)}
+.g-title{font-size:17px;font-weight:700;flex:1;min-width:0;overflow:hidden;
+  text-overflow:ellipsis;white-space:nowrap}
+.g-table{flex:0 0 auto;padding:5px 12px;border-radius:var(--r-pill);
+  background:var(--brand-600);color:#fff;font-size:14px;font-weight:700}
+
+/* ================================================== SHELL 2 — app bep/quay */
+/* tablet-first, chu to hon, vung cham 56px */
+.staff{min-height:100vh;background:var(--surface-sunken);font-size:18px}
+.s-hdr{position:sticky;top:0;z-index:30;height:64px;display:flex;align-items:center;
+  gap:var(--s4);padding:0 var(--s5);background:var(--surface);
+  border-bottom:1px solid var(--line-200)}
+.s-brand{font-size:17px;font-weight:700}
+.s-nav{display:flex;gap:var(--s1);flex:1}
+.s-nav a{padding:9px var(--s4);border-radius:var(--r-md);font-size:16px;font-weight:600;
+  color:var(--ink-600)}
+.s-nav a:hover{background:var(--surface-sunken)}
+.s-nav a.on{background:var(--brand-50);color:var(--brand-700)}
+.s-icon{width:56px;height:56px;border-radius:var(--r-md);display:grid;place-items:center;
+  color:var(--ink-700);position:relative}
+.s-icon:hover{background:var(--surface-sunken)}
+.s-dot{position:absolute;top:9px;right:9px;min-width:20px;height:20px;padding:0 5px;
+  border-radius:var(--r-pill);background:var(--danger);color:#fff;font-size:11px;
+  font-weight:800;display:grid;place-items:center;border:2px solid var(--surface)}
+.s-main{padding:var(--s5);max-width:1400px;margin:0 auto}
+.s-h1{font-size:24px;font-weight:700;margin:0 0 var(--s5)}
+
+/* ==================================================== SHELL 3 — app admin */
+/* desktop-first, dense, table-first */
+/* minmax(0,1fr) — khong co cai nay thi cot noi dung khong co duoi min-content
+   cua bang, va CA TRANG tran ngang. Loi kinh dien cua CSS grid. */
+.admin{display:grid;grid-template-columns:236px minmax(0,1fr);min-height:100vh;font-size:14px}
+.a-side{background:var(--ink-900);padding:var(--s4) var(--s3);position:sticky;top:0;
+  height:100vh;overflow-y:auto}
+.a-brand{color:#fff;font-size:15px;font-weight:700;padding:var(--s2) var(--s3) var(--s5)}
+.a-brand small{display:block;color:#A8A29E;font-size:11px;font-weight:600;margin-top:2px}
+.a-side a{display:flex;align-items:center;gap:var(--s3);padding:10px var(--s3);
+  border-radius:var(--r-md);color:#D6D3D1;font-weight:600;margin-bottom:2px}
+.a-side a:hover{background:rgba(255,255,255,.07);color:#fff}
+.a-side a.on{background:var(--brand-600);color:#fff}
+.a-main{min-width:0;background:var(--surface-sunken)}
+.a-top{height:60px;display:flex;align-items:center;gap:var(--s4);padding:0 var(--s6);
+  background:var(--surface);border-bottom:1px solid var(--line-200);position:sticky;top:0;z-index:20}
+.a-top h1{font-size:18px;font-weight:700;margin:0;flex:1}
+.a-body{padding:var(--s6);max-width:1240px}
+.panel{background:var(--surface);border:1px solid var(--line-200);border-radius:var(--r-lg);
+  box-shadow:var(--sh-sm)}
+.panel-hd{display:flex;align-items:center;gap:var(--s3);padding:var(--s4) var(--s5);
+  border-bottom:1px solid var(--line-200)}
+.panel-hd h2{font-size:15px;font-weight:700;margin:0;flex:1}
+
+/* Bang rong hon man thi CUON TRONG PANEL, khong bao gio de ca trang cuon ngang */
+.panel{overflow-x:auto}
+.tbl{width:100%;border-collapse:collapse;min-width:560px}
+.tbl th{text-align:left;font-size:12px;font-weight:700;color:var(--ink-600);
+  text-transform:uppercase;letter-spacing:.05em;padding:var(--s3) var(--s5);
+  border-bottom:1px solid var(--line-200);background:var(--surface-sunken)}
+.tbl td{padding:var(--s3) var(--s5);border-bottom:1px solid var(--line-200);height:44px}
+.tbl tr:last-child td{border-bottom:0}
+.tbl tbody tr:hover{background:var(--surface-sunken)}
+
+/* Man hep: sidebar admin thanh thanh ngang tren dau, khong con cot doc */
+@media(max-width:860px){
+  .admin{grid-template-columns:1fr}
+  .a-side{position:static;height:auto;display:flex;align-items:center;gap:var(--s2);
+    padding:var(--s2) var(--s3);overflow-x:auto}
+  .a-brand{padding:0 var(--s3) 0 var(--s2);white-space:nowrap;flex:0 0 auto}
+  .a-brand small{display:none}
+  .a-side a{margin-bottom:0;white-space:nowrap;flex:0 0 auto;padding:8px var(--s3)}
+  .a-body{padding:var(--s4)}
+  .a-top{padding:0 var(--s4)}
+}
