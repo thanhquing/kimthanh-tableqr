@@ -31,13 +31,15 @@ Vite + React + TS, cổng 5175. Sidebar trái: **Menu · Bàn & mã QR · Cài �
 
 **Kết quả:** cột danh mục hiển thị số món từ API, thêm/sửa/bật-tắt/xóa qua CRUD API, hiện thông báo lỗi server (gồm 409) và drag/drop PATCH sort order ngay. Lint/typecheck/build sạch, initial JS 71,06 KB gzip.
 
-### `AD-03` — Danh sách món · TODO
+### `AD-03` — Danh sách món · DONE
 
 **Prototype:** `prototype/admin-menu.html (cột phải)`
 
 `/menu` cột phải: món của danh mục đang chọn. Mỗi dòng: thumbnail, tên, giá, **công tắc "Còn hàng"**, nút Sửa / Xoá.
 
 Công tắc "Còn hàng" là thao tác dùng nhiều nhất trong ngày — **đổi là lưu ngay** (`PATCH /admin/items/:id` với cập nhật lạc quan), không bắt mở form, không có nút Lưu. Kéo thả đổi `sortOrder`.
+
+**Kết quả:** cột món lọc theo danh mục đang chọn, hiển thị thumbnail/tên/giá/toggle, availability PATCH optimistic có rollback, xóa có xác nhận và links sửa/thêm sang form món. Lint/typecheck/build sạch, initial JS 71,67 KB gzip.
 
 ### `AD-04` — Form món · TODO
 

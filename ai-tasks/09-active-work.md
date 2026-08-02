@@ -6,15 +6,15 @@
 
 ## Current task
 
-> ### `AD-03` — Danh sách món
+> ### `AD-04` — Form món
 >
 > **Mốc:** M4 · **Trạng thái:** TODO
 >
-> Chi tiết đầy đủ: [07-admin-task-list.md § AD-03](07-admin-task-list.md)
+> Chi tiết đầy đủ: [07-admin-task-list.md § AD-04](07-admin-task-list.md)
 >
 > **Đọc trước khi làm:** [`ai-tasks/12-prototype-to-react.md`](12-prototype-to-react.md), [`prototype/admin-menu.html`](../prototype/admin-menu.html), [`ai-docs/04-api-contract.md`](../ai-docs/04-api-contract.md), [`ai-docs/05-ui-ux-spec.md`](../ai-docs/05-ui-ux-spec.md).
 >
-> **Xong khi:** món theo danh mục có thumbnail/tên/giá, toggle còn hàng optimistic và thao tác sửa/xóa.
+> **Xong khi:** tạo/sửa món có validate field, preview giá, phản hồi lỗi API và cảnh báo rời form chưa lưu.
 
 ---
 
@@ -22,6 +22,7 @@
 
 | Task | Ngày | Ghi chú |
 | --- | --- | --- |
+| `AD-03` — Danh sách món | 2026-08-02 | Cột món theo danh mục, thumbnail/name/price, availability optimistic rollback, xóa + links form; lint/typecheck/build sạch, JS initial 71,67 KB gzip |
 | `AD-02` — Danh sách danh mục | 2026-08-02 | GET categories/items, số món, CRUD/toggle, 409 message, drag/drop PATCH sort order; lint/typecheck/build sạch, JS initial 71,06 KB gzip |
 | `AD-01` — Đăng nhập | 2026-08-02 | POST email/password, lỗi API, auth owner localStorage/guard/logout sidebar; lint/typecheck/build sạch, JS initial 64,77 KB gzip |
 | `AD-00` — Khởi tạo app + shell | 2026-08-02 | Vite/React/TS cổng 5175, mock worker, Query/Router, sidebar responsive + placeholder routes, `.env.example` guest URL; lint/typecheck/build sạch, JS initial 63,90 KB gzip |
@@ -57,7 +58,7 @@
 
 ## Tiếp theo (theo thứ tự, không đảo)
 
-`AD-03`…`AD-08` → `WS-05`…`WS-07` → **cổng M5→M6** → `BE-*`.
+`AD-04`…`AD-08` → `WS-05`…`WS-07` → **cổng M5→M6** → `BE-*`.
 
 Cổng M1→M2 đã đạt ngày 2026-08-02: đối chiếu xong 28 handler M1 ở bảng cuối `ai-docs/04`, dòng 29 là SSE để M7; prototype đã duyệt; 3 package M1 build sạch.
 
