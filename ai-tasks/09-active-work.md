@@ -6,15 +6,15 @@
 
 ## Current task
 
-> ### `AD-08` — Cài đặt quán
+> ### `WS-05` — Cổng chất lượng M4
 >
-> **Mốc:** M4 · **Trạng thái:** TODO
+> **Mốc:** M5 · **Trạng thái:** TODO
 >
-> Chi tiết đầy đủ: [07-admin-task-list.md § AD-08](07-admin-task-list.md)
+> Chi tiết đầy đủ: [05-workspace-task-list.md § WS-05](05-workspace-task-list.md)
 >
-> **Đọc trước khi làm:** [`ai-tasks/12-prototype-to-react.md`](12-prototype-to-react.md), [`prototype/admin-menu.html`](../prototype/admin-menu.html), [`ai-docs/04-api-contract.md`](../ai-docs/04-api-contract.md), [`ai-docs/05-ui-ux-spec.md`](../ai-docs/05-ui-ux-spec.md).
+> **Đọc trước khi làm:** [`ai-tasks/01-milestones.md`](01-milestones.md), [`ai-tasks/05-workspace-task-list.md`](05-workspace-task-list.md), [`ai-docs/07-acceptance.md`](../ai-docs/07-acceptance.md).
 >
-> **Xong khi:** GET/PATCH cài đặt quán hoạt động, validate field và lưu thay đổi.
+> **Xong khi:** toàn bộ M4 build/test/lint sạch, các luồng acceptance khả dụng và các xác minh thiết bị thật được ghi rõ.
 
 ---
 
@@ -22,6 +22,7 @@
 
 | Task | Ngày | Ghi chú |
 | --- | --- | --- |
+| `AD-08` — Cài đặt quán | 2026-08-02 | GET/PATCH restaurant, validate name, logo URL/address + preview khách; lint/typecheck/build sạch, JS initial 81,21 KB gzip |
 | `AD-07` — Trang in mã QR hàng loạt | 2026-08-02 | Route no-sidebar, active table selection, QR canvas A4 3×4 và print CSS; lint/typecheck/build sạch, JS initial 80,69 KB gzip; Print Preview deferred |
 | `AD-06` — Xem mã QR một bàn | 2026-08-02 | QRCodeCanvas từ qrUrl API, modal tên/URL, tải PNG; lint/typecheck/build sạch, JS initial 80,09 KB gzip; camera check deferred |
 | `AD-05` — Quản lý bàn | 2026-08-02 | Table CRUD/status, 409 delete message, form update không có qrToken; lint/typecheck/build sạch, JS initial 73,69 KB gzip |
@@ -62,7 +63,7 @@
 
 ## Tiếp theo (theo thứ tự, không đảo)
 
-`AD-08` → `WS-05`…`WS-07` → **cổng M5→M6** → `BE-*`.
+`WS-05`…`WS-07` → **cổng M5→M6** → `BE-*`.
 
 Cổng M1→M2 đã đạt ngày 2026-08-02: đối chiếu xong 28 handler M1 ở bảng cuối `ai-docs/04`, dòng 29 là SSE để M7; prototype đã duyệt; 3 package M1 build sạch.
 

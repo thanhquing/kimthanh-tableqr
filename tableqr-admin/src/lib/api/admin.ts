@@ -1,4 +1,4 @@
-import { API_BASE_PATH, type AdminCategoriesResponse, type AdminItemsResponse, type AdminTableDto, type AdminTablesResponse, type AuthResponse, type CreateCategoryRequest, type CreateMenuItemRequest, type CreateTableRequest, type MenuCategory, type MenuItem, type UpdateCategoryRequest, type UpdateMenuItemRequest, type UpdateTableRequest } from '@kimthanh-tableqr/contracts'
+import { API_BASE_PATH, type AdminCategoriesResponse, type AdminItemsResponse, type AdminTableDto, type AdminTablesResponse, type AuthResponse, type CreateCategoryRequest, type CreateMenuItemRequest, type CreateTableRequest, type MenuCategory, type MenuItem, type Restaurant, type UpdateCategoryRequest, type UpdateMenuItemRequest, type UpdateRestaurantRequest, type UpdateTableRequest } from '@kimthanh-tableqr/contracts'
 
 export async function loginAdmin(email: string, password: string): Promise<AuthResponse> {
   const response = await fetch(`${API_BASE_PATH}/admin/auth/login`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, password }) })
@@ -26,3 +26,5 @@ export const getTables = (token: string) => adminRequest<AdminTablesResponse>(to
 export const createTable = (token: string, body: CreateTableRequest) => adminRequest<AdminTableDto>(token, '/admin/tables', { method: 'POST', body: JSON.stringify(body) })
 export const updateTable = (token: string, id: string, body: UpdateTableRequest) => adminRequest<AdminTableDto>(token, `/admin/tables/${id}`, { method: 'PATCH', body: JSON.stringify(body) })
 export const deleteTable = (token: string, id: string) => adminRequest<void>(token, `/admin/tables/${id}`, { method: 'DELETE' })
+export const getRestaurant = (token: string) => adminRequest<Restaurant>(token, '/admin/restaurant')
+export const updateRestaurant = (token: string, body: UpdateRestaurantRequest) => adminRequest<Restaurant>(token, '/admin/restaurant', { method: 'PATCH', body: JSON.stringify(body) })

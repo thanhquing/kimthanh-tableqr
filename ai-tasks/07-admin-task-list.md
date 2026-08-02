@@ -85,11 +85,13 @@ Kiểm tra bằng **Print Preview thật**, không đoán.
 
 **Kết quả:** route riêng không sidebar, chọn các bàn active mặc định, chia QR thật thành sheets A4 3×4 và CSS `@media print` ẩn controls/giữ lề/page break. Lint/typecheck/build sạch, initial JS 80,69 KB gzip. **Cần kiểm Print Preview thật trước khi phát hành.**
 
-### `AD-08` — Cài đặt quán · TODO
+### `AD-08` — Cài đặt quán · DONE
 
 **Prototype:** `prototype/admin-settings.html`
 
 `/settings`: tên quán, logo (URL), địa chỉ. `GET`/`PATCH /admin/restaurant`. Đổi tên quán → app khách hiện tên mới sau reload.
+
+**Kết quả:** form cài đặt GET/PATCH restaurant, validate tên quán, URL logo/address, preview header khách và reset thay đổi chưa lưu. Lint/typecheck/build sạch, initial JS 81,21 KB gzip.
 
 ---
 
