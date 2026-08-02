@@ -58,7 +58,7 @@ pnpm workspace. Node ≥ 20.19 (dùng 22, xem `.nvmrc`), `pnpm@10.13.1`.
 | Thư mục | Vai trò | Stack | Trạng thái |
 | --- | --- | --- | --- |
 | `packages/contracts` | Type, DTO, enum, tính tổng tiền, `formatVnd()`. Zero dependency. | TS thuần | `WS-01` TODO |
-| `packages/mock` | Fixture + store + MSW handlers khớp `ai-docs/04` | TS + MSW 2 | `WS-02`/`WS-03` TODO |
+| `packages/mock` | Fixture + store + MSW handlers khớp `ai-docs/04` | TS + MSW 2 | `WS-02`/`WS-03` DONE |
 | `packages/ui` | `theme.css` (Tailwind v4 `@theme`) + primitive dùng chung | TS + React | `WS-04` TODO |
 | `prototype` | **13 màn HTML tĩnh — giao diện đã duyệt.** Nguồn chân lý về look. | HTML/CSS/JS thuần | `WS-08` DONE |
 | `tableqr-guest` | App khách, mobile-first, không đăng nhập | Vite + React SPA | M2 — chưa tạo |

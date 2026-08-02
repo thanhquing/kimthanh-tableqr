@@ -31,7 +31,7 @@ pnpm --filter @kimthanh-tableqr/mock build
 pnpm --filter @kimthanh-tableqr/ui build
 ```
 
-**Cổng M1 → M2 (bắt buộc, làm tay):** mở bảng 29 dòng ở cuối `ai-docs/04-api-contract.md`, đối chiếu từng dòng với `packages/mock/src/handlers.ts`. Thiếu handler nào thì làm nốt **trước khi** sang M2 — mọi màn hình sau đó xây trên nền này.
+**Cổng M1 → M2 (bắt buộc, làm tay):** mở bảng 29 dòng ở cuối `ai-docs/04-api-contract.md`, đối chiếu dòng 1–28 với `packages/mock/src/handlers.ts`; dòng 29 (`GET /staff/stream`) phải để M7 đúng contract. Thiếu handler M1 nào thì làm nốt **trước khi** sang M2 — mọi màn hình sau đó xây trên nền này.
 
 Kiểm fixture: ≥ 4 danh mục, ≥ 20 món, ≥ 8 bàn, có sẵn 1 phiên đang mở với 2 đơn.
 

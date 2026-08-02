@@ -5,7 +5,7 @@
 | Mốc | Nội dung | Task | Điều kiện đạt |
 | --- | --- | --- | --- |
 | **M0** | Khung workspace + toàn bộ tài liệu | `WS-00` | `pnpm install` sạch; `ai-docs` và `ai-tasks` đầy đủ; `CLAUDE.md` trỏ đúng |
-| **M1** | 3 package dùng chung | `WS-01`…`WS-04` | 3 package build được; fixture ≥ 4 danh mục / ≥ 20 món; **mọi endpoint ở `ai-docs/04` có handler mock** |
+| **M1** | 3 package dùng chung | `WS-01`…`WS-04` | 3 package build được; fixture ≥ 4 danh mục / ≥ 20 món; **đủ 28 handler mock của M1** (`GET /staff/stream` để M7) |
 | **M2** | `tableqr-guest` UI đầy đủ | `GU-00`…`GU-10` | Đi trọn A1–A4 của `ai-docs/07` trên mock |
 | **M3** | `tableqr-staff` UI đầy đủ | `ST-00`…`ST-08` | Đi trọn A5, A6 |
 | **M4** | `tableqr-admin` UI đầy đủ | `AD-00`…`AD-08` | Đi trọn A7, A8 |
@@ -18,7 +18,7 @@
 
 Không sang mốc sau khi mốc trước chưa đạt **hết** điều kiện. Cụ thể:
 
-- **M1 → M2:** đối chiếu xong bảng 29 dòng ở cuối `ai-docs/04-api-contract.md`. Thiếu handler nào thì làm nốt, đừng để "làm sau khi cần" — mọi màn hình sau đó sẽ xây trên nền sai.
+- **M1 → M2:** đối chiếu xong bảng 29 dòng ở cuối `ai-docs/04-api-contract.md`: dòng 1–28 có handler, dòng 29 (`GET /staff/stream`) xác nhận để M7 đúng contract. Thiếu handler M1 nào thì làm nốt, đừng để "làm sau khi cần" — mọi màn hình sau đó sẽ xây trên nền sai.
 - **M4 → M5:** đủ ba app chạy được end-to-end trên mock.
 - **M5 → M6:** đây là cổng nghiêm nhất. Ngân sách bundle < 150 KB gzip và `pnpm build` sạch là **bắt buộc**. Sang M6 rồi thì sửa UI sẽ tốn hơn nhiều vì lúc đó còn phải nghĩ tới API thật.
 - **M7a → M7b:** không nối cả ba app cùng lúc. Đây là chỗ rủi ro tích tụ của cách làm UI-trước-BE-sau — nếu contract lệch, nối một lượt cả ba thì ba app cùng hỏng và không biết lỗi ở đâu. Nối luồng khách trước (ngắn nhất, quan trọng nhất), sửa hết lệch, rồi mới nối phần còn lại.

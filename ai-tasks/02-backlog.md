@@ -60,11 +60,11 @@ Nguồn: Unsplash / Pexels (giấy phép thoáng). Quy cách đầy đủ: `ai-d
 
 Ba món **bỏ khỏi thực đơn** vì không tìm được ảnh đúng, theo đúng quy tắc "ảnh sai món tệ hơn không có ảnh": trà tắc, sữa chua nếp cẩm, chè đậu xanh. Thực đơn còn 21 món + 1 món cố ý **không có ảnh** (trà tắc giữ lại trong fixture để kiểm ô placeholder chữ cái đầu). Chi tiết: `ai-tasks/04-open-questions.md` Q9.
 
-### `WS-03` — Mock store + MSW handlers · TODO (M1)
+### `WS-03` — Mock store + MSW handlers · **DONE** (2026-08-02) — build sạch, 16/16 test pass
 
 `packages/mock`. Store in-memory, persist `localStorage`, có `resetStore()`.
 
-Handlers **khớp 1:1** với `ai-docs/04-api-contract.md` — đối chiếu bảng 29 dòng ở cuối file đó. Store phải thực thi đúng các bất biến ở `ai-docs/03 §Quy tắc bất biến`, gồm: một session `OPEN` mỗi bàn, `sequenceNo` liên tục, snapshot giá, chặn món hết hàng, `close` không xoá đơn.
+Handlers **khớp 1:1** với 28 endpoint M1 trong `ai-docs/04-api-contract.md`; dòng 29 là SSE để M7 theo chính contract. Store phải thực thi đúng các bất biến ở `ai-docs/03 §Quy tắc bất biến`, gồm: một session `OPEN` mỗi bàn, `sequenceNo` liên tục, snapshot giá, chặn món hết hàng, `close` không xoá đơn.
 
 `src/browser.ts` xuất `startMockWorker()`; `src/node.ts` xuất server cho vitest.
 
@@ -87,6 +87,8 @@ Handlers **khớp 1:1** với `ai-docs/04-api-contract.md` — đối chiếu b�
 | Ép `ITEMS_UNAVAILABLE` | tắt | Thử case món hết khi đang gửi đơn |
 
 Độ trễ **cố định 200ms là sai** — nó làm UI trông mượt giả tạo. Độ trễ thay đổi mới lộ ra chỗ thiếu trạng thái chờ và chỗ bị double-submit.
+
+**Kết quả:** store persist `localStorage` + `resetStore()`; đủ **28 handler của M1** và đã đối chiếu chính xác method/path. Dòng thứ 29 là SSE `GET /staff/stream`, chủ ý để M7 theo chính contract. Store thực thi 7 bất biến, validate payload, snapshot giá phía server, idempotency 60 giây, guest/staff/owner auth. Panel chaos lưu `localStorage`, hỗ trợ trễ 150–800ms, lỗi 500, offline và ép hai lỗi nghiệp vụ. `src/browser.ts` xuất `startMockWorker()`; `src/node.ts` xuất `server`.
 
 ### `WS-04` — `packages/ui` · TODO (M1)
 
@@ -128,7 +130,7 @@ Hoàn thiện checklist test ở mục D của `ai-docs/07`. Test logic thuần,
 | `WS-00` | Khung workspace + tài liệu | M0 | **DONE** |
 | `WS-01` | `packages/contracts` | M1 | **DONE** — 45/45 test |
 | `WS-02` | Fixture + **21 ảnh món thật** | M1 | **DONE** |
-| `WS-03` | Mock store + MSW handlers | M1 | TODO |
+| `WS-03` | Mock store + MSW handlers | M1 | **DONE** |
 | `WS-04` | `packages/ui` (theo `ai-docs/08`) | M1 | TODO |
 | `WS-08` | **Prototype 13 màn** — chốt look | M1 | **DONE** |
 | `GU-00` | Khởi tạo app khách | M2 | TODO |

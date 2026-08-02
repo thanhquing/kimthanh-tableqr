@@ -99,7 +99,7 @@ Vượt ngưỡng bundle thì phải cắt, không được nới ngưỡng.
 - [ ] `pnpm lint && pnpm test && pnpm build` sạch toàn workspace
 - [ ] Không có `any`, không có `@ts-ignore` thiếu giải thích
 - [ ] Không `fetch` trực tiếp trong component
-- [ ] Mọi endpoint trong `04-api-contract.md` có handler mock tương ứng
+- [ ] Đủ 28 handler mock của M1 trong `04-api-contract.md`; riêng SSE `GET /staff/stream` để M7 như contract quy định
 - [ ] Vitest phủ tối thiểu:
   - `formatVnd()` — gồm 0 đồng và số lớn
   - Cộng tiền giỏ hàng với `quantity > 1`
