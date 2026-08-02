@@ -1,5 +1,16 @@
-import { Button } from '@kimthanh-tableqr/ui'
+import { EmptyState, LoadingSkeleton } from '@kimthanh-tableqr/ui'
+import { formatRelativeTime, formatTime, formatVnd, minutesSince, type OrderStatus, type StaffOrderDto } from '@kimthanh-tableqr/contracts'
+import { useEffect, useRef } from 'react'
 import { useStaffAuth } from '../features/auth/auth-context'
 import { simulateStaffOrder } from '../lib/api/staff'
 import { useOrderStream } from '../lib/realtime'
-export function OrdersPage() { const { auth } = useStaffAuth(); const stream = useOrderStream(); return <div className="staff-orders-placeholder"><strong>Đơn bếp · {stream.orders.length}</strong>{import.meta.env.VITE_USE_MOCK === 'true' ? <Button onClick={() => auth && void simulateStaffOrder(auth.token).then(stream.refetch)} variant="secondary">Giả lập đơn mới</Button> : null}</div> }
+
+const columns: Array<{ status: Extract<OrderStatus, 'NEW' | 'PREPARING' | 'SERVED'>; title: string }> = [{ status:'NEW', title:'Đơn mới' }, { status:'PREPARING', title:'Đang làm' }, { status:'SERVED', title:'Đã phục vụ' }]
+export function OrdersPage() {
+  const { auth } = useStaffAuth(); const stream = useOrderStream(); const known = useRef(new Set<string>()); const fresh = useRef(new Set<string>())
+  useEffect(() => { stream.orders.forEach((order) => { if (known.current.size && !known.current.has(order.id)) fresh.current.add(order.id); known.current.add(order.id) }); const timer = window.setTimeout(() => fresh.current.clear(), 3000); return () => window.clearTimeout(timer) }, [stream.orders])
+  if (stream.isLoading) return <div className="staff-orders"><h1>Đơn hàng</h1><div className="staff-order-columns">{columns.map((column) => <section key={column.status}><h2>{column.title}</h2><LoadingSkeleton height={220} width="100%" /></section>)}</div></div>
+  if (!stream.orders.length) return <EmptyState description="Đơn của khách sẽ hiện ở đây." title="Chưa có đơn nào" />
+  return <div className="staff-orders"><h1>Đơn hàng</h1><div className="staff-order-columns">{columns.map((column) => { const orders = stream.orders.filter((order) => order.status === column.status).sort((a,b) => a.createdAt.localeCompare(b.createdAt)); return <section key={column.status}><header className="staff-order-column__title"><h2>{column.title}</h2><span>{orders.length}</span></header>{orders.length ? orders.map((order) => <OrderCard fresh={fresh.current.has(order.id)} key={order.id} order={order} />) : <div className="staff-order-column__empty">Chưa có đơn nào</div>}</section> })}</div>{import.meta.env.VITE_USE_MOCK === 'true' ? <button className="staff-simulate" onClick={() => auth && void simulateStaffOrder(auth.token).then(stream.refetch)} type="button">+ Giả lập đơn mới</button> : null}</div>
+}
+function OrderCard({ fresh, order }: { readonly fresh: boolean; readonly order: StaffOrderDto }) { const late = order.status === 'NEW' && minutesSince(order.createdAt) > 10; const action = order.status === 'NEW' ? 'Bắt đầu làm' : order.status === 'PREPARING' ? 'Đã phục vụ' : null; return <article className={`staff-order-card ${fresh ? 'staff-order-card--fresh' : ''}`}><header><strong>{order.table.displayName}</strong><span>lần gọi #{order.sequenceNo}</span></header><p className={late ? 'staff-order-card__late' : ''}>{formatTime(order.createdAt)} · {formatRelativeTime(order.createdAt)}{late ? ' · quá lâu' : ''}</p><div>{order.items.map((item) => <section key={item.id}><b>{item.quantity}×</b><span><strong>{item.nameSnapshot}</strong>{item.note ? <small>↳ {item.note}</small> : null}</span></section>)}</div><footer><strong>{formatVnd(order.totalVnd)}</strong>{action ? <button type="button">{action}</button> : null}</footer></article> }

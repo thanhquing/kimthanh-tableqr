@@ -37,7 +37,7 @@ Kèm nút dev "Giả lập đơn mới" (chỉ hiện khi `VITE_USE_MOCK=true`) 
 
 **Kết quả:** `useOrderStream()` poll 3 giây, dùng `serverTime` làm cursor và merge update theo ID; interface tách polling để M7 thay SSE. Debug handler browser-only tạo order trong mock store; staff build sạch, mock 16/16 test pass.
 
-### `ST-03` — Bảng đơn · TODO
+### `ST-03` — Bảng đơn · **DONE** (2026-08-02)
 
 **Prototype:** `prototype/staff-orders.html`
 
@@ -49,6 +49,8 @@ Thẻ đơn theo `ai-docs/05`: **số bàn là chữ to nhất**, số lần g�
 - Đơn `NEW` quá 10 phút → đồng hồ chuyển đỏ
 - Đơn `NEW` vừa tới → viền nổi + nhấp nháy 3s
 - Empty state: "Chưa có đơn nào. Đơn của khách sẽ hiện ở đây."
+
+**Kết quả:** board dùng `useOrderStream`, ba cột tablet / một cột mobile, sắp thứ tự `createdAt` tăng. Card ưu tiên số bàn, có item/note/tổng, màu quá lâu và nháy đơn mới; loading/empty đầy đủ. Lint/typecheck/build sạch, initial JS 67,72 KB gzip.
 
 ### `ST-04` — Chuyển trạng thái đơn · TODO
 
