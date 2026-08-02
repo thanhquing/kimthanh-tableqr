@@ -94,7 +94,7 @@ Dấu tích, "Đã gửi đơn tới bếp", tóm tắt đơn vừa gửi. Tự 
 
 **Kết quả:** lưu snapshot cart vừa gửi theo session để recap món/note/tổng tiền sau khi giỏ xóa; có dấu tích, đếm ngược 3 giây và nút mở đơn ngay. Lint/typecheck/build sạch, initial JS 73,40 KB gzip.
 
-### `GU-08` — Màn đơn của bàn (gọi thêm món) · TODO
+### `GU-08` — Màn đơn của bàn (gọi thêm món) · **DONE** (2026-08-02)
 
 **Prototype:** `prototype/guest-orders.html`
 
@@ -103,6 +103,8 @@ Dấu tích, "Đã gửi đơn tới bếp", tóm tắt đơn vừa gửi. Tự 
 **Tổng cộng cả phiên** chữ to ở cuối — cộng dồn mọi đơn không `CANCELLED`. Nút `Gọi thêm món` (về menu, giỏ rỗng) và `Xin tính tiền`.
 
 Đây là task hiện thực yêu cầu MVP "gọi thêm món nhiều lần" — kiểm kỹ theo A2 của `ai-docs/07`.
+
+**Kết quả:** `GET /guest/sessions/:id/orders` qua TanStack Query poll 10 giây; render mỗi lần gọi với thời gian, status badge, item/note/thành tiền và tổng phiên từ server. Có loading/error/empty, gọi thêm món về menu và nút xin tính tiền dành cho GU-09. Lint/typecheck/build sạch, initial JS 73,63 KB gzip.
 
 ### `GU-09` — Nút nổi Gọi nhân viên · TODO
 
