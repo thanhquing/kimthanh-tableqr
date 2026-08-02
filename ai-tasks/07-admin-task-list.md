@@ -41,13 +41,15 @@ Công tắc "Còn hàng" là thao tác dùng nhiều nhất trong ngày — **đ
 
 **Kết quả:** cột món lọc theo danh mục đang chọn, hiển thị thumbnail/tên/giá/toggle, availability PATCH optimistic có rollback, xóa có xác nhận và links sửa/thêm sang form món. Lint/typecheck/build sạch, initial JS 71,67 KB gzip.
 
-### `AD-04` — Form món · TODO
+### `AD-04` — Form món · DONE
 
 **Prototype:** `prototype/admin-menu.html (modal — bấm nút sửa)`
 
 `/menu/items/new` và `/menu/items/:id`. Trường: danh mục · tên (bắt buộc) · mô tả · **giá** (nhập số nguyên, hiện `45.000 ₫` ngay dưới ô) · URL ảnh · còn hàng · thứ tự.
 
 Validate phía client trước khi gửi; lỗi `VALIDATION_ERROR` từ server thì gắn vào đúng field theo `details.fields`. Rời trang khi chưa lưu → hỏi xác nhận.
+
+**Kết quả:** routes tạo/sửa món, fields đầy đủ, validate client và preview giá VND, lưu POST/PATCH API, phản hồi lỗi API và cảnh báo beforeunload khi form đã thay đổi. Lint/typecheck/build sạch, initial JS 72,74 KB gzip.
 
 Giai đoạn mock chưa có upload ảnh — nhập URL, gợi ý sẵn các ảnh có trong `packages/mock/assets/`. Upload thật là `BE-09`.
 

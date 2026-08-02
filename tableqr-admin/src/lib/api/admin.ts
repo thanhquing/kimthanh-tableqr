@@ -1,4 +1,4 @@
-import { API_BASE_PATH, type AdminCategoriesResponse, type AdminItemsResponse, type AuthResponse, type CreateCategoryRequest, type MenuCategory, type MenuItem, type UpdateCategoryRequest, type UpdateMenuItemRequest } from '@kimthanh-tableqr/contracts'
+import { API_BASE_PATH, type AdminCategoriesResponse, type AdminItemsResponse, type AuthResponse, type CreateCategoryRequest, type CreateMenuItemRequest, type MenuCategory, type MenuItem, type UpdateCategoryRequest, type UpdateMenuItemRequest } from '@kimthanh-tableqr/contracts'
 
 export async function loginAdmin(email: string, password: string): Promise<AuthResponse> {
   const response = await fetch(`${API_BASE_PATH}/admin/auth/login`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, password }) })
@@ -21,3 +21,4 @@ export const updateCategory = (token: string, id: string, body: UpdateCategoryRe
 export const deleteCategory = (token: string, id: string) => adminRequest<void>(token, `/admin/categories/${id}`, { method: 'DELETE' })
 export const updateItem = (token: string, id: string, body: UpdateMenuItemRequest) => adminRequest<MenuItem>(token, `/admin/items/${id}`, { method: 'PATCH', body: JSON.stringify(body) })
 export const deleteItem = (token: string, id: string) => adminRequest<void>(token, `/admin/items/${id}`, { method: 'DELETE' })
+export const createItem = (token: string, body: CreateMenuItemRequest) => adminRequest<MenuItem>(token, '/admin/items', { method: 'POST', body: JSON.stringify(body) })
