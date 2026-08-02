@@ -17,11 +17,13 @@ Vite + React + TS, cổng 5174. Cùng cấu hình nền như `GU-00`. Layout tab
 
 **Kết quả:** tạo `tableqr-staff` với Vite/React/TypeScript, Tailwind + UI theme, mock worker trước render, React Query/Router, shell header tablet-first; cổng 5174. Lint/typecheck/build sạch, initial JS 61,99 KB gzip.
 
-### `ST-01` — Đăng nhập PIN · TODO
+### `ST-01` — Đăng nhập PIN · **DONE** (2026-08-02)
 
 **Prototype:** `prototype/staff-login.html`
 
 `/login` với bàn phím số lớn (nút ≥ 64px), nhập PIN 6 số, hiện chấm tròn. `POST /staff/auth/login`. Token lưu `localStorage`, **giữ đăng nhập lâu** — không ai muốn đăng nhập lại giữa giờ cao điểm. Route guard chuyển hướng về `/login` khi 401. Nút Đăng xuất ở header.
+
+**Kết quả:** `StaffAuthProvider` lưu `AuthResponse` trong `localStorage`; login keypad 64px tự gửi ở số thứ 6, hiện lỗi PIN, guard `/orders` và redirect login, header có logout. Lint/typecheck/build sạch, initial JS 62,77 KB gzip.
 
 ### `ST-02` — Hook realtime (polling) · TODO
 

@@ -1,0 +1,2 @@
+import { API_BASE_PATH, type AuthResponse } from '@kimthanh-tableqr/contracts'
+export async function loginStaff(pin: string): Promise<AuthResponse> { const response = await fetch(`${API_BASE_PATH}/staff/auth/login`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ pin }) }); if (!response.ok) throw new Error('Mã PIN không đúng. Thử lại.'); return response.json() as Promise<AuthResponse> }

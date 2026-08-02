@@ -147,7 +147,7 @@ Hoàn thiện checklist test ở mục D của `ai-docs/07`. Test logic thuần,
 | `GU-09` | Nút nổi Gọi nhân viên | M2 | **DONE** — staff call menu + 30s cooldown |
 | `GU-10` | Trạng thái lỗi & màn biên | M2 | **DONE** — offline/session closed/error boundary |
 | `ST-00` | Khởi tạo app bếp | M3 | **DONE** — Vite/React shell tablet-first |
-| `ST-01` | Đăng nhập PIN | M3 | TODO |
+| `ST-01` | Đăng nhập PIN | M3 | **DONE** — PIN auth, guard và logout |
 | `ST-02` | Hook realtime (polling) | M3 | TODO |
 | `ST-03` | Bảng đơn | M3 | TODO |
 | `ST-04` | Chuyển trạng thái đơn | M3 | TODO |
