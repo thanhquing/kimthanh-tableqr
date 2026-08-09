@@ -1,7 +1,10 @@
 import { API_BASE_PATH, type AdminCategoriesResponse, type AdminItemsResponse, type AdminTableDto, type AdminTablesResponse, type AuthResponse, type CreateCategoryRequest, type CreateMenuItemRequest, type CreateTableRequest, type MenuCategory, type MenuItem, type Restaurant, type UpdateCategoryRequest, type UpdateMenuItemRequest, type UpdateRestaurantRequest, type UpdateTableRequest, type UploadImageResponse } from '@kimthanh-tableqr/contracts'
 
+const adminApiBaseUrl = import.meta.env.VITE_API_BASE_URL ?? API_BASE_PATH
+const adminApiUrl = (path: string) => `${adminApiBaseUrl.replace(/\/$/, '')}${path}`
+
 export async function loginAdmin(email: string, password: string): Promise<AuthResponse> {
-  const response = await fetch(`${API_BASE_PATH}/admin/auth/login`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, password }) })
+  const response = await fetch(adminApiUrl('/admin/auth/login'), { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, password }) })
   if (!response.ok) {
     const body = await response.json().catch(() => null) as { error?: { message?: string } } | null
     throw new Error(body?.error?.message ?? 'Không thể đăng nhập.')
@@ -10,7 +13,7 @@ export async function loginAdmin(email: string, password: string): Promise<AuthR
 }
 
 async function adminRequest<T>(token: string, path: string, init?: RequestInit): Promise<T> {
-  const response = await fetch(`${API_BASE_PATH}${path}`, { ...init, headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json', ...init?.headers } })
+  const response = await fetch(adminApiUrl(path), { ...init, headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json', ...init?.headers } })
   if (!response.ok) { const body = await response.json().catch(() => null) as { error?: { message?: string } } | null; throw new Error(body?.error?.message ?? 'Không thể cập nhật dữ liệu.') }
   return response.status === 204 ? undefined as T : response.json() as Promise<T>
 }
@@ -19,7 +22,7 @@ export const getItems = (token: string) => adminRequest<AdminItemsResponse>(toke
 export async function uploadMenuImage(token: string, file: File): Promise<UploadImageResponse> {
   const form = new FormData()
   form.set('file', file)
-  const response = await fetch(`${API_BASE_PATH}/admin/uploads/images`, { method: 'POST', headers: { Authorization: `Bearer ${token}` }, body: form })
+  const response = await fetch(adminApiUrl('/admin/uploads/images'), { method: 'POST', headers: { Authorization: `Bearer ${token}` }, body: form })
   if (!response.ok) {
     const body = await response.json().catch(() => null) as { error?: { message?: string } } | null
     throw new Error(body?.error?.message ?? 'Không thể tải ảnh lên.')

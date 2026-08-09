@@ -6,15 +6,15 @@
 
 ## Current task
 
-> ### `BE-12a` — M7a: nối lát cắt dọc — chỉ luồng khách
+> ### `BE-12b` — M7b: nối nốt staff + admin
 >
-> **Mốc:** M7a · **Trạng thái:** DONE
+> **Mốc:** M7b · **Trạng thái:** DONE
 >
-> Chi tiết đầy đủ: [08-api-task-list.md § BE-12a](08-api-task-list.md)
+> Chi tiết đầy đủ: [08-api-task-list.md § BE-12b](08-api-task-list.md)
 >
 > **Đọc trước khi làm:** [`ai-tasks/08-api-task-list.md`](08-api-task-list.md), [`ai-docs/04-api-contract.md`](../ai-docs/04-api-contract.md), [`ai-docs/03-domain-model.md`](../ai-docs/03-domain-model.md).
 >
-> **Xong:** guest mặc định tắt MSW, gọi API thật qua Vite proxy; API phục vụ cả ảnh menu fixture. Không phải sửa component hay contract.
+> **Xong:** cả ba app mặc định tắt MSW và gọi API thật qua Vite proxy. Production build không chứa MSW hay `mockServiceWorker`.
 
 ---
 
@@ -22,6 +22,7 @@
 
 | Task | Ngày | Ghi chú |
 | --- | --- | --- |
+| `BE-12b` — nối staff + admin | 2026-08-09 | Staff/admin mặc định gọi API thật qua proxy; toàn bộ staff endpoint dùng base URL cấu hình. Login + dữ liệu đã kiểm qua proxy đến Docker; production bundle của cả ba app không có MSW. |
 | `BE-12a` — nối lát cắt khách | 2026-08-09 | Guest chạy API thật qua Vite proxy; menu asset, mở phiên, gửi đơn, gọi nhân viên/xin bill đã kiểm qua proxy. Staff/admin vẫn mock. |
 | `BE-11` — SSE realtime | 2026-08-09 | `GET /staff/stream` có JWT, phát `order.created`, `order.status_changed`, `call.created`, `session.closed`; hook staff merge event, invalidate call/table liên quan và fallback polling sau 3 lỗi liên tiếp. Docker flow bắt đủ 4 event. |
 | `BE-10` — Script verify cURL | 2026-08-09 | `verify-flow-01-guest-order.sh` kiểm luồng guest/staff qua cURL: dọn bàn B01, mở phiên, order/idempotency, gọi thêm, gọi nhân viên, bếp chuyển `NEW → PREPARING → SERVED`, tính tiền, close, `SESSION_CLOSED`, rồi quét lại thấy phiên mới rỗng. |

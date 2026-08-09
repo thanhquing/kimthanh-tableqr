@@ -102,8 +102,16 @@ seed trả URL `/menu-images/*` nhưng API chưa phục vụ ảnh, nên bổ su
 route và copy asset vào Docker image; đây không ảnh hưởng staff/admin. Hai app
 đó vẫn dùng mock.
 
-### `BE-12b` — **M7b**: nối nốt staff + admin · BLOCKED
+### `BE-12b` — **M7b**: nối nốt staff + admin · DONE
 Sau khi `BE-12a` sạch. Xác nhận MSW **không** lọt vào production bundle của cả ba app.
+
+Hoàn thành 2026-08-09: staff và admin mặc định đặt `VITE_USE_MOCK=false`,
+gọi API thật qua Vite proxy `/api`, `/menu-images` và `/uploads` đến backend
+cổng 3000. Staff thống nhất tất cả endpoint (kể cả SSE URL) theo
+`VITE_API_BASE_URL`; admin cũng không còn hardcode `API_BASE_PATH`. Login và
+dữ liệu staff/admin đã kiểm qua hai proxy với API Docker (tất cả 200). Build
+production của guest/staff/admin đều typecheck/lint/build sạch và không chứa
+MSW hay `mockServiceWorker`.
 
 ### `BE-13` — Verify thiết bị thật · BLOCKED
 In mã QR ra giấy, dán lên bàn. Điện thoại thật quét; tablet mở màn bếp. Đơn phải hiện trên bếp **< 2s, không refresh**. Thử với mạng 4G thật, không phải wifi.

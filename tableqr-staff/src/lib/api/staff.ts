@@ -1,13 +1,69 @@
-import { API_BASE_PATH, type AuthResponse, type CloseSessionResponse, type OrderStatus, type PaySessionResponse, type StaffCallDto, type StaffCallsResponse, type StaffOrderDto, type StaffOrdersResponse, type StaffSessionDetailResponse, type StaffTablesResponse } from '@kimthanh-tableqr/contracts'
+import {
+  API_BASE_PATH,
+  type AuthResponse,
+  type CloseSessionResponse,
+  type OrderStatus,
+  type PaySessionResponse,
+  type StaffCallDto,
+  type StaffCallsResponse,
+  type StaffOrderDto,
+  type StaffOrdersResponse,
+  type StaffSessionDetailResponse,
+  type StaffTablesResponse,
+} from '@kimthanh-tableqr/contracts'
+
 export const staffApiBaseUrl = import.meta.env.VITE_API_BASE_URL ?? API_BASE_PATH
-export function getStaffStreamUrl(token: string): string { const url = new URL(`${staffApiBaseUrl}/staff/stream`, window.location.origin); url.searchParams.set('access_token', token); return url.toString() }
-export async function loginStaff(pin: string): Promise<AuthResponse> { const response = await fetch(`${staffApiBaseUrl}/staff/auth/login`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ pin }) }); if (!response.ok) throw new Error('Mã PIN không đúng. Thử lại.'); return response.json() as Promise<AuthResponse> }
-export async function getStaffOrders(token: string, since?: string): Promise<StaffOrdersResponse> { const query = since ? `?since=${encodeURIComponent(since)}` : ''; const response = await fetch(`${staffApiBaseUrl}/staff/orders${query}`, { headers: { Authorization: `Bearer ${token}` } }); if (!response.ok) throw new Error('Không tải được đơn bếp.'); return response.json() as Promise<StaffOrdersResponse> }
-export async function simulateStaffOrder(token: string): Promise<void> { const response = await fetch(`${API_BASE_PATH}/__debug/staff/orders`, { method:'POST', headers:{ Authorization:`Bearer ${token}` } }); if (!response.ok) throw new Error('Không tạo được đơn mô phỏng.'); }
-export async function updateStaffOrder(token: string, id: string, status: OrderStatus): Promise<StaffOrderDto> { const response = await fetch(`${API_BASE_PATH}/staff/orders/${id}/status`, { method:'PATCH', headers:{Authorization:`Bearer ${token}`,'Content-Type':'application/json'}, body:JSON.stringify({status}) }); if (!response.ok) throw new Error('Không thể cập nhật đơn.'); return response.json() as Promise<StaffOrderDto> }
-export async function getStaffTables(token:string):Promise<StaffTablesResponse>{const response=await fetch(`${API_BASE_PATH}/staff/tables`,{headers:{Authorization:`Bearer ${token}`}});if(!response.ok)throw new Error('Không tải được sơ đồ bàn.');return response.json() as Promise<StaffTablesResponse>}
-export async function getStaffSession(token:string,id:string):Promise<StaffSessionDetailResponse>{const r=await fetch(`${API_BASE_PATH}/staff/sessions/${id}`,{headers:{Authorization:`Bearer ${token}`}});if(!r.ok)throw new Error('Không tải được phiên bàn.');return r.json() as Promise<StaffSessionDetailResponse>}
-export async function paySession(token:string,id:string):Promise<PaySessionResponse>{const r=await fetch(`${API_BASE_PATH}/staff/sessions/${id}/pay`,{method:'POST',headers:{Authorization:`Bearer ${token}`}});if(!r.ok)throw new Error('Không thể ghi nhận thanh toán.');return r.json() as Promise<PaySessionResponse>}
-export async function closeSession(token:string,id:string):Promise<CloseSessionResponse>{const r=await fetch(`${API_BASE_PATH}/staff/sessions/${id}/close`,{method:'POST',headers:{Authorization:`Bearer ${token}`}});if(!r.ok)throw new Error('Không thể reset bàn.');return r.json() as Promise<CloseSessionResponse>}
-export async function getStaffCalls(token:string):Promise<StaffCallsResponse>{const r=await fetch(`${API_BASE_PATH}/staff/calls?status=PENDING`,{headers:{Authorization:`Bearer ${token}`}});if(!r.ok)throw new Error('Không tải được yêu cầu nhân viên.');return r.json() as Promise<StaffCallsResponse>}
-export async function completeStaffCall(token:string,id:string):Promise<StaffCallDto>{const r=await fetch(`${API_BASE_PATH}/staff/calls/${id}`,{method:'PATCH',headers:{Authorization:`Bearer ${token}`,'Content-Type':'application/json'},body:JSON.stringify({status:'DONE'})});if(!r.ok)throw new Error('Không thể cập nhật yêu cầu.');return r.json() as Promise<StaffCallDto>}
+
+function staffApiUrl(path: string): string {
+  return `${staffApiBaseUrl.replace(/\/$/, '')}${path}`
+}
+
+function staffHeaders(token: string, includeJson = false): HeadersInit {
+  return {
+    Authorization: `Bearer ${token}`,
+    ...(includeJson ? { 'Content-Type': 'application/json' } : {}),
+  }
+}
+
+async function staffRequest<T>(token: string, path: string, init?: RequestInit): Promise<T> {
+  const response = await fetch(staffApiUrl(path), {
+    ...init,
+    headers: { ...staffHeaders(token, init?.body !== undefined), ...init?.headers },
+  })
+  if (!response.ok) throw new Error('Không thể cập nhật dữ liệu.')
+  return response.json() as Promise<T>
+}
+
+export function getStaffStreamUrl(token: string): string {
+  const url = new URL(staffApiUrl('/staff/stream'), window.location.origin)
+  url.searchParams.set('access_token', token)
+  return url.toString()
+}
+
+export async function loginStaff(pin: string): Promise<AuthResponse> {
+  const response = await fetch(staffApiUrl('/staff/auth/login'), {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ pin }),
+  })
+  if (!response.ok) throw new Error('Mã PIN không đúng. Thử lại.')
+  return response.json() as Promise<AuthResponse>
+}
+
+export const getStaffOrders = (token: string, since?: string) =>
+  staffRequest<StaffOrdersResponse>(token, `/staff/orders${since ? `?since=${encodeURIComponent(since)}` : ''}`)
+
+/** Only available from the MSW debug handler. */
+export const simulateStaffOrder = (token: string) =>
+  staffRequest<void>(token, '/__debug/staff/orders', { method: 'POST' })
+
+export const updateStaffOrder = (token: string, id: string, status: OrderStatus) =>
+  staffRequest<StaffOrderDto>(token, `/staff/orders/${id}/status`, { method: 'PATCH', body: JSON.stringify({ status }) })
+
+export const getStaffTables = (token: string) => staffRequest<StaffTablesResponse>(token, '/staff/tables')
+export const getStaffSession = (token: string, id: string) => staffRequest<StaffSessionDetailResponse>(token, `/staff/sessions/${id}`)
+export const paySession = (token: string, id: string) => staffRequest<PaySessionResponse>(token, `/staff/sessions/${id}/pay`, { method: 'POST' })
+export const closeSession = (token: string, id: string) => staffRequest<CloseSessionResponse>(token, `/staff/sessions/${id}/close`, { method: 'POST' })
+export const getStaffCalls = (token: string) => staffRequest<StaffCallsResponse>(token, '/staff/calls?status=PENDING')
+export const completeStaffCall = (token: string, id: string) =>
+  staffRequest<StaffCallDto>(token, `/staff/calls/${id}`, { method: 'PATCH', body: JSON.stringify({ status: 'DONE' }) })

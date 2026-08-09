@@ -47,8 +47,8 @@ docker compose -f tableqr-api/docker-compose.yml up --build
 pnpm dev:guest      # http://localhost:5173/t/qr-ban-01-a7f3k9m2xp
 ```
 
-`tableqr-guest` mặc định gọi API thật qua Vite proxy; `tableqr-staff` và
-`tableqr-admin` vẫn dùng dữ liệu giả (MSW) cho đến M7b.
+Ba app mặc định gọi API thật qua Vite proxy. Để chạy giao diện với MSW khi
+phát triển, đặt `VITE_USE_MOCK=true` trong file `.env.development` của app đó.
 
 ## Trạng thái
 

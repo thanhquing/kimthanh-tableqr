@@ -20,7 +20,7 @@ afterEach(() => {
 afterAll(() => server.close())
 
 describe('handlers', () => {
-  it('khai báo đúng 28 endpoint M1 và chưa khai báo SSE M7', () => {
+  it('khai báo đủ 29 HTTP endpoint hiện tại và chưa khai báo SSE M7', () => {
     expect(createHandlers({ store, chaos }).map((handler) => handler.info.header)).toEqual([
       'GET */api/v1/guest/tables/:qrToken',
       'GET */api/v1/guest/sessions/:sessionId/orders',
@@ -41,6 +41,7 @@ describe('handlers', () => {
       'PATCH */api/v1/admin/categories/:id',
       'DELETE */api/v1/admin/categories/:id',
       'GET */api/v1/admin/items',
+      'POST */api/v1/admin/uploads/images',
       'POST */api/v1/admin/items',
       'PATCH */api/v1/admin/items/:id',
       'DELETE */api/v1/admin/items/:id',
