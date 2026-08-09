@@ -214,6 +214,11 @@ export interface AdminItemsResponse {
   items: MenuItem[]
 }
 
+/** POST /admin/uploads/images — multipart/form-data, field `file`. */
+export interface UploadImageResponse {
+  imageUrl: string
+}
+
 export interface CreateMenuItemRequest {
   categoryId: string
   name: string

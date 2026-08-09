@@ -1,4 +1,4 @@
-import { API_BASE_PATH, type AdminCategoriesResponse, type AdminItemsResponse, type AdminTableDto, type AdminTablesResponse, type AuthResponse, type CreateCategoryRequest, type CreateMenuItemRequest, type CreateTableRequest, type MenuCategory, type MenuItem, type Restaurant, type UpdateCategoryRequest, type UpdateMenuItemRequest, type UpdateRestaurantRequest, type UpdateTableRequest } from '@kimthanh-tableqr/contracts'
+import { API_BASE_PATH, type AdminCategoriesResponse, type AdminItemsResponse, type AdminTableDto, type AdminTablesResponse, type AuthResponse, type CreateCategoryRequest, type CreateMenuItemRequest, type CreateTableRequest, type MenuCategory, type MenuItem, type Restaurant, type UpdateCategoryRequest, type UpdateMenuItemRequest, type UpdateRestaurantRequest, type UpdateTableRequest, type UploadImageResponse } from '@kimthanh-tableqr/contracts'
 
 export async function loginAdmin(email: string, password: string): Promise<AuthResponse> {
   const response = await fetch(`${API_BASE_PATH}/admin/auth/login`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, password }) })
@@ -16,6 +16,16 @@ async function adminRequest<T>(token: string, path: string, init?: RequestInit):
 }
 export const getCategories = (token: string) => adminRequest<AdminCategoriesResponse>(token, '/admin/categories')
 export const getItems = (token: string) => adminRequest<AdminItemsResponse>(token, '/admin/items')
+export async function uploadMenuImage(token: string, file: File): Promise<UploadImageResponse> {
+  const form = new FormData()
+  form.set('file', file)
+  const response = await fetch(`${API_BASE_PATH}/admin/uploads/images`, { method: 'POST', headers: { Authorization: `Bearer ${token}` }, body: form })
+  if (!response.ok) {
+    const body = await response.json().catch(() => null) as { error?: { message?: string } } | null
+    throw new Error(body?.error?.message ?? 'Không thể tải ảnh lên.')
+  }
+  return response.json() as Promise<UploadImageResponse>
+}
 export const createCategory = (token: string, body: CreateCategoryRequest) => adminRequest<MenuCategory>(token, '/admin/categories', { method: 'POST', body: JSON.stringify(body) })
 export const updateCategory = (token: string, id: string, body: UpdateCategoryRequest) => adminRequest<MenuCategory>(token, `/admin/categories/${id}`, { method: 'PATCH', body: JSON.stringify(body) })
 export const deleteCategory = (token: string, id: string) => adminRequest<void>(token, `/admin/categories/${id}`, { method: 'DELETE' })

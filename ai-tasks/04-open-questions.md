@@ -56,6 +56,12 @@ Cân nhắc ở M6: job tự đóng phiên `OPEN` quá 6 giờ.
 
 **Giả định đang dùng:** ghép hai nguồn trên, mỗi món tải 4 ứng viên rồi **chọn bằng mắt** — không để script tự quyết, vì metadata không đủ tin. Món nào không có ảnh đúng thì **đổi món trong fixture** (đúng quy tắc ở `ai-docs/08 §5`), không dùng ảnh gần đúng.
 
+### Q10 — Thư viện ảnh chia sẻ giữa các quán?
+
+**Ý tưởng người dùng:** chủ quán chọn ảnh món từ nguồn miễn phí có giấy phép rõ ràng, đồng thời ảnh họ tải lên có thể trở thành nguồn cho quán khác.
+
+**Để sau MVP:** hệ thống hiện là một quán/một deploy và ảnh BE-09 nằm trên ổ đĩa cục bộ, nên không thể chia sẻ giữa deploy. Tính năng này cần kho đối tượng tập trung, mô hình đa quán, duyệt/opt-in của người tải và metadata giấy phép/tác giả. Không lấy ảnh trực tiếp từ Google Search vì kết quả không đồng nghĩa được phép tái sử dụng. Khi làm, ưu tiên nhà cung cấp có license/API rõ ràng hoặc thư viện cộng đồng có xác nhận quyền chia sẻ.
+
 **Cần người dùng quyết** — ba đường:
 
 1. **Xin API key Unsplash** (miễn phí, ~2 phút ở unsplash.com/developers). Chất lượng tốt nhất trên mỗi công bỏ ra.

@@ -5,6 +5,11 @@ import type { Response } from 'express'
 export class ApiExceptionFilter implements ExceptionFilter {
   catch(exception: unknown, host: ArgumentsHost) {
     const response = host.switchToHttp().getResponse<Response>()
+    const isFileTooLarge = typeof exception === 'object' && exception !== null && 'code' in exception && exception.code === 'LIMIT_FILE_SIZE'
+    if (isFileTooLarge) {
+      response.status(HttpStatus.BAD_REQUEST).json({ error: { code: 'VALIDATION_ERROR', message: 'Ảnh tối đa 5 MB.', details: null } })
+      return
+    }
     const isHttpException = exception instanceof HttpException
     const status = isHttpException ? exception.getStatus() : HttpStatus.INTERNAL_SERVER_ERROR
     const body = isHttpException ? exception.getResponse() : null

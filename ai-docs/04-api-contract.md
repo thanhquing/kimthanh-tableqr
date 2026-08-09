@@ -232,6 +232,7 @@ Request `{ "email": "...", "password": "..." }` → **200** `{ "token": "...", "
 | Method | Path | Ghi chú |
 | --- | --- | --- |
 | `GET` | `/admin/items?categoryId=` | Gồm cả món `isAvailable=false` |
+| `POST` | `/admin/uploads/images` | `multipart/form-data`, field `file`; owner-only. Chỉ JPG/PNG/WebP, tối đa 5 MB → `{ imageUrl }` WebP đã tối ưu. |
 | `POST` | `/admin/items` | `{ categoryId, name, description, priceVnd, imageUrl, sortOrder }` |
 | `PATCH` | `/admin/items/:id` | Mọi trường optional; dùng cả cho toggle nhanh `{ isAvailable }` |
 | `DELETE` | `/admin/items/:id` | Soft delete — đơn cũ đã snapshot nên không ảnh hưởng |

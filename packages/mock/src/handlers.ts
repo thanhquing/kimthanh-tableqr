@@ -241,6 +241,22 @@ export function createHandlers(options: HandlerOptions = {}): HttpHandler[] {
         return HttpResponse.json(store.getItems(new URL(request.url).searchParams.get('categoryId') ?? undefined))
       }),
     ),
+    http.post(`${api}/admin/uploads/images`, ({ request }) =>
+      execute(request, chaosController, async () => {
+        requireRole(request, ['owner'])
+        const form = await request.formData()
+        const value = form.get('file')
+        if (!value || typeof value !== 'object' || !('size' in value) || !('type' in value)) {
+          throw validationError({ file: 'Chọn một ảnh món để tải lên.' })
+        }
+        const file = value as { size: number; type: string }
+        if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
+          throw validationError({ file: 'Chỉ nhận ảnh JPG, PNG hoặc WebP.' })
+        }
+        if (file.size > 5 * 1024 * 1024) throw validationError({ file: 'Ảnh tối đa 5 MB.' })
+        return HttpResponse.json({ imageUrl: '/menu-images/ca-phe-sua-da.jpg' }, { status: 201 })
+      }),
+    ),
     http.post(`${api}/admin/items`, ({ request }) =>
       execute(request, chaosController, async () => {
         requireRole(request, ['owner'])

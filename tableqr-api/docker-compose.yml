@@ -19,10 +19,12 @@ services:
     environment:
       DATABASE_URL: postgresql://tableqr:tableqr@db:5432/tableqr?schema=public
       PORT: 3000
+      UPLOAD_DIR: /app/uploads
     depends_on:
       db:
         condition: service_healthy
     ports: ["3000:3000"]
+    volumes: [./uploads:/app/uploads]
     healthcheck:
       test: ["CMD-SHELL", "wget -qO- http://localhost:3000/api/v1/healthz >/dev/null || exit 1"]
       interval: 10s

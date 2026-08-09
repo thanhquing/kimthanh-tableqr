@@ -6,15 +6,15 @@
 
 ## Current task
 
-> ### `BE-09` — Upload ảnh món
+> ### `BE-10` — Script verify cURL
 >
-> **Mốc:** M6 · **Trạng thái:** BLOCKED
+> **Mốc:** M6 · **Trạng thái:** TODO
 >
-> Chi tiết đầy đủ: [08-api-task-list.md § BE-09](08-api-task-list.md)
+> Chi tiết đầy đủ: [08-api-task-list.md § BE-10](08-api-task-list.md)
 >
 > **Đọc trước khi làm:** [`ai-tasks/08-api-task-list.md`](08-api-task-list.md), [`ai-docs/04-api-contract.md`](../ai-docs/04-api-contract.md), [`ai-docs/03-domain-model.md`](../ai-docs/03-domain-model.md).
 >
-> **Chờ quyết định:** nơi lưu ảnh (đĩa cục bộ hay S3-compatible) trước khi triển khai upload/resize.
+> **Xong khi:** `scripts/verify-flow-*.sh` kiểm toàn bộ luồng mở phiên → gọi món → bếp → thanh toán → reset → quét lại.
 
 ---
 
@@ -22,6 +22,7 @@
 
 | Task | Ngày | Ghi chú |
 | --- | --- | --- |
+| `BE-09` — Upload ảnh món | 2026-08-09 | Owner upload JPG/PNG/WebP ≤5 MB; Sharp tạo WebP 480×270 local `/uploads/`, cache 30 ngày. Form admin có upload, preview và retry; Docker test JPEG 83 KB → WebP 14,8 KB, chặn MIME sai 400. |
 | `BE-08` — Logic tính tiền dùng chung | 2026-08-09 | Guest và staff dùng helper import từ `packages/contracts`; Docker build/runtime và endpoint tổng tiền đã kiểm tra. |
 | `BE-05` — Staff module | 2026-08-09 | JWT/role guard; Docker test order/table, transition 200/409, pay/close/call 200. |
 | `BE-04` — Guest module | 2026-08-09 | 4 endpoint Docker-tested; session race-safe, snapshot giá, idempotency DB 60 giây, call PENDING không trùng và rate limit QR/bàn. |
@@ -74,7 +75,7 @@
 
 ## Tiếp theo (theo thứ tự, không đảo)
 
-`BE-09`…`BE-13` (BE-09 đang chờ quyết định nơi lưu ảnh).
+`BE-10`…`BE-13`.
 
 Cổng M1→M2 đã đạt ngày 2026-08-02: đối chiếu xong 28 handler M1 ở bảng cuối `ai-docs/04`, dòng 29 là SSE để M7; prototype đã duyệt; 3 package M1 build sạch.
 

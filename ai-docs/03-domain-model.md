@@ -65,7 +65,7 @@ Tài khoản nội bộ, không có tài khoản khách. `STAFF` chỉ có `pinH
 | `name` | string | |
 | `description` | string \| null | |
 | `priceVnd` | int | **Số nguyên đồng.** 45000 nghĩa là 45.000 ₫ |
-| `imageUrl` | string \| null | |
+| `imageUrl` | string \| null | URL ảnh menu; BE-09 lưu local tại `/uploads/`, WebP 480 × 270 |
 | `isAvailable` | boolean | `false` = "Hết món" |
 | `sortOrder` | int | |
 
