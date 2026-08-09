@@ -2,6 +2,7 @@ import { HttpException, Injectable } from '@nestjs/common'
 import { Prisma } from '@prisma/client'
 import { PrismaService } from '../prisma.service'
 import { GuestRateLimitService } from './guest-rate-limit.service'
+import { calcOrderTotalFromContracts, calcSessionTotalFromContracts } from '../common/totals'
 
 type CreateOrderBody = { note?: unknown; items?: unknown }
 type CreateCallBody = { type?: unknown }
@@ -43,8 +44,9 @@ export class GuestService {
     const session = await this.prisma.tableSession.findUnique({ where: { id: sessionId }, include: { orders: { include: { items: true }, orderBy: { sequenceNo: 'asc' } } } })
     if (!session || session.status !== 'OPEN') fail(409, 'SESSION_CLOSED', 'Phiên bàn đã kết thúc.')
     const openSession = session!
-    const orders = openSession.orders.map((order) => this.orderDto(order))
-    return { session: { id: openSession.id, status: openSession.status, totalVnd: orders.filter((order) => order.status !== 'CANCELLED').reduce((sum, order) => sum + order.totalVnd, 0) }, orders }
+    const orders = await Promise.all(openSession.orders.map((order) => this.orderDto(order)))
+    const totalVnd = await calcSessionTotalFromContracts(openSession.orders.map((order) => ({ status: order.status, items: order.items })))
+    return { session: { id: openSession.id, status: openSession.status, totalVnd }, orders }
   }
 
   async createOrder(sessionId: string, requestId: string | undefined, body: CreateOrderBody) {
@@ -54,7 +56,7 @@ export class GuestService {
     return this.prisma.$transaction(async (tx) => {
       await tx.guestOrderRequest.deleteMany({ where: { createdAt: { lt: new Date(Date.now() - 60_000) } } })
       const existing = await tx.guestOrderRequest.findUnique({ where: { sessionId_requestId: { sessionId, requestId: safeRequestId } } })
-      if (existing) return { order: this.orderDto(await tx.order.findUniqueOrThrow({ where: { id: existing.orderId }, include: { items: true } })), reused: true }
+      if (existing) return { order: await this.orderDto(await tx.order.findUniqueOrThrow({ where: { id: existing.orderId }, include: { items: true } })), reused: true }
       const session = await tx.tableSession.findUnique({ where: { id: sessionId } })
       if (!session || session.status !== 'OPEN') fail(409, 'SESSION_CLOSED', 'Phiên bàn đã kết thúc.')
       this.rateLimit.take(`table:${session.tableId}`, 10)
@@ -66,7 +68,7 @@ export class GuestService {
       const max = await tx.order.aggregate({ where: { sessionId }, _max: { sequenceNo: true } })
       const order = await tx.order.create({ data: { sessionId, tableId: session.tableId, sequenceNo: (max._max.sequenceNo ?? 0) + 1, note: typeof body.note === 'string' ? body.note : null, items: { create: lines.map((line) => { const item = menuItems.find((candidate) => candidate.id === line.menuItemId)!; return { menuItemId: item.id, nameSnapshot: item.name, unitPriceVndSnapshot: item.priceVnd, quantity: line.quantity as number, note: typeof line.note === 'string' ? line.note : null } }) } }, include: { items: true } })
       await tx.guestOrderRequest.create({ data: { sessionId, requestId: safeRequestId, orderId: order.id } })
-      return { order: this.orderDto(order), reused: false }
+      return { order: await this.orderDto(order), reused: false }
     })
   }
 
@@ -80,8 +82,8 @@ export class GuestService {
     return { call: { id: call.id, type: call.type, status: call.status, createdAt: call.createdAt }, reused: Boolean(existing) }
   }
 
-  private orderDto(order: { id: string; sequenceNo: number; status: string; createdAt: Date; note: string | null; items: Array<{ id: string; menuItemId: string; nameSnapshot: string; unitPriceVndSnapshot: number; quantity: number; note: string | null }> }) {
+  private async orderDto(order: { id: string; sequenceNo: number; status: string; createdAt: Date; note: string | null; items: Array<{ id: string; menuItemId: string; nameSnapshot: string; unitPriceVndSnapshot: number; quantity: number; note: string | null }> }) {
     const items = order.items.map(({ id, menuItemId, nameSnapshot, unitPriceVndSnapshot, quantity, note }) => ({ id, menuItemId, nameSnapshot, unitPriceVndSnapshot, quantity, note, lineTotalVnd: unitPriceVndSnapshot * quantity }))
-    return { id: order.id, sequenceNo: order.sequenceNo, status: order.status, createdAt: order.createdAt, note: order.note, totalVnd: items.reduce((sum, item) => sum + item.lineTotalVnd, 0), items }
+    return { id: order.id, sequenceNo: order.sequenceNo, status: order.status, createdAt: order.createdAt, note: order.note, totalVnd: await calcOrderTotalFromContracts(order.items), items }
   }
 }

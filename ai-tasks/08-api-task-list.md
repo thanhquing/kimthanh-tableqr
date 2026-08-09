@@ -55,10 +55,12 @@ Hoàn thành 2026-08-09: route staff được JWT/role guard bảo vệ; Docker 
 ### `BE-06` — Admin module · DONE
 CRUD danh mục / món / bàn / thông tin quán. Sinh `qrToken` bằng CSPRNG ≥ 16 ký tự. **Chặn mọi đường đổi `qrToken`.** Xoá món = soft delete. Chặn xoá bàn đang có session `OPEN`, chặn xoá danh mục còn món.
 
-### `BE-07` — Xử lý lỗi thống nhất · TODO
+### `BE-07` — Xử lý lỗi thống nhất · DONE
 Exception filter trả đúng shape `{ error: { code, message, details } }` với `message` **tiếng Việt** như đã ghi ở `ai-docs/04`.
 
-### `BE-08` — Logic tính tiền dùng chung · BLOCKED
+Hoàn thành 2026-08-09: global exception filter đã được lint/typecheck và Docker kiểm tra cho lỗi 401 cùng lỗi server.
+
+### `BE-08` — Logic tính tiền dùng chung · TODO
 API import `calcOrderTotal` / `calcSessionTotal` từ `packages/contracts` — **không viết lại**. FE và BE không được phép cộng ra hai con số khác nhau.
 
 ### `BE-09` — Upload ảnh món · BLOCKED
