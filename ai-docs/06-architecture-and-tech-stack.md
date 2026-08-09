@@ -12,7 +12,7 @@ pnpm workspace. Node ≥ 20.19 (dùng 22, xem `.nvmrc`), `packageManager: pnpm@1
 | `tableqr-guest` | App khách, mobile-first, không đăng nhập | Vite + React SPA | M2 |
 | `tableqr-staff` | Màn hình bếp/quầy, tablet-first | Vite + React SPA | M3 |
 | `tableqr-admin` | Quản trị menu, bàn, mã QR | Vite + React SPA | M4 |
-| `tableqr-api` | Backend | NestJS + Prisma + PostgreSQL | **M6 — BE-00 hoàn thành, đang làm BE-01** |
+| `tableqr-api` | Backend | NestJS + Prisma + PostgreSQL | **M6 — BE-00/BE-01 hoàn thành, đang làm BE-02** |
 
 ## Stack
 

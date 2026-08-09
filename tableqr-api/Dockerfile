@@ -1,7 +1,7 @@
 FROM node:22-alpine AS build
 WORKDIR /app
 
-RUN corepack enable
+RUN apk add --no-cache openssl && corepack enable
 
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY tableqr-api/package.json ./tableqr-api/package.json
@@ -16,6 +16,8 @@ FROM node:22-alpine
 WORKDIR /app
 
 ENV NODE_ENV=production
+
+RUN apk add --no-cache openssl
 
 COPY --from=build /app/node_modules ./node_modules
 COPY --from=build /app/tableqr-api/node_modules ./tableqr-api/node_modules

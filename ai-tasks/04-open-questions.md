@@ -8,12 +8,6 @@ Khi có câu trả lời: cập nhật `ai-docs` liên quan, ghi ngày chốt v�
 
 ## Đang mở
 
-### Q10 — Docker Desktop chưa sẵn sàng để kiểm thử migration BE-01
-
-Schema Prisma và migration SQL đã hoàn thiện, nhưng `docker compose build`/`docker info` đều không kết nối được tới Docker daemon sau khi đã mở Docker Desktop (2026-08-09).
-
-**Giả định đang dùng:** không sửa migration chỉ để bỏ qua bước kiểm thử database. Khi daemon sẵn sàng, chạy `docker compose -f tableqr-api/docker-compose.yml up --build` và xác nhận migration `20260809000000_init` được áp dụng trước khi mở `BE-02`.
-
 ### Q1 — Đã quyết định chuyển "Reset bàn" thành đóng phiên thay vì xoá dữ liệu. Có đúng ý không?
 
 Mô tả ban đầu viết *"toàn bộ dữ liệu order của bàn đó bị xóa"*. Hệ thống đang làm: đóng `TableSession`, giữ nguyên đơn.
@@ -85,3 +79,4 @@ Cân nhắc ở M6: job tự đóng phiên `OPEN` quá 6 giờ.
 | 2026-08-01 | Báo cáo doanh thu / món bán chạy? | **Không** trong MVP |
 | 2026-08-01 | Gọi thêm món nhiều lần trong 1 phiên? | **Có** |
 | 2026-08-01 | Nút "Gọi nhân viên"? | **Có** |
+| 2026-08-09 | Kiểm thử migration BE-01 | Docker Desktop đã chạy; migration `20260809000000_init` áp dụng thành công trên PostgreSQL 15, API readiness 200. |
