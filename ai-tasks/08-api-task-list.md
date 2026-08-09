@@ -84,7 +84,7 @@ Hoàn thành 2026-08-09: kiểm đủ luồng guest/staff với API Docker, gồ
 
 Hoàn thành 2026-08-09: endpoint SSE xác thực JWT (EventSource gửi `access_token` query), phát đủ bốn event sau khi dữ liệu đã ghi; hook staff nhận/merge event và fallback poll sau 3 lỗi liên tiếp. Docker flow xác nhận đủ bốn event cùng luồng guest → staff → close.
 
-### `BE-12a` — **M7a**: nối lát cắt dọc — chỉ luồng khách · BLOCKED
+### `BE-12a` — **M7a**: nối lát cắt dọc — chỉ luồng khách · DONE
 Chỉ `tableqr-guest` đặt `VITE_USE_MOCK=false`. Staff và admin **vẫn chạy mock**.
 
 Đi hết: quét QR → mở phiên → xem menu → gửi đơn → gọi thêm → xin tính tiền, trên API thật.
@@ -92,6 +92,15 @@ Chỉ `tableqr-guest` đặt `VITE_USE_MOCK=false`. Staff và admin **vẫn ch�
 Đây là nơi mọi lệch contract lộ ra. Nối một app tại một thời điểm để biết chính xác lỗi ở đâu; nối cả ba cùng lúc thì ba app cùng hỏng.
 
 > Nếu phải sửa component ở bước này thì tầng mock ở M1 đã làm sai contract. Sửa cho khớp `ai-docs/04`, **và ghi lại nguyên nhân** — cùng loại lỗi đó gần như chắc chắn còn nằm ở hai app kia.
+
+Hoàn thành 2026-08-09: guest mặc định chạy `VITE_USE_MOCK=false` và giữ base
+URL cùng origin `/api/v1`; Vite proxy `/api`, `/menu-images`, `/uploads` tới API
+Docker cổng 3000. Không sửa component: mở phiên, xem menu, gửi đơn có
+idempotency, gọi nhân viên và xin tính tiền đều dùng nguyên client/DTO M2.
+Script flow chạy qua chính proxy đã PASS. Phát hiện lệch asset từ M1: fixture
+seed trả URL `/menu-images/*` nhưng API chưa phục vụ ảnh, nên bổ sung static
+route và copy asset vào Docker image; đây không ảnh hưởng staff/admin. Hai app
+đó vẫn dùng mock.
 
 ### `BE-12b` — **M7b**: nối nốt staff + admin · BLOCKED
 Sau khi `BE-12a` sạch. Xác nhận MSW **không** lọt vào production bundle của cả ba app.

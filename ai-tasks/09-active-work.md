@@ -6,15 +6,15 @@
 
 ## Current task
 
-> ### `BE-11` — SSE realtime
+> ### `BE-12a` — M7a: nối lát cắt dọc — chỉ luồng khách
 >
-> **Mốc:** M7b · **Trạng thái:** DONE
+> **Mốc:** M7a · **Trạng thái:** DONE
 >
-> Chi tiết đầy đủ: [08-api-task-list.md § BE-11](08-api-task-list.md)
+> Chi tiết đầy đủ: [08-api-task-list.md § BE-12a](08-api-task-list.md)
 >
 > **Đọc trước khi làm:** [`ai-tasks/08-api-task-list.md`](08-api-task-list.md), [`ai-docs/04-api-contract.md`](../ai-docs/04-api-contract.md), [`ai-docs/03-domain-model.md`](../ai-docs/03-domain-model.md).
 >
-> **Xong:** endpoint SSE JWT, bốn event đúng contract, hook `useOrderStream()` nhận event/fallback poll sau 3 lỗi; Docker flow xác nhận cả bốn event.
+> **Xong:** guest mặc định tắt MSW, gọi API thật qua Vite proxy; API phục vụ cả ảnh menu fixture. Không phải sửa component hay contract.
 
 ---
 
@@ -22,6 +22,7 @@
 
 | Task | Ngày | Ghi chú |
 | --- | --- | --- |
+| `BE-12a` — nối lát cắt khách | 2026-08-09 | Guest chạy API thật qua Vite proxy; menu asset, mở phiên, gửi đơn, gọi nhân viên/xin bill đã kiểm qua proxy. Staff/admin vẫn mock. |
 | `BE-11` — SSE realtime | 2026-08-09 | `GET /staff/stream` có JWT, phát `order.created`, `order.status_changed`, `call.created`, `session.closed`; hook staff merge event, invalidate call/table liên quan và fallback polling sau 3 lỗi liên tiếp. Docker flow bắt đủ 4 event. |
 | `BE-10` — Script verify cURL | 2026-08-09 | `verify-flow-01-guest-order.sh` kiểm luồng guest/staff qua cURL: dọn bàn B01, mở phiên, order/idempotency, gọi thêm, gọi nhân viên, bếp chuyển `NEW → PREPARING → SERVED`, tính tiền, close, `SESSION_CLOSED`, rồi quét lại thấy phiên mới rỗng. |
 | `BE-09` — Upload ảnh món | 2026-08-09 | Owner upload JPG/PNG/WebP ≤5 MB; Sharp tạo WebP 480×270 local `/uploads/`, cache 30 ngày. Form admin có upload, preview và retry; Docker test JPEG 83 KB → WebP 14,8 KB, chặn MIME sai 400. |
@@ -77,7 +78,7 @@
 
 ## Tiếp theo (theo thứ tự, không đảo)
 
-`BE-12a`…`BE-13`.
+`BE-12b` → `BE-13`.
 
 Cổng M1→M2 đã đạt ngày 2026-08-02: đối chiếu xong 28 handler M1 ở bảng cuối `ai-docs/04`, dòng 29 là SSE để M7; prototype đã duyệt; 3 package M1 build sạch.
 

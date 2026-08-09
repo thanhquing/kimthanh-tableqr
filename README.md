@@ -40,7 +40,15 @@ pnpm dev:staff      # http://localhost:5174
 pnpm dev:admin      # http://localhost:5175
 ```
 
-Giai đoạn đầu cả 3 app chạy trên dữ liệu giả (MSW) — không cần backend, không cần database.
+Để chạy lát cắt khách trên API thật, khởi động backend trước rồi mở app khách:
+
+```bash
+docker compose -f tableqr-api/docker-compose.yml up --build
+pnpm dev:guest      # http://localhost:5173/t/qr-ban-01-a7f3k9m2xp
+```
+
+`tableqr-guest` mặc định gọi API thật qua Vite proxy; `tableqr-staff` và
+`tableqr-admin` vẫn dùng dữ liệu giả (MSW) cho đến M7b.
 
 ## Trạng thái
 

@@ -7,6 +7,7 @@ import { ApiExceptionFilter } from './common/api-exception.filter'
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule)
   app.setGlobalPrefix('api/v1')
+  app.useStaticAssets(process.env.MENU_IMAGE_DIR ?? join(process.cwd(), '../packages/mock/assets'), { prefix: '/menu-images/', maxAge: '30d', immutable: true })
   app.useStaticAssets(process.env.UPLOAD_DIR ?? join(process.cwd(), 'uploads'), { prefix: '/uploads/', maxAge: '30d', immutable: true })
   app.useGlobalFilters(new ApiExceptionFilter())
   app.enableShutdownHooks()

@@ -9,6 +9,7 @@ COPY tableqr-api/package.json ./tableqr-api/package.json
 RUN pnpm install --frozen-lockfile --filter tableqr-api...
 
 COPY packages/contracts ./packages/contracts
+COPY packages/mock/assets ./packages/mock/assets
 RUN pnpm --filter @kimthanh-tableqr/contracts build
 COPY tableqr-api ./tableqr-api
 WORKDIR /app/tableqr-api
@@ -25,6 +26,7 @@ RUN apk add --no-cache openssl
 COPY --from=build /app/node_modules ./node_modules
 COPY --from=build /app/tableqr-api/node_modules ./tableqr-api/node_modules
 COPY --from=build /app/packages/contracts ./packages/contracts
+COPY --from=build /app/packages/mock/assets ./packages/mock/assets
 COPY --from=build /app/tableqr-api/dist ./tableqr-api/dist
 COPY --from=build /app/tableqr-api/prisma ./tableqr-api/prisma
 
