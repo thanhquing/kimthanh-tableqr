@@ -6,11 +6,11 @@
 
 ## Current task
 
-> ### `BE-06` — Admin module
+> ### `BE-07` — Xử lý lỗi thống nhất
 >
 > **Mốc:** M6 · **Trạng thái:** TODO
 >
-> Chi tiết đầy đủ: [08-api-task-list.md § BE-06](08-api-task-list.md)
+> Chi tiết đầy đủ: [08-api-task-list.md § BE-07](08-api-task-list.md)
 >
 > **Đọc trước khi làm:** [`ai-tasks/08-api-task-list.md`](08-api-task-list.md), [`ai-docs/04-api-contract.md`](../ai-docs/04-api-contract.md), [`ai-docs/03-domain-model.md`](../ai-docs/03-domain-model.md).
 >

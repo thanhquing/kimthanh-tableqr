@@ -28,7 +28,7 @@ export class GuestService {
     const [restaurant, categories, items] = await Promise.all([
       this.prisma.restaurant.findFirstOrThrow(),
       this.prisma.menuCategory.findMany({ where: { isActive: true }, orderBy: { sortOrder: 'asc' } }),
-      this.prisma.menuItem.findMany({ where: { category: { isActive: true } }, orderBy: { sortOrder: 'asc' } }),
+      this.prisma.menuItem.findMany({ where: { deletedAt: null, category: { isActive: true } }, orderBy: { sortOrder: 'asc' } }),
     ])
     return {
       restaurant: { id: restaurant.id, name: restaurant.name, logoUrl: restaurant.logoUrl },
@@ -60,7 +60,7 @@ export class GuestService {
       this.rateLimit.take(`table:${session.tableId}`, 10)
       const lines = body.items as Array<{ menuItemId?: unknown; quantity?: unknown; note?: unknown }>
       if (lines.some((line) => typeof line.menuItemId !== 'string' || !Number.isInteger(line.quantity) || (line.quantity as number) < 1)) fail(400, 'VALIDATION_ERROR', 'Dữ liệu món không hợp lệ.', { fields: { items: 'Mỗi món cần mã và số lượng nguyên từ 1.' } })
-      const menuItems = await tx.menuItem.findMany({ where: { id: { in: lines.map((line) => line.menuItemId as string) } } })
+      const menuItems = await tx.menuItem.findMany({ where: { id: { in: lines.map((line) => line.menuItemId as string) }, deletedAt: null } })
       const unavailable = menuItems.filter((item) => !item.isAvailable)
       if (menuItems.length !== lines.length || unavailable.length) fail(409, 'ITEMS_UNAVAILABLE', 'Có món vừa hết. Vui lòng chọn món khác.', { unavailableItemIds: unavailable.map((item) => item.id) })
       const max = await tx.order.aggregate({ where: { sessionId }, _max: { sequenceNo: true } })

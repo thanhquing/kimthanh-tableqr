@@ -52,10 +52,10 @@ Hoàn thành 2026-08-09: cả 4 endpoint Guest đã kiểm thử trên Docker; q
 
 Hoàn thành 2026-08-09: route staff được JWT/role guard bảo vệ; Docker test list order/table, chuyển đúng/sai (200/409), pay, close và resolve call đều thành công.
 
-### `BE-06` — Admin module · TODO
+### `BE-06` — Admin module · DONE
 CRUD danh mục / món / bàn / thông tin quán. Sinh `qrToken` bằng CSPRNG ≥ 16 ký tự. **Chặn mọi đường đổi `qrToken`.** Xoá món = soft delete. Chặn xoá bàn đang có session `OPEN`, chặn xoá danh mục còn món.
 
-### `BE-07` — Xử lý lỗi thống nhất · BLOCKED
+### `BE-07` — Xử lý lỗi thống nhất · TODO
 Exception filter trả đúng shape `{ error: { code, message, details } }` với `message` **tiếng Việt** như đã ghi ở `ai-docs/04`.
 
 ### `BE-08` — Logic tính tiền dùng chung · BLOCKED
