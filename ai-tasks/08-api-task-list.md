@@ -79,8 +79,10 @@ Hoàn thành 2026-08-09: kiểm đủ luồng guest/staff với API Docker, gồ
 
 ## M7 — Nối FE ↔ BE
 
-### `BE-11` — SSE realtime · BLOCKED
+### `BE-11` — SSE realtime · DONE
 `GET /staff/stream`. Event: `order.created`, `order.status_changed`, `call.created`, `session.closed`. Client thay implementation trong `useOrderStream()` — **không sửa component nào**. Fallback về polling nếu SSE lỗi 3 lần liên tiếp.
+
+Hoàn thành 2026-08-09: endpoint SSE xác thực JWT (EventSource gửi `access_token` query), phát đủ bốn event sau khi dữ liệu đã ghi; hook staff nhận/merge event và fallback poll sau 3 lỗi liên tiếp. Docker flow xác nhận đủ bốn event cùng luồng guest → staff → close.
 
 ### `BE-12a` — **M7a**: nối lát cắt dọc — chỉ luồng khách · BLOCKED
 Chỉ `tableqr-guest` đặt `VITE_USE_MOCK=false`. Staff và admin **vẫn chạy mock**.

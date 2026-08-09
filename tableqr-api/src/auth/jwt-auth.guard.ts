@@ -11,7 +11,8 @@ export class JwtAuthGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest<RequestWithUser>()
-    const token = request.headers.authorization?.replace(/^Bearer\s+/i, '')
+    const queryToken = typeof request.query.access_token === 'string' ? request.query.access_token : undefined
+    const token = request.headers.authorization?.replace(/^Bearer\s+/i, '') ?? queryToken
     if (!token) throw new UnauthorizedException('Thiếu token đăng nhập.')
     try {
       const payload = await this.jwt.verifyAsync<{

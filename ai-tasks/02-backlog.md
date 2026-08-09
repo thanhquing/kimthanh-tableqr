@@ -174,4 +174,4 @@ Hoàn thiện checklist test ở mục D của `ai-docs/07`. Test logic thuần,
 | `WS-05` | Rà soát responsive & a11y | M5 | **DONE** — automated quality audit; device/visual checks deferred |
 | `WS-06` | Bổ sung test logic | M5 | **DONE** — D checklist covered by 61 existing tests |
 | `WS-07` | Ngân sách hiệu năng | M5 | **DONE** — 74,429 B gzip, no MSW production artifact |
-| `BE-00`…`BE-13` | Backend + nối FE↔BE | M6–M7 | **IN PROGRESS** — M6 (`BE-00` đến `BE-10`) DONE 2026-08-09; tiếp theo `BE-11` |
+| `BE-00`…`BE-13` | Backend + nối FE↔BE | M6–M7 | **IN PROGRESS** — M6 (`BE-00` đến `BE-10`) + SSE `BE-11` DONE 2026-08-09; tiếp theo `BE-12a` |

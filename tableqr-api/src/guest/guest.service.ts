@@ -3,6 +3,7 @@ import { Prisma } from '@prisma/client'
 import { PrismaService } from '../prisma.service'
 import { GuestRateLimitService } from './guest-rate-limit.service'
 import { calcOrderTotalFromContracts, calcSessionTotalFromContracts } from '../common/totals'
+import { RealtimeService } from '../realtime/realtime.service'
 
 type CreateOrderBody = { note?: unknown; items?: unknown }
 type CreateCallBody = { type?: unknown }
@@ -10,7 +11,7 @@ function fail(status: number, code: string, message: string, details: unknown = 
 
 @Injectable()
 export class GuestService {
-  constructor(private readonly prisma: PrismaService, private readonly rateLimit: GuestRateLimitService) {}
+  constructor(private readonly prisma: PrismaService, private readonly rateLimit: GuestRateLimitService, private readonly realtime: RealtimeService) {}
 
   async bootstrap(qrToken: string) {
     this.rateLimit.take(`qr:${qrToken}`, 20)
@@ -53,7 +54,7 @@ export class GuestService {
     if (!requestId) fail(400, 'VALIDATION_ERROR', 'Thiếu mã yêu cầu gửi đơn.', { fields: { requestId: 'Thiếu X-Request-Id.' } })
     const safeRequestId = requestId!
     if (!Array.isArray(body.items) || body.items.length === 0) fail(400, 'EMPTY_ORDER', 'Vui lòng chọn ít nhất một món.')
-    return this.prisma.$transaction(async (tx) => {
+    const result = await this.prisma.$transaction(async (tx) => {
       await tx.guestOrderRequest.deleteMany({ where: { createdAt: { lt: new Date(Date.now() - 60_000) } } })
       const existing = await tx.guestOrderRequest.findUnique({ where: { sessionId_requestId: { sessionId, requestId: safeRequestId } } })
       if (existing) return { order: await this.orderDto(await tx.order.findUniqueOrThrow({ where: { id: existing.orderId }, include: { items: true } })), reused: true }
@@ -70,6 +71,8 @@ export class GuestService {
       await tx.guestOrderRequest.create({ data: { sessionId, requestId: safeRequestId, orderId: order.id } })
       return { order: await this.orderDto(order), reused: false }
     })
+    if (!result.reused) await this.realtime.publishOrderCreated(result.order.id)
+    return result
   }
 
   async createCall(sessionId: string, body: CreateCallBody) {
@@ -79,6 +82,7 @@ export class GuestService {
     const callType = body.type as 'CALL_STAFF' | 'REQUEST_BILL'
     const existing = await this.prisma.staffCall.findFirst({ where: { sessionId, type: callType, status: 'PENDING' } })
     const call = existing ?? await this.prisma.staffCall.create({ data: { sessionId, tableId: session!.tableId, type: callType } })
+    if (!existing) await this.realtime.publishCallCreated(call.id)
     return { call: { id: call.id, type: call.type, status: call.status, createdAt: call.createdAt }, reused: Boolean(existing) }
   }
 

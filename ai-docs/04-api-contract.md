@@ -211,7 +211,7 @@ Chi tiết phiên: tất cả các lần gọi + tổng bill. Shape giống `GET
 Request `{ "status": "DONE" }` → **200**
 
 ### `GET /api/v1/staff/stream` — **chỉ từ M7**
-SSE. Event: `order.created`, `order.status_changed`, `call.created`, `session.closed`. Data là payload cùng shape với các endpoint tương ứng. Giai đoạn mock (M2–M5) **không** có endpoint này; client dùng polling `GET /staff/orders?since=`.
+SSE. Event: `order.created`, `order.status_changed`, `call.created`, `session.closed`. Data là payload cùng shape với các endpoint tương ứng. Vì `EventSource` không gửi được header `Authorization`, client gửi JWT qua query `access_token`; endpoint vẫn bắt buộc role `staff` hoặc `owner`. Giai đoạn mock (M2–M5) **không** có endpoint này; client dùng polling `GET /staff/orders?since=`.
 
 ---
 

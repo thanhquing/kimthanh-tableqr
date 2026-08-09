@@ -3,6 +3,7 @@ import { AuthModule } from '../auth/auth.module'
 import { GuestController } from './guest.controller'
 import { GuestRateLimitService } from './guest-rate-limit.service'
 import { GuestService } from './guest.service'
+import { RealtimeModule } from '../realtime/realtime.module'
 
-@Module({ imports: [AuthModule], controllers: [GuestController], providers: [GuestRateLimitService, GuestService] })
+@Module({ imports: [AuthModule, RealtimeModule], controllers: [GuestController], providers: [GuestRateLimitService, GuestService] })
 export class GuestModule {}
