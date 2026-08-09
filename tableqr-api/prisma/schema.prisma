@@ -123,11 +123,25 @@ model Order {
   session    TableSession @relation(fields: [sessionId], references: [id])
   table      DiningTable  @relation(fields: [tableId], references: [id])
   items      OrderItem[]
+  request    GuestOrderRequest?
 
   @@unique([sessionId, sequenceNo], map: "order_session_id_sequence_no_key")
   @@index([createdAt], map: "order_created_at_idx")
   @@index([tableId], map: "order_table_id_idx")
   @@map("order")
+}
+
+model GuestOrderRequest {
+  id        String   @id @default(uuid()) @db.Uuid
+  sessionId String   @map("session_id") @db.Uuid
+  requestId String   @map("request_id")
+  orderId   String   @unique @map("order_id") @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  order     Order    @relation(fields: [orderId], references: [id])
+
+  @@unique([sessionId, requestId], map: "guest_order_request_session_id_request_id_key")
+  @@index([createdAt], map: "guest_order_request_created_at_idx")
+  @@map("guest_order_request")
 }
 
 model OrderItem {

@@ -37,7 +37,7 @@ PIN cho `staff`, email+mật khẩu cho `owner`. JWT, guard theo role. Mật kh�
 
 Hoàn thành 2026-08-09: bcrypt hash, JWT, `JwtAuthGuard`/`RolesGuard`, migration `auth_user`, rate limit 5 lần/phút cho login. Docker kiểm thử staff đúng → 200 và password sai → 401.
 
-### `BE-04` — Guest module · TODO
+### `BE-04` — Guest module · DONE
 4 endpoint `/guest/*`. Điểm cần cẩn thận:
 - `GET /guest/tables/:qrToken` mở phiên: **transaction + xử lý đua** khi hai điện thoại quét cùng lúc — phải ra một session, không phải hai
 - `POST .../orders`: snapshot `nameSnapshot` + `unitPriceVndSnapshot` **phía server**; không bao giờ tin giá client gửi lên
@@ -45,7 +45,9 @@ Hoàn thành 2026-08-09: bcrypt hash, JWT, `JwtAuthGuard`/`RolesGuard`, migratio
 - Idempotency theo `X-Request-Id`, cửa sổ 60s
 - Rate limit theo `qrToken` — chặn spam đơn
 
-### `BE-05` — Staff module · BLOCKED
+Hoàn thành 2026-08-09: cả 4 endpoint Guest đã kiểm thử trên Docker; quét QR tạo/gắn đúng một session, order snapshot giá phía server, idempotency DB 60 giây trả 200 cùng order, call PENDING trùng trả 200. Rate limit theo QR/bàn trong cửa sổ 60 giây.
+
+### `BE-05` — Staff module · TODO
 9 endpoint `/staff/*`. Bảng chuyển trạng thái đơn thực thi **phía server**, không tin UI. `close` session = đặt `CLOSED` + `closedAt`, **không xoá đơn**.
 
 ### `BE-06` — Admin module · BLOCKED
