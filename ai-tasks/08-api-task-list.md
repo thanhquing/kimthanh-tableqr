@@ -60,8 +60,10 @@ Exception filter trả đúng shape `{ error: { code, message, details } }` vớ
 
 Hoàn thành 2026-08-09: global exception filter đã được lint/typecheck và Docker kiểm tra cho lỗi 401 cùng lỗi server.
 
-### `BE-08` — Logic tính tiền dùng chung · TODO
+### `BE-08` — Logic tính tiền dùng chung · DONE
 API import `calcOrderTotal` / `calcSessionTotal` từ `packages/contracts` — **không viết lại**. FE và BE không được phép cộng ra hai con số khác nhau.
+
+Hoàn thành 2026-08-09: guest và staff cùng gọi helper import từ `packages/contracts`; Docker build/runtime đã kiểm tra được workspace dependency và endpoint thực tế.
 
 ### `BE-09` — Upload ảnh món · BLOCKED
 Nhận file, resize (sharp), lưu đĩa hoặc S3-compatible. Giới hạn dung lượng và MIME type. Thay ô nhập URL ở `AD-04`.
