@@ -47,10 +47,12 @@ Hoàn thành 2026-08-09: bcrypt hash, JWT, `JwtAuthGuard`/`RolesGuard`, migratio
 
 Hoàn thành 2026-08-09: cả 4 endpoint Guest đã kiểm thử trên Docker; quét QR tạo/gắn đúng một session, order snapshot giá phía server, idempotency DB 60 giây trả 200 cùng order, call PENDING trùng trả 200. Rate limit theo QR/bàn trong cửa sổ 60 giây.
 
-### `BE-05` — Staff module · TODO
+### `BE-05` — Staff module · DONE
 9 endpoint `/staff/*`. Bảng chuyển trạng thái đơn thực thi **phía server**, không tin UI. `close` session = đặt `CLOSED` + `closedAt`, **không xoá đơn**.
 
-### `BE-06` — Admin module · BLOCKED
+Hoàn thành 2026-08-09: route staff được JWT/role guard bảo vệ; Docker test list order/table, chuyển đúng/sai (200/409), pay, close và resolve call đều thành công.
+
+### `BE-06` — Admin module · TODO
 CRUD danh mục / món / bàn / thông tin quán. Sinh `qrToken` bằng CSPRNG ≥ 16 ký tự. **Chặn mọi đường đổi `qrToken`.** Xoá món = soft delete. Chặn xoá bàn đang có session `OPEN`, chặn xoá danh mục còn món.
 
 ### `BE-07` — Xử lý lỗi thống nhất · BLOCKED

@@ -6,15 +6,15 @@
 
 ## Current task
 
-> ### `BE-05` — Staff module
+> ### `BE-06` — Admin module
 >
 > **Mốc:** M6 · **Trạng thái:** TODO
 >
-> Chi tiết đầy đủ: [08-api-task-list.md § BE-05](08-api-task-list.md)
+> Chi tiết đầy đủ: [08-api-task-list.md § BE-06](08-api-task-list.md)
 >
 > **Đọc trước khi làm:** [`ai-tasks/08-api-task-list.md`](08-api-task-list.md), [`ai-docs/04-api-contract.md`](../ai-docs/04-api-contract.md), [`ai-docs/03-domain-model.md`](../ai-docs/03-domain-model.md).
 >
-> **Xong khi:** 9 endpoint staff có guard, bảng chuyển trạng thái server-side và reset bàn không xoá dữ liệu.
+> **Xong khi:** CRUD menu/bàn/quán đúng contract, qrToken an toàn và các điều kiện chặn xóa hoạt động.
 
 ---
 
@@ -22,6 +22,7 @@
 
 | Task | Ngày | Ghi chú |
 | --- | --- | --- |
+| `BE-05` — Staff module | 2026-08-09 | JWT/role guard; Docker test order/table, transition 200/409, pay/close/call 200. |
 | `BE-04` — Guest module | 2026-08-09 | 4 endpoint Docker-tested; session race-safe, snapshot giá, idempotency DB 60 giây, call PENDING không trùng và rate limit QR/bàn. |
 | `BE-03` — Auth | 2026-08-09 | Staff PIN/owner password bcrypt, JWT + role guards, rate limit 5 lần/phút; Docker test login đúng 200, sai 401. |
 | `BE-02` — Seed | 2026-08-09 | Seed idempotent dùng trực tiếp fixture mock; PostgreSQL xác nhận 1 quán, 4 danh mục, 22 món, 8 bàn, session mẫu 2 đơn/4 item sau hai lần chạy. |
@@ -72,7 +73,7 @@
 
 ## Tiếp theo (theo thứ tự, không đảo)
 
-`BE-05`…`BE-13`.
+`BE-06`…`BE-13`.
 
 Cổng M1→M2 đã đạt ngày 2026-08-02: đối chiếu xong 28 handler M1 ở bảng cuối `ai-docs/04`, dòng 29 là SSE để M7; prototype đã duyệt; 3 package M1 build sạch.
 
