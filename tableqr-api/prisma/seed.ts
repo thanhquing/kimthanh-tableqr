@@ -1,10 +1,14 @@
 import { createHash } from 'node:crypto'
 import { PrismaClient } from '@prisma/client'
+import { hash } from 'bcryptjs'
 import {
+  ADMIN_EMAIL,
+  ADMIN_PASSWORD,
   CATEGORIES,
   MENU_ITEMS,
   RESTAURANT,
   SEEDED_SESSION,
+  STAFF_PIN,
   TABLES,
 } from '@kimthanh-tableqr/mock/fixtures'
 
@@ -27,6 +31,17 @@ async function seed() {
       where: { id: restaurantId },
       update: { name: RESTAURANT.name, logoUrl: RESTAURANT.logoUrl, address: RESTAURANT.address },
       create: { id: restaurantId, name: RESTAURANT.name, logoUrl: RESTAURANT.logoUrl, address: RESTAURANT.address },
+    })
+
+    await tx.authUser.upsert({
+      where: { id: fixtureId('staff-default') },
+      update: { displayName: 'Nhân viên quầy', isActive: true, pinHash: await hash(STAFF_PIN, 12) },
+      create: { id: fixtureId('staff-default'), role: 'STAFF', displayName: 'Nhân viên quầy', pinHash: await hash(STAFF_PIN, 12) },
+    })
+    await tx.authUser.upsert({
+      where: { id: fixtureId('owner-default') },
+      update: { displayName: 'Chủ quán', email: ADMIN_EMAIL, isActive: true, passwordHash: await hash(ADMIN_PASSWORD, 12) },
+      create: { id: fixtureId('owner-default'), role: 'OWNER', displayName: 'Chủ quán', email: ADMIN_EMAIL, passwordHash: await hash(ADMIN_PASSWORD, 12) },
     })
 
     for (const category of CATEGORIES) {

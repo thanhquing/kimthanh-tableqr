@@ -6,15 +6,15 @@
 
 ## Current task
 
-> ### `BE-03` — Auth
+> ### `BE-04` — Guest module
 >
 > **Mốc:** M6 · **Trạng thái:** TODO
 >
-> Chi tiết đầy đủ: [08-api-task-list.md § BE-03](08-api-task-list.md)
+> Chi tiết đầy đủ: [08-api-task-list.md § BE-04](08-api-task-list.md)
 >
-> **Đọc trước khi làm:** [`ai-tasks/08-api-task-list.md`](08-api-task-list.md), [`ai-docs/04-api-contract.md`](../ai-docs/04-api-contract.md), [`packages/mock/src/fixtures.ts`](../packages/mock/src/fixtures.ts).
+> **Đọc trước khi làm:** [`ai-tasks/08-api-task-list.md`](08-api-task-list.md), [`ai-docs/04-api-contract.md`](../ai-docs/04-api-contract.md), [`ai-docs/03-domain-model.md`](../ai-docs/03-domain-model.md).
 >
-> **Xong khi:** PIN staff, email/mật khẩu owner, JWT role guard, password hash và rate limit đăng nhập hoạt động theo contract.
+> **Xong khi:** 4 endpoint `/guest/*` đúng contract, transaction mở session/gửi đơn, snapshot giá và idempotency 60 giây.
 
 ---
 
@@ -22,6 +22,7 @@
 
 | Task | Ngày | Ghi chú |
 | --- | --- | --- |
+| `BE-03` — Auth | 2026-08-09 | Staff PIN/owner password bcrypt, JWT + role guards, rate limit 5 lần/phút; Docker test login đúng 200, sai 401. |
 | `BE-02` — Seed | 2026-08-09 | Seed idempotent dùng trực tiếp fixture mock; PostgreSQL xác nhận 1 quán, 4 danh mục, 22 món, 8 bàn, session mẫu 2 đơn/4 item sau hai lần chạy. |
 | `BE-01` — Prisma schema + migration | 2026-08-09 | Schema snake_case + migration PostgreSQL 15 đã chạy thật trong Docker; partial unique session OPEN, unique/index/check constraints đã xác nhận bằng SQL. |
 | `BE-00` — Khởi tạo NestJS + Prisma + Postgres | 2026-08-09 | NestJS 10 `/api/v1`, Prisma/PostgreSQL Compose, `.env.example`, `healthz`/`readyz`; generate/validate/lint/typecheck/build sạch. Khi DB chưa sẵn sàng: healthz 200, readyz 503; khi Compose chạy: cả hai endpoint 200. |
@@ -70,7 +71,7 @@
 
 ## Tiếp theo (theo thứ tự, không đảo)
 
-`BE-03`…`BE-13`.
+`BE-04`…`BE-13`.
 
 Cổng M1→M2 đã đạt ngày 2026-08-02: đối chiếu xong 28 handler M1 ở bảng cuối `ai-docs/04`, dòng 29 là SSE để M7; prototype đã duyệt; 3 package M1 build sạch.
 

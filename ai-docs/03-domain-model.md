@@ -10,6 +10,8 @@ Restaurant 1──n MenuCategory 1──n MenuItem
      └────n DiningTable 1──n TableSession 1──n Order 1──n OrderItem
                                     │
                                     └──n StaffCall
+
+AuthUser độc lập với các entity nghiệp vụ; chỉ dùng cho nhân viên/chủ quán đăng nhập.
 ```
 
 ---
@@ -40,6 +42,10 @@ Thông tin quán. MVP một bản ghi duy nhất.
 | `sortOrder` | int | Thứ tự hiển thị trên sơ đồ bàn |
 
 > **Tại sao URL dùng `qrToken` chứ không dùng `code`?** Nếu URL là `/t/B01` thì ai cũng đoán được `/t/B02`, `/t/B03` và gọi món cho bàn người khác từ ngoài đường. `qrToken` ngẫu nhiên chặn việc đó mà không cần khách đăng nhập.
+
+### `AuthUser`
+
+Tài khoản nội bộ, không có tài khoản khách. `STAFF` chỉ có `pinHash`; `OWNER` chỉ có `email` và `passwordHash`. Hash dùng bcrypt; tuyệt đối không lưu PIN/mật khẩu thô.
 
 ### `MenuCategory`
 
@@ -127,6 +133,7 @@ type SessionStatus   = 'OPEN' | 'CLOSED'
 type OrderStatus     = 'NEW' | 'PREPARING' | 'SERVED' | 'CANCELLED'
 type StaffCallType   = 'CALL_STAFF' | 'REQUEST_BILL'
 type StaffCallStatus = 'PENDING' | 'DONE'
+type UserRole        = 'STAFF' | 'OWNER'
 ```
 
 Chuyển trạng thái đơn hợp lệ:

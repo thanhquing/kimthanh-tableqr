@@ -32,10 +32,12 @@ Hoàn thành 2026-08-09: schema/migration đã chạy thành công trên Postgre
 ### `BE-02` — Seed · DONE
 Dùng lại đúng fixture của `packages/mock` để dữ liệu dev giống hệt giai đoạn UI. Hoàn thành 2026-08-09: seed idempotent đọc trực tiếp subpath fixture; database mới có 1 quán, 4 danh mục, 22 món, 8 bàn, session mẫu với 2 đơn/4 item.
 
-### `BE-03` — Auth · TODO
+### `BE-03` — Auth · DONE
 PIN cho `staff`, email+mật khẩu cho `owner`. JWT, guard theo role. Mật khẩu/PIN băm bằng argon2 hoặc bcrypt — **không lưu thô**. Rate limit endpoint đăng nhập.
 
-### `BE-04` — Guest module · BLOCKED
+Hoàn thành 2026-08-09: bcrypt hash, JWT, `JwtAuthGuard`/`RolesGuard`, migration `auth_user`, rate limit 5 lần/phút cho login. Docker kiểm thử staff đúng → 200 và password sai → 401.
+
+### `BE-04` — Guest module · TODO
 4 endpoint `/guest/*`. Điểm cần cẩn thận:
 - `GET /guest/tables/:qrToken` mở phiên: **transaction + xử lý đua** khi hai điện thoại quét cùng lúc — phải ra một session, không phải hai
 - `POST .../orders`: snapshot `nameSnapshot` + `unitPriceVndSnapshot` **phía server**; không bao giờ tin giá client gửi lên
