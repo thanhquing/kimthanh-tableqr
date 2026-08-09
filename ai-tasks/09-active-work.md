@@ -6,15 +6,15 @@
 
 ## Current task
 
-> ### `BE-00` — Khởi tạo NestJS + Prisma + Postgres
+> ### `BE-01` — Prisma schema + migration
 >
-> **Mốc:** M6 · **Trạng thái:** TODO
+> **Mốc:** M6 · **Trạng thái:** BLOCKED — Docker Desktop daemon chưa sẵn sàng để kiểm thử migration trên PostgreSQL thật.
 >
-> Chi tiết đầy đủ: [08-api-task-list.md § BE-00](08-api-task-list.md)
+> Chi tiết đầy đủ: [08-api-task-list.md § BE-01](08-api-task-list.md)
 >
-> **Đọc trước khi làm:** [`ai-tasks/08-api-task-list.md`](08-api-task-list.md), [`ai-docs/04-api-contract.md`](../ai-docs/04-api-contract.md), [`ai-docs/06-architecture-and-tech-stack.md`](../ai-docs/06-architecture-and-tech-stack.md).
+> **Đọc trước khi làm:** [`ai-tasks/08-api-task-list.md`](08-api-task-list.md), [`ai-docs/03-domain-model.md`](../ai-docs/03-domain-model.md), [`ai-docs/04-api-contract.md`](../ai-docs/04-api-contract.md).
 >
-> **Xong khi:** NestJS + Prisma + Postgres scaffold có health/ready endpoints, Docker compose và .env example.
+> **Xong khi:** Prisma schema và migration có đầy đủ ràng buộc unique/index theo `BE-01`, và migration đã chạy thành công trên PostgreSQL.
 
 ---
 
@@ -22,6 +22,7 @@
 
 | Task | Ngày | Ghi chú |
 | --- | --- | --- |
+| `BE-00` — Khởi tạo NestJS + Prisma + Postgres | 2026-08-09 | NestJS 10 `/api/v1`, Prisma/PostgreSQL Compose, `.env.example`, `healthz`/`readyz`; generate/validate/lint/typecheck/build sạch. Khi DB chưa sẵn sàng: healthz 200, readyz 503. Docker image chưa build được vì Docker Desktop daemon không chạy. |
 | Cổng M5 → M6 | 2026-08-02 | Lint/test/build workspace pass; guest 74,429 B gzip/no MSW dist; camera/Print Preview/visual checks deferred theo user |
 | `WS-07` — Ngân sách hiệu năng guest | 2026-08-02 | VITE_USE_MOCK=false entry 74,429 B gzip (<150 KB); Vite loại public worker, dist không chứa MSW; lint/typecheck/build sạch |
 | `WS-06` — Bổ sung test logic | 2026-08-02 | 45 contracts + 16 mock tests phủ D: money/cart/session/transition/28 handlers; workspace test sạch |
@@ -67,7 +68,7 @@
 
 ## Tiếp theo (theo thứ tự, không đảo)
 
-`BE-00`…`BE-13`.
+`BE-01`…`BE-13`.
 
 Cổng M1→M2 đã đạt ngày 2026-08-02: đối chiếu xong 28 handler M1 ở bảng cuối `ai-docs/04`, dòng 29 là SSE để M7; prototype đã duyệt; 3 package M1 build sạch.
 

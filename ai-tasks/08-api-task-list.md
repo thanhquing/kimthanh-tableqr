@@ -16,8 +16,8 @@ File này viết sẵn để biết đích đến, giúp các quyết định �
 
 ## M6 — Dựng backend
 
-### `BE-00` — Khởi tạo NestJS + Prisma + Postgres · BLOCKED
-`tableqr-api/` theo pattern `kimthanh-tutor/tutor-api`: NestJS 10, prefix `/api/v1`, `docker-compose.yml` (PostgreSQL 15 + api), `.env.example`, `GET /healthz` + `GET /readyz` (readyz kiểm tra DB).
+### `BE-00` — Khởi tạo NestJS + Prisma + Postgres · DONE
+`tableqr-api/` theo pattern `kimthanh-tutor/tutor-api`: NestJS 10, prefix `/api/v1`, `docker-compose.yml` (PostgreSQL 15 + api), `.env.example`, `GET /healthz` + `GET /readyz` (readyz kiểm tra DB). Hoàn thành 2026-08-09: Prisma generate/validate, lint, typecheck và build đều sạch; endpoint đã kiểm thử khi DB chưa sẵn sàng.
 
 ### `BE-01` — Prisma schema + migration · BLOCKED
 Dựng theo `ai-docs/03-domain-model.md`. Bảng `snake_case`. Bắt buộc:
@@ -26,6 +26,8 @@ Dựng theo `ai-docs/03-domain-model.md`. Bảng `snake_case`. Bắt buộc:
 - Unique `(session_id, sequence_no)` trên `order`
 - Tiền là `INTEGER`, **không** dùng float/decimal
 - Index `order(created_at)` cho màn hình bếp
+
+Schema và migration đã viết, Prisma validate/generate cùng lint/typecheck/build đều sạch. Đang chờ Docker Desktop daemon để chạy migration trên PostgreSQL thật (2026-08-09).
 
 ### `BE-02` — Seed · BLOCKED
 Dùng lại đúng fixture của `packages/mock` để dữ liệu dev giống hệt giai đoạn UI.

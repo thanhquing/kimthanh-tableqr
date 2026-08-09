@@ -3,4 +3,4 @@ packages:
   - "tableqr-guest"
   - "tableqr-staff"
   - "tableqr-admin"
-  # tableqr-api duoc them tu M6 (xem ai-tasks/01-milestones.md)
+  - "tableqr-api"

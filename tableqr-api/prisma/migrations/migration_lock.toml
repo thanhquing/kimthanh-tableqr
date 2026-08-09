@@ -1,0 +1,2 @@
+# Khong sua thu cong: Prisma dung file nay de khoa provider cua migration.
+provider = "postgresql"

@@ -1,0 +1,143 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum SessionStatus {
+  OPEN
+  CLOSED
+}
+
+enum OrderStatus {
+  NEW
+  PREPARING
+  SERVED
+  CANCELLED
+}
+
+enum StaffCallType {
+  CALL_STAFF
+  REQUEST_BILL
+}
+
+enum StaffCallStatus {
+  PENDING
+  DONE
+}
+
+model Restaurant {
+  id      String  @id @default(uuid()) @db.Uuid
+  name    String
+  logoUrl String? @map("logo_url")
+  address String?
+
+  @@map("restaurant")
+}
+
+model DiningTable {
+  id          String         @id @default(uuid()) @db.Uuid
+  code        String         @unique
+  displayName String         @map("display_name")
+  qrToken     String         @unique @map("qr_token")
+  isActive    Boolean        @default(true) @map("is_active")
+  sortOrder   Int            @default(0) @map("sort_order")
+  sessions    TableSession[]
+  orders      Order[]
+  calls       StaffCall[]
+
+  @@map("dining_table")
+}
+
+model MenuCategory {
+  id        String     @id @default(uuid()) @db.Uuid
+  name      String
+  sortOrder Int        @default(0) @map("sort_order")
+  isActive  Boolean    @default(true) @map("is_active")
+  items     MenuItem[]
+
+  @@map("menu_category")
+}
+
+model MenuItem {
+  id          String       @id @default(uuid()) @db.Uuid
+  categoryId  String       @map("category_id") @db.Uuid
+  name        String
+  description String?
+  priceVnd    Int          @map("price_vnd")
+  imageUrl    String?      @map("image_url")
+  isAvailable Boolean      @default(true) @map("is_available")
+  sortOrder   Int          @default(0) @map("sort_order")
+  category    MenuCategory @relation(fields: [categoryId], references: [id])
+  orderItems  OrderItem[]
+
+  @@index([categoryId], map: "menu_item_category_id_idx")
+  @@map("menu_item")
+}
+
+model TableSession {
+  id       String        @id @default(uuid()) @db.Uuid
+  tableId  String        @map("table_id") @db.Uuid
+  openedAt DateTime      @default(now()) @map("opened_at") @db.Timestamptz(3)
+  closedAt DateTime?     @map("closed_at") @db.Timestamptz(3)
+  status   SessionStatus @default(OPEN)
+  paidAt   DateTime?     @map("paid_at") @db.Timestamptz(3)
+  table    DiningTable   @relation(fields: [tableId], references: [id])
+  orders   Order[]
+  calls    StaffCall[]
+
+  @@index([tableId, status], map: "table_session_table_id_status_idx")
+  @@map("table_session")
+}
+
+model Order {
+  id         String       @id @default(uuid()) @db.Uuid
+  sessionId  String       @map("session_id") @db.Uuid
+  tableId    String       @map("table_id") @db.Uuid
+  sequenceNo Int          @map("sequence_no")
+  status     OrderStatus  @default(NEW)
+  note       String?
+  createdAt  DateTime     @default(now()) @map("created_at") @db.Timestamptz(3)
+  session    TableSession @relation(fields: [sessionId], references: [id])
+  table      DiningTable  @relation(fields: [tableId], references: [id])
+  items      OrderItem[]
+
+  @@unique([sessionId, sequenceNo], map: "order_session_id_sequence_no_key")
+  @@index([createdAt], map: "order_created_at_idx")
+  @@index([tableId], map: "order_table_id_idx")
+  @@map("order")
+}
+
+model OrderItem {
+  id                   String   @id @default(uuid()) @db.Uuid
+  orderId              String   @map("order_id") @db.Uuid
+  menuItemId           String   @map("menu_item_id") @db.Uuid
+  nameSnapshot         String   @map("name_snapshot")
+  unitPriceVndSnapshot Int      @map("unit_price_vnd_snapshot")
+  quantity             Int
+  note                 String?
+  order                Order    @relation(fields: [orderId], references: [id])
+  menuItem             MenuItem @relation(fields: [menuItemId], references: [id])
+
+  @@index([orderId], map: "order_item_order_id_idx")
+  @@index([menuItemId], map: "order_item_menu_item_id_idx")
+  @@map("order_item")
+}
+
+model StaffCall {
+  id        String          @id @default(uuid()) @db.Uuid
+  sessionId String          @map("session_id") @db.Uuid
+  tableId   String          @map("table_id") @db.Uuid
+  type      StaffCallType
+  status    StaffCallStatus @default(PENDING)
+  createdAt DateTime        @default(now()) @map("created_at") @db.Timestamptz(3)
+  session   TableSession    @relation(fields: [sessionId], references: [id])
+  table     DiningTable     @relation(fields: [tableId], references: [id])
+
+  @@index([status, createdAt], map: "staff_call_status_created_at_idx")
+  @@index([sessionId], map: "staff_call_session_id_idx")
+  @@map("staff_call")
+}
