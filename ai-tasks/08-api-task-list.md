@@ -70,8 +70,10 @@ Nhận file, resize (sharp), lưu đĩa hoặc S3-compatible. Giới hạn dung 
 
 Hoàn thành 2026-08-09: lưu vào ổ đĩa cục bộ; owner tải JPG/PNG/WebP tối đa 5 MB, Sharp đổi sang WebP 480 × 270 và phục vụ qua `/uploads/` với cache 30 ngày. Form món thay URL bằng upload/preview/retry. Docker smoke test: JPEG 83 KB thành WebP 14,8 KB; MIME sai trả 400.
 
-### `BE-10` — Script verify cURL · TODO
-`scripts/verify-flow-*.sh` chạy hết luồng: mở phiên → gửi đơn → gọi thêm → gọi nhân viên → bếp đổi trạng thái → thanh toán → reset bàn → quét lại thấy phiên sạch. Theo pattern `tutor-api/scripts/`.
+### `BE-10` — Script verify cURL · DONE
+`tableqr-api/scripts/verify-flow-01-guest-order.sh` chạy hết luồng: mở phiên → gửi đơn (kèm idempotency) → gọi thêm → gọi nhân viên → bếp đổi trạng thái → thanh toán → reset bàn → quét lại thấy phiên sạch. Script dùng cURL + jq, tự dọn bàn fixture B01 trước khi chạy để chạy lặp lại được.
+
+Hoàn thành 2026-08-09: kiểm đủ luồng guest/staff với API Docker, gồm tổng phiên, `SESSION_CLOSED` sau reset và phiên mới rỗng khi quét lại.
 
 ---
 

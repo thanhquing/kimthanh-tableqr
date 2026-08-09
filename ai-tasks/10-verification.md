@@ -99,8 +99,10 @@ gzip -c tableqr-guest/dist/assets/index-*.js | wc -c    # phai < 153600
 
 ```bash
 cd tableqr-api && docker compose up -d db api
-curl -s localhost:3000/readyz
-pnpm --filter tableqr-api test
+curl -fsS localhost:3000/api/v1/readyz
+cd ..
+pnpm --filter tableqr-api lint
+pnpm --filter tableqr-api typecheck
 bash tableqr-api/scripts/verify-flow-01-guest-order.sh
 ```
 
