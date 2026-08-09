@@ -6,15 +6,15 @@
 
 ## Current task
 
-> ### `BE-12b` — M7b: nối nốt staff + admin
+> ### `BE-13` — Verify thiết bị thật
 >
-> **Mốc:** M7b · **Trạng thái:** DONE
+> **Mốc:** M7b · **Trạng thái:** BLOCKED bởi kiểm thử vật lý
 >
-> Chi tiết đầy đủ: [08-api-task-list.md § BE-12b](08-api-task-list.md)
+> Chi tiết đầy đủ: [08-api-task-list.md § BE-13](08-api-task-list.md)
 >
-> **Đọc trước khi làm:** [`ai-tasks/08-api-task-list.md`](08-api-task-list.md), [`ai-docs/04-api-contract.md`](../ai-docs/04-api-contract.md), [`ai-docs/03-domain-model.md`](../ai-docs/03-domain-model.md).
+> **Đọc trước khi làm:** [`ai-tasks/08-api-task-list.md`](08-api-task-list.md), [`ai-docs/09-current-system-architecture.md`](../ai-docs/09-current-system-architecture.md).
 >
-> **Xong:** cả ba app mặc định tắt MSW và gọi API thật qua Vite proxy. Production build không chứa MSW hay `mockServiceWorker`.
+> **Xong:** QR in thật được điện thoại dùng 4G quét; tablet bếp nhận đơn qua SSE dưới 2 giây không refresh; kiểm reset/session closed. Cần domain HTTPS public, QR giấy và hai thiết bị; không thể xác nhận bằng workspace local.
 
 ---
 
@@ -23,6 +23,7 @@
 | Task | Ngày | Ghi chú |
 | --- | --- | --- |
 | `BE-12b` — nối staff + admin | 2026-08-09 | Staff/admin mặc định gọi API thật qua proxy; toàn bộ staff endpoint dùng base URL cấu hình. Login + dữ liệu đã kiểm qua proxy đến Docker; production bundle của cả ba app không có MSW. |
+| `SA-00`…`SA-14` — roadmap SaaS | 2026-08-09 | Đã lập kế hoạch sau M7: production foundation, tenant isolation, owner signup, trial 2 tháng, 100.000 VND/tháng unlimited orders và chuẩn bị tiered plans. Chưa triển khai code/schema. |
 | `BE-12a` — nối lát cắt khách | 2026-08-09 | Guest chạy API thật qua Vite proxy; menu asset, mở phiên, gửi đơn, gọi nhân viên/xin bill đã kiểm qua proxy. Staff/admin vẫn mock. |
 | `BE-11` — SSE realtime | 2026-08-09 | `GET /staff/stream` có JWT, phát `order.created`, `order.status_changed`, `call.created`, `session.closed`; hook staff merge event, invalidate call/table liên quan và fallback polling sau 3 lỗi liên tiếp. Docker flow bắt đủ 4 event. |
 | `BE-10` — Script verify cURL | 2026-08-09 | `verify-flow-01-guest-order.sh` kiểm luồng guest/staff qua cURL: dọn bàn B01, mở phiên, order/idempotency, gọi thêm, gọi nhân viên, bếp chuyển `NEW → PREPARING → SERVED`, tính tiền, close, `SESSION_CLOSED`, rồi quét lại thấy phiên mới rỗng. |
@@ -79,7 +80,7 @@
 
 ## Tiếp theo (theo thứ tự, không đảo)
 
-`BE-12b` → `BE-13`.
+`BE-13` (kiểm thử thiết bị thật) → `SA-00` (khi quyết định mở rộng SaaS).
 
 Cổng M1→M2 đã đạt ngày 2026-08-02: đối chiếu xong 28 handler M1 ở bảng cuối `ai-docs/04`, dòng 29 là SSE để M7; prototype đã duyệt; 3 package M1 build sạch.
 

@@ -13,6 +13,10 @@
 | **M6** | Backend `tableqr-api` | `BE-00`…`BE-10` | Endpoint khớp `ai-docs/04`; script verify cURL chạy hết luồng |
 | **M7a** | **Lát cắt dọc**: nối *chỉ* luồng gọi món của khách vào API thật | `BE-12a` | Quét QR → xem menu → gửi đơn chạy trên API thật. Hai app kia vẫn dùng mock. |
 | **M7b** | Nối nốt staff + admin, bật SSE | `BE-11`, `BE-12b`, `BE-13` | Điện thoại quét QR in thật + tablet mở màn bếp → đơn hiện < 2s, không refresh |
+| **M8** | Production foundation SaaS | `SA-00`…`SA-02` | HTTPS QR ổn định, backup/restore kiểm chứng, logging/alert và asset bền vững |
+| **M9** | Đa quán + owner self-service | `SA-03`…`SA-07` | Tenant isolation, đăng ký chủ quán, trial được tạo tự động |
+| **M10** | Billing tháng đầu | `SA-08`…`SA-12` | Trial 2 tháng, 100.000 VND/tháng unlimited orders, payment webhook/entitlement đúng |
+| **M11** | Sẵn sàng nhiều gói | `SA-13`…`SA-14` | Gói và feature data-driven; nền tảng đa chi nhánh |
 
 ## Cổng chuyển mốc
 
@@ -38,6 +42,6 @@ Trình tự này hợp với sản phẩm này (giá trị nằm ở trải nghi
 
 Làm **tuần tự guest → staff → admin**, không song song. Lý do: app khách định hình `packages/ui` và các quyết định UX; hai app sau kế thừa. Làm ngược lại sẽ phải viết lại primitive.
 
-## Sau M7 (chưa lên lịch)
+## Sau M7
 
-Đã nằm ngoài MVP, ghi ở đây để không quên bối cảnh: thanh toán online VietQR/SePay · báo cáo doanh thu và món bán chạy · nhiều chi nhánh. Xem `ai-docs/02-product-scope.md` để biết chỗ đã chừa sẵn.
+Roadmap SaaS M8–M11 đã được lập riêng tại [`13-saas-expansion.md`](13-saas-expansion.md). Thanh toán online tại bàn, báo cáo doanh thu/món bán chạy và nhiều chi nhánh vẫn là scope sau; xem `ai-docs/02-product-scope.md` để biết chỗ đã chừa sẵn.

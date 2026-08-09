@@ -14,6 +14,8 @@ Thứ tự ưu tiên khi có mâu thuẫn: **code đang chạy → `ai-docs` →
 | [06-architecture-and-tech-stack.md](06-architecture-and-tech-stack.md) | Cấu trúc monorepo, stack, quy ước code | Trước task kỹ thuật đầu tiên |
 | [07-acceptance-criteria.md](07-acceptance-criteria.md) | Điều kiện nghiệm thu + ngưỡng hiệu năng | Trước khi đánh dấu task DONE |
 | [08-design-system.md](08-design-system.md) | **Giá trị token thật** (hex đã kiểm tương phản), thang chữ, quy cách ảnh, danh sách cấm | Mọi task UI — dán vào prompt |
+| [09-current-system-architecture.md](09-current-system-architecture.md) | **Sơ đồ FE/BE/infra, runtime flow và ERD database đang chạy** | Onboard AI/dev, task kiến trúc hoặc deploy |
+| [10-saas-evolution.md](10-saas-evolution.md) | Thiết kế đích đa quán, trial 2 tháng, subscription/billing và migration | Trước mọi `SA-*` |
 
 Backlog và mã task nằm ở [`../ai-tasks/`](../ai-tasks/00-index.md).
 

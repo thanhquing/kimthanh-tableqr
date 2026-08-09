@@ -52,11 +52,9 @@ phát triển, đặt `VITE_USE_MOCK=true` trong file `.env.development` của a
 
 ## Trạng thái
 
-**M0 xong** — khung workspace và toàn bộ tài liệu. Đang làm **M1**: các package dùng chung.
+M0–M6 và tích hợp M7 (`BE-00`…`BE-12b`) đã xong. `BE-13` đang chờ kiểm thử vật lý: QR giấy, điện thoại 4G và tablet bếp nhận đơn qua SSE dưới 2 giây.
 
-Lộ trình: M0 khung → M1 packages → M2 app khách → M3 app bếp → M4 app admin → M5 polish → M6 backend → M7 nối FE↔BE.
-
-Backend cố ý làm **sau khi UI xong hết**.
+Sau M7, roadmap SaaS đã sẵn sàng: production HTTPS/backup → multi-tenant → chủ quán tự đăng ký và trial 2 tháng → 100.000 VND/tháng không giới hạn đơn → gói tính năng sau này. Xem [kiến trúc hiện tại](ai-docs/09-current-system-architecture.md), [thiết kế SaaS](ai-docs/10-saas-evolution.md) và [task `SA-*`](ai-tasks/13-saas-expansion.md).
 
 ## Tài liệu
 

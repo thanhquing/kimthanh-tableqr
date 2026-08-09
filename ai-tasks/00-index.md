@@ -31,6 +31,7 @@
 | [10-verification.md](10-verification.md) | Cách kiểm tra từng mốc |
 | [11-ui-build-prompts.md](11-ui-build-prompts.md) | **Cách viết prompt dựng UI** + rubric tự chấm 20 điểm + checklist đọc HTML 30 giây |
 | [12-prototype-to-react.md](12-prototype-to-react.md) | **Bắt buộc đọc trước mọi task UI từ M2.** Ánh xạ 13 màn prototype ↔ route ↔ task; cái gì copy, cái gì bỏ |
+| [13-saas-expansion.md](13-saas-expansion.md) | `SA-xx` — production foundation, đa quán, đăng ký và thuê bao |
 
 ## Quy ước mã task
 
@@ -41,5 +42,6 @@
 | `ST-xx` | `tableqr-staff` |
 | `AD-xx` | `tableqr-admin` |
 | `BE-xx` | `tableqr-api` |
+| `SA-xx` | SaaS: hạ tầng production, multi-tenant, onboarding và billing |
 
 Trạng thái: `TODO` · `IN PROGRESS` · `DONE` · `BLOCKED`

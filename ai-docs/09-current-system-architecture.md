@@ -1,0 +1,217 @@
+# 09 — Kiến trúc hệ thống hiện tại
+
+Tài liệu này mô tả **code và hạ tầng đang có**, không phải kiến trúc SaaS đích. Thiết kế đa quán và tính phí nằm tại [10-saas-evolution.md](10-saas-evolution.md).
+
+## 1. Bức tranh tổng thể
+
+```mermaid
+flowchart LR
+  Guest["Khách\nĐiện thoại + camera QR"] --> GuestFE["tableqr-guest\nVite + React"]
+  Staff["Nhân viên/bếp\nTablet hoặc điện thoại"] --> StaffFE["tableqr-staff\nVite + React"]
+  Owner["Chủ quán\nTrình duyệt desktop"] --> AdminFE["tableqr-admin\nVite + React"]
+
+  GuestFE -->|"REST /api/v1/guest/*"| API
+  StaffFE -->|"REST /api/v1/staff/*"| API
+  StaffFE -->|"SSE /api/v1/staff/stream"| API
+  AdminFE -->|"REST /api/v1/admin/*"| API
+
+  API["tableqr-api\nNestJS 10 + Prisma"] --> DB[("PostgreSQL 15")]
+  API --> Uploads["Ảnh menu\n/uploads + /menu-images"]
+
+  Contracts["packages/contracts\nDTO, enum, tổng tiền"] -. dùng chung .-> GuestFE
+  Contracts -. dùng chung .-> StaffFE
+  Contracts -. dùng chung .-> AdminFE
+  Contracts -. dùng chung .-> API
+  UI["packages/ui\nToken + component React"] -. dùng chung .-> GuestFE
+  UI -. dùng chung .-> StaffFE
+  UI -. dùng chung .-> AdminFE
+```
+
+### Thành phần và trách nhiệm
+
+| Thành phần | Trách nhiệm | Không làm |
+| --- | --- | --- |
+| `tableqr-guest` | Menu, giỏ hàng, gọi món, gọi nhân viên, xem đơn | Không có tài khoản khách hoặc logic tính giá phía client đáng tin cậy |
+| `tableqr-staff` | Bảng bếp, bàn, thanh toán, reset phiên, nhận SSE | Không tự tạo/đồng bộ dữ liệu ngoài API |
+| `tableqr-admin` | Đăng nhập chủ quán, menu, bàn/QR, cài đặt | Không đổi `qrToken` sau khi đã in |
+| `tableqr-api` | Xác thực, kiểm tra nghiệp vụ, idempotency, transaction, SSE | Không phục vụ UI HTML |
+| PostgreSQL | Nguồn dữ liệu bền vững, khoá/unique/index và lịch sử đơn | Không chứa file ảnh |
+| `packages/contracts` | Contract dùng chung và phép tính tiền | Không phụ thuộc React/NestJS/DB |
+| `packages/mock` | MSW + fixture chỉ cho phát triển/test UI | Không được có trong production bundle |
+
+## 2. Luồng vận hành chính
+
+```mermaid
+sequenceDiagram
+  participant G as Guest app
+  participant A as API
+  participant D as PostgreSQL
+  participant S as Staff app
+
+  G->>A: GET /guest/tables/:qrToken
+  A->>D: Tìm bàn, tạo/gắn TableSession OPEN
+  D-->>A: session + menu
+  A-->>G: bootstrap menu, table, session
+  G->>A: POST /guest/sessions/:id/orders + X-Request-Id
+  A->>D: Transaction: validate, snapshot giá, tạo Order
+  D-->>A: Order mới
+  A-->>S: SSE order.created
+  A-->>G: Order (200; gửi lại cùng request ID trả cùng đơn)
+  S->>A: PATCH /staff/orders/:id/status
+  A->>D: Chuyển trạng thái hợp lệ
+  A-->>S: SSE order.status_changed
+```
+
+`GET /guest/tables/:qrToken` hiện có side effect tạo phiên. Đây là quyết định tối ưu một round-trip 4G của MVP; cần kiểm tra prefetch bằng thiết bị thật ở `BE-13`.
+
+## 3. Hạ tầng đang chạy
+
+```mermaid
+flowchart TB
+  Dev["Máy phát triển"]
+  Docker["Docker Compose"]
+  DB[("db\nPostgreSQL 15\nlocalhost:5433")]
+  API["api\nNestJS\nlocalhost:3000"]
+  G["Vite guest :5173"]
+  S["Vite staff :5174"]
+  AD["Vite admin :5175"]
+
+  Docker --- DB
+  Docker --- API
+  API --> DB
+  G -->|"proxy /api, /menu-images, /uploads"| API
+  S -->|"proxy /api, /menu-images, /uploads"| API
+  AD -->|"proxy /api, /menu-images, /uploads"| API
+```
+
+Compose khởi tạo database và API. Ba frontend hiện được Vite phục vụ cho development; proxy giữ frontend cùng origin với API trong quá trình này. Ảnh fixture được API phục vụ từ `/menu-images`, ảnh upload từ volume `tableqr-api/uploads` qua `/uploads`.
+
+**Chưa phải production SaaS:** chưa có domain HTTPS ổn định, reverse proxy/CDN, object storage, managed PostgreSQL/backup, Redis hay worker nền. Vì vậy điện thoại 4G không thể quét một URL `localhost`; các khoảng thiếu này là một phần của roadmap SaaS.
+
+## 4. Xác thực và realtime
+
+| Đối tượng | Cách định danh | Quyền |
+| --- | --- | --- |
+| Khách | `qrToken` trong URL; FE cũng gửi `X-Guest-Token` cục bộ | Không đăng nhập. **Hiện API chưa xác thực header này**: các endpoint sau bootstrap nhận `sessionId` public. UUID khó đoán nhưng đây chưa phải ranh giới phân quyền tenant. |
+| Nhân viên | PIN → JWT role `STAFF` | Orders, calls, bàn, thanh toán/reset |
+| Chủ quán | Email/mật khẩu → JWT role `OWNER` | Admin menu, bàn và cài đặt |
+| Realtime | `EventSource` với JWT query `access_token` | Server phát `order.created`, `order.status_changed`, `call.created`, `session.closed`; client fallback polling sau 3 lỗi SSE |
+
+Mật khẩu/PIN chỉ lưu hash bcrypt. Rate limit hiện là in-process qua Nest throttler và guest rate limiter; khi chạy nhiều API instance, các giới hạn này phải chuyển sang Redis trước khi scale ngang.
+
+`X-Guest-Token` là contract/client state còn API guest chưa dùng để authorize session. `SA-04` phải quyết và áp dụng cơ chế guest session capability an toàn, đồng thời không dựa vào UUID "khó đoán" như một quyền truy cập. JWT trong URL SSE cũng cần được thay bằng cơ chế short-lived/ticket nếu hạ tầng log/proxy có thể ghi query string.
+
+## 5. ERD — database hiện tại
+
+```mermaid
+erDiagram
+  RESTAURANT {
+    uuid id PK
+    text name
+    text logo_url
+    text address
+  }
+  AUTH_USER {
+    uuid id PK
+    enum role
+    text email UK
+    text pin_hash
+    text password_hash
+    text display_name
+    boolean is_active
+    timestamptz created_at
+  }
+  MENU_CATEGORY {
+    uuid id PK
+    text name
+    int sort_order
+    boolean is_active
+  }
+  MENU_ITEM {
+    uuid id PK
+    uuid category_id FK
+    text name
+    int price_vnd
+    boolean is_available
+    timestamptz deleted_at
+  }
+  DINING_TABLE {
+    uuid id PK
+    text code UK
+    text qr_token UK
+    boolean is_active
+    int sort_order
+  }
+  TABLE_SESSION {
+    uuid id PK
+    uuid table_id FK
+    enum status
+    timestamptz opened_at
+    timestamptz closed_at
+    timestamptz paid_at
+  }
+  ORDER {
+    uuid id PK
+    uuid session_id FK
+    uuid table_id FK
+    int sequence_no
+    enum status
+    timestamptz created_at
+  }
+  ORDER_ITEM {
+    uuid id PK
+    uuid order_id FK
+    uuid menu_item_id FK
+    text name_snapshot
+    int unit_price_vnd_snapshot
+    int quantity
+  }
+  GUEST_ORDER_REQUEST {
+    uuid id PK
+    uuid session_id
+    text request_id
+    uuid order_id FK
+    timestamptz created_at
+  }
+  STAFF_CALL {
+    uuid id PK
+    uuid session_id FK
+    uuid table_id FK
+    enum type
+    enum status
+    timestamptz created_at
+  }
+
+  MENU_CATEGORY ||--o{ MENU_ITEM : contains
+  DINING_TABLE ||--o{ TABLE_SESSION : has
+  TABLE_SESSION ||--o{ ORDER : contains
+  DINING_TABLE ||--o{ ORDER : denormalized_for_kitchen
+  ORDER ||--|{ ORDER_ITEM : contains
+  MENU_ITEM ||--o{ ORDER_ITEM : referenced_by
+  ORDER ||--o| GUEST_ORDER_REQUEST : idempotency_record
+  TABLE_SESSION ||--o{ STAFF_CALL : creates
+  DINING_TABLE ||--o{ STAFF_CALL : appears_at
+```
+
+`Restaurant` và `AuthUser` **đang độc lập với các bảng nghiệp vụ**: ứng dụng hiện mặc định đúng một quán/một deployment. Đây là điểm cần thay đổi có chủ đích khi chuyển SaaS, không phải một quan hệ bị thiếu vô tình.
+
+### Ràng buộc quan trọng trong DB
+
+| Ràng buộc | Tác dụng |
+| --- | --- |
+| `dining_table.code`, `dining_table.qr_token` unique | Không lẫn bàn và QR trong deployment một quán |
+| partial unique `table_session(table_id) WHERE status = OPEN` | Không thể có hai lượt khách mở cùng một bàn |
+| unique `order(session_id, sequence_no)` | Lần gọi món tăng liên tục trong một phiên |
+| unique `guest_order_request(session_id, request_id)` | Retry/double-click không tạo đơn trùng trong 60 giây |
+| `OrderItem` snapshot tên/giá | Đổi menu sau đó không đổi bill lịch sử |
+
+## 6. Bản đồ code cần đọc
+
+| Khi cần hiểu | Đọc đầu tiên |
+| --- | --- |
+| Shape DB thực tế | `tableqr-api/prisma/schema.prisma` và migration `20260809000000_init` |
+| Quy tắc nghiệp vụ | [03-domain-model.md](03-domain-model.md), [01-business-flow.md](01-business-flow.md) |
+| API | [04-api-contract.md](04-api-contract.md), controller/service tương ứng trong `tableqr-api/src` |
+| Realtime | `tableqr-api/src/realtime/`, `tableqr-staff/src/lib/realtime.ts` |
+| FE data layer | `tableqr-*/src/lib/api/` và TanStack Query hooks |
+| Docker/runtime local | `tableqr-api/docker-compose.yml`, `tableqr-api/Dockerfile` |

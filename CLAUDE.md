@@ -46,6 +46,8 @@ Mục tiêu trải nghiệm: **quét → gửi đơn xong trong 25–30 giây.**
 | **Chuyển prototype → React** (đọc trước mọi task UI) | [`ai-tasks/12-prototype-to-react.md`](ai-tasks/12-prototype-to-react.md) |
 | Cách viết prompt dựng UI + rubric tự chấm | [`ai-tasks/11-ui-build-prompts.md`](ai-tasks/11-ui-build-prompts.md) |
 | Kiến trúc, stack, quy ước code | [`ai-docs/06-architecture-and-tech-stack.md`](ai-docs/06-architecture-and-tech-stack.md) |
+| **Sơ đồ hệ thống đang chạy: FE/BE/infra/ERD** | [`ai-docs/09-current-system-architecture.md`](ai-docs/09-current-system-architecture.md) |
+| **Roadmap SaaS: đa quán, trial và billing** | [`ai-docs/10-saas-evolution.md`](ai-docs/10-saas-evolution.md) |
 | Điều kiện nghiệm thu + ngân sách hiệu năng | [`ai-docs/07-acceptance-criteria.md`](ai-docs/07-acceptance-criteria.md) |
 | Mốc, backlog, task | [`ai-tasks/`](ai-tasks/00-index.md) |
 
@@ -61,10 +63,10 @@ pnpm workspace. Node ≥ 20.19 (dùng 22, xem `.nvmrc`), `pnpm@10.13.1`.
 | `packages/mock` | Fixture + store + MSW handlers khớp `ai-docs/04` | TS + MSW 2 | `WS-02`/`WS-03` DONE |
 | `packages/ui` | `theme.css` (Tailwind v4 `@theme`) + primitive dùng chung | TS + React | `WS-04` DONE |
 | `prototype` | **13 màn HTML tĩnh — giao diện đã duyệt.** Nguồn chân lý về look. | HTML/CSS/JS thuần | `WS-08` DONE |
-| `tableqr-guest` | App khách, mobile-first, không đăng nhập | Vite + React SPA | M2 — `GU-00` DONE, đang `GU-01` |
-| `tableqr-staff` | Màn hình bếp/quầy, tablet-first | Vite + React SPA | M3 — chưa tạo |
-| `tableqr-admin` | Quản trị menu, bàn, in mã QR | Vite + React SPA | M4 — chưa tạo |
-| `tableqr-api` | Backend | NestJS + Prisma + PostgreSQL | 🔒 **M6 — không tạo trước** |
+| `tableqr-guest` | App khách, mobile-first, không đăng nhập | Vite + React SPA | M2 DONE; M7 API thật DONE |
+| `tableqr-staff` | Màn hình bếp/quầy, tablet-first | Vite + React SPA | M3 DONE; M7 SSE/API thật DONE |
+| `tableqr-admin` | Quản trị menu, bàn, in mã QR | Vite + React SPA | M4 DONE; M7 API thật DONE |
+| `tableqr-api` | Backend | NestJS + Prisma + PostgreSQL | M6 DONE; `BE-13` device verification BLOCKED |
 | `ai-docs` | Nguồn chân lý nghiệp vụ | — | Đầy đủ |
 | `ai-tasks` | Nguồn chân lý triển khai | — | Đầy đủ |
 
@@ -89,13 +91,13 @@ Kịch bản kiểm tra đầy đủ cho từng mốc: [`ai-tasks/10-verificatio
 
 ---
 
-## 6. Trình tự triển khai — ràng buộc cứng
+## 6. Trình tự triển khai
 
-> ### 🔒 Dựng xong **toàn bộ UI của cả 3 app** rồi mới bắt đầu backend
+> ### Giai đoạn lịch sử đã hoàn tất: dựng xong **toàn bộ UI của cả 3 app** rồi mới bắt đầu backend
 
-Người dùng yêu cầu rõ như vậy. Cụ thể, cho tới khi M5 đạt: **không** tạo `tableqr-api/`, **không** viết Prisma schema, **không** thêm dependency backend. Kể cả khi thấy "làm luôn cho tiện".
+Ràng buộc này đã được tuân thủ và M5/M6 đã hoàn tất. Không diễn giải nó như cấm sửa backend hiện tại; thứ tự công việc hiện tại lấy từ [`ai-tasks/09-active-work.md`](ai-tasks/09-active-work.md). Roadmap SaaS sau M7 ở [`ai-tasks/13-saas-expansion.md`](ai-tasks/13-saas-expansion.md).
 
-M0 khung + docs → M1 packages → M2 guest → M3 staff → M4 admin → M5 polish/test/perf → **cổng** → M6 backend → M7 nối FE↔BE.
+M0 khung + docs → M1 packages → M2 guest → M3 staff → M4 admin → M5 polish/test/perf → M6 backend → M7 nối FE↔BE → M8–M11 SaaS.
 
 Làm **tuần tự guest → staff → admin**, không song song: app khách định hình `packages/ui`, hai app sau kế thừa.
 

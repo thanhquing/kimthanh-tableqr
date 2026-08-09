@@ -72,6 +72,12 @@ Cân nhắc ở M6: job tự đóng phiên `OPEN` quá 6 giờ.
 
 **Giả định:** chưa quyết, không ảnh hưởng M0–M5. Cần chốt trước M7 vì `VITE_GUEST_BASE_URL` (URL nhúng trong mã QR) **phải ổn định vĩnh viễn** — đổi domain sau khi đã dán QR lên bàn nghĩa là in lại toàn bộ.
 
+### Q11 — Cổng thanh toán và chính sách quá hạn cho SaaS?
+
+Định hướng đã chốt: chủ quán tự đăng ký, dùng miễn phí 2 tháng rồi trả **100.000 VND/tháng**, không giới hạn đơn. Chưa chốt provider nhận tiền, thời gian ân hạn, retry/dunning và quyền guest/staff/admin khi quá hạn.
+
+**Giả định thiết kế:** tạo `Subscription` có `trialEndsAt` cố định (2 tháng lịch từ lúc đăng ký), số tiền lịch sử được snapshot; trạng thái billing được kiểm ở một `EntitlementService`. Không code payment hoặc chặn quán khi chưa làm `SA-01`. Chi tiết ở [../ai-docs/10-saas-evolution.md](../ai-docs/10-saas-evolution.md).
+
 ---
 
 ## Đã chốt

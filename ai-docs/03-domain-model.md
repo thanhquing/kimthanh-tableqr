@@ -14,6 +14,8 @@ Restaurant 1──n MenuCategory 1──n MenuItem
 AuthUser độc lập với các entity nghiệp vụ; chỉ dùng cho nhân viên/chủ quán đăng nhập.
 ```
 
+> **Phạm vi hiện tại:** đây là ERD single-restaurant đúng với schema PostgreSQL đang chạy; `Restaurant` và `AuthUser` chưa có FK vào dữ liệu nghiệp vụ. Thiết kế đích multi-tenant/billing (không phải schema đã áp dụng) xem [10-saas-evolution.md](10-saas-evolution.md).
+
 ---
 
 ## Entity

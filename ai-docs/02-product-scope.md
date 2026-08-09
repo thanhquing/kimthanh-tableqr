@@ -50,7 +50,7 @@ Khi phân vân giữa hai phương án, chọn phương án **ít bước hơn c
 | --- | --- | --- |
 | **Thanh toán online tại bàn (VietQR / SePay)** | Người dùng chốt để sau. MVP dùng "gọi nhân viên tính tiền" — vốn là cách quán nhỏ Việt Nam vẫn làm. | `TableSession` có `closedAt`; `OrderItem` snapshot giá ⇒ tổng bill luôn tính được chính xác, thêm cổng thanh toán sau không phải migrate. |
 | **Báo cáo doanh thu / món bán chạy** | Người dùng chốt để sau. | Không xoá cứng `Order` khi Reset bàn ⇒ dữ liệu lịch sử còn nguyên để dựng báo cáo bất cứ lúc nào. |
-| Nhiều chi nhánh / nhiều quán trên một hệ thống | Một quán một deploy là đủ cho quán nhỏ. | Entity `Restaurant` đã tồn tại, chưa gắn `restaurantId` vào mọi bảng. |
+| Nhiều chi nhánh / nhiều quán trên một hệ thống | Runtime MVP đang là một quán/một deploy. | Đã có thiết kế và roadmap migration SaaS tại [10-saas-evolution.md](10-saas-evolution.md); chưa thay schema MVP trước `SA-03`. |
 | Tích điểm, khuyến mãi, mã giảm giá | Ngoài phạm vi. | — |
 | Đặt bàn trước | Ngoài phạm vi. Hệ thống này là "đã ngồi rồi mới dùng". | — |
 | Quản lý kho / nguyên liệu | Ngoài phạm vi. Chỉ có cờ `isAvailable` bật tay. | — |
@@ -65,3 +65,4 @@ Khi phân vân giữa hai phương án, chọn phương án **ít bước hơn c
 - **"Reset bàn" không phải là xoá dữ liệu.** Xem [01-business-flow.md §2](01-business-flow.md#khi-khách-về).
 - **Khách không có tài khoản.** Đừng thêm màn hình "nhập tên", "nhập số điện thoại" dù nghe có vẻ tiện. Mỗi trường bắt nhập là một lý do để khách bỏ cuộc.
 - **Không có giỏ hàng đồng bộ giữa hai điện thoại cùng bàn.** Giỏ là cục bộ trên máy khách; chỉ khi bấm Gửi đơn thì đơn mới thuộc về phiên chung. Đồng bộ giỏ realtime là phức tạp thừa cho MVP.
+- **Đăng ký chủ quán và billing chưa thuộc runtime MVP.** Hướng mở rộng đã chốt: trial 2 tháng, sau đó 100.000 VND/tháng không giới hạn đơn. Xem [10-saas-evolution.md](10-saas-evolution.md); chỉ triển khai theo `SA-*` sau production foundation.
