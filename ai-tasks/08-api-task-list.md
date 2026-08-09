@@ -29,10 +29,10 @@ Dựng theo `ai-docs/03-domain-model.md`. Bảng `snake_case`. Bắt buộc:
 
 Hoàn thành 2026-08-09: schema/migration đã chạy thành công trên PostgreSQL 15 trong Docker; đã xác nhận partial unique index, unique `(session_id, sequence_no)`, index `order(created_at)` và `CHECK` cho quantity/sequence number.
 
-### `BE-02` — Seed · TODO
-Dùng lại đúng fixture của `packages/mock` để dữ liệu dev giống hệt giai đoạn UI.
+### `BE-02` — Seed · DONE
+Dùng lại đúng fixture của `packages/mock` để dữ liệu dev giống hệt giai đoạn UI. Hoàn thành 2026-08-09: seed idempotent đọc trực tiếp subpath fixture; database mới có 1 quán, 4 danh mục, 22 món, 8 bàn, session mẫu với 2 đơn/4 item.
 
-### `BE-03` — Auth · BLOCKED
+### `BE-03` — Auth · TODO
 PIN cho `staff`, email+mật khẩu cho `owner`. JWT, guard theo role. Mật khẩu/PIN băm bằng argon2 hoặc bcrypt — **không lưu thô**. Rate limit endpoint đăng nhập.
 
 ### `BE-04` — Guest module · BLOCKED
