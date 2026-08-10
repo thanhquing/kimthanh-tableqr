@@ -1,6 +1,6 @@
 # 13 — SaaS: đa quán, đăng ký và thuê bao
 
-Thực hiện **sau `BE-13`**. Đây là roadmap mở rộng từ single-restaurant MVP sang SaaS đa quán; không được triển khai task dưới đây khi chưa có production foundation và các quyết định ở `SA-01`.
+Đây là roadmap mở rộng từ single-restaurant MVP sang SaaS đa quán. Theo ưu tiên đã đổi ngày 2026-08-10, thực hiện roadmap này **trước `BE-13`** để ưu tiên đăng ký chủ quán và đa tenant. `BE-13` được giữ lại như kiểm thử thiết bị thật bắt buộc trước phát hành. Không triển khai task dưới đây khi chưa đạt production foundation và các quyết định cần thiết ở `SA-01`.
 
 Nguồn thiết kế: [../ai-docs/10-saas-evolution.md](../ai-docs/10-saas-evolution.md). Kiến trúc hiện tại: [../ai-docs/09-current-system-architecture.md](../ai-docs/09-current-system-architecture.md).
 
@@ -11,7 +11,7 @@ Nguồn thiết kế: [../ai-docs/10-saas-evolution.md](../ai-docs/10-saas-evolu
 | M8 | Đưa MVP lên production an toàn | `SA-00`…`SA-02` | HTTPS QR ổn định, backup restore đã thử, monitor/alert cơ bản |
 | M9 | Tenant isolation + onboarding | `SA-03`…`SA-07` | Hai quán không thể đọc/ghi dữ liệu chéo; chủ quán tự đăng ký được |
 | M10 | Trial và thu phí monthly | `SA-08`…`SA-12` | Trial 2 tháng, 100.000 VND/tháng, webhook idempotent, entitlement đúng |
-| M11 | Sẵn sàng nhiều gói | `SA-13`…`SA-14` | Gói/feature data-driven; đổi giá không đổi lịch sử |
+| M11 | Sẵn sàng nhiều gói | `SA-13` | Gói/feature data-driven; đổi giá không đổi lịch sử |
 
 ## Task theo thứ tự
 
@@ -23,7 +23,7 @@ Chọn deployment, domain/subdomain cho QR và HTTPS. Tách static frontend/API 
 
 ### `SA-01` — Chốt chính sách billing · TODO · NEEDS DECISION
 
-Ghi quyết định cổng thanh toán, ngày kết thúc trial, grace period, retry/dunning, refund, khi quá hạn guest/staff/admin được làm gì, và một owner có mấy quán/chi nhánh. Chốt copy tiếng Việt cho trial/hết hạn/thanh toán thất bại.
+Ghi quyết định cổng thanh toán, ngày kết thúc trial, grace period, retry/dunning, refund và khi quá hạn guest/staff/admin được làm gì. Đã chốt: một tài khoản owner chỉ quản lý một quán; mỗi chi nhánh là quán/tài khoản độc lập. Chốt copy tiếng Việt cho trial/hết hạn/thanh toán thất bại.
 
 **Xong khi:** cập nhật `ai-docs/10`, enum status, state-transition và acceptance criteria; không còn quy tắc billing mơ hồ trong code task.
 
@@ -35,13 +35,13 @@ Managed PostgreSQL hoặc phương án tương đương: backup tự động, re
 
 ### `SA-03` — Tenant schema additive migration · TODO
 
-Thêm `Organization`, `Membership`, cột tenant nullable và các bảng billing qua migration additive. Backfill single restaurant hiện có thành default organization/owner membership; không đổi endpoint công khai ở task này.
+Thêm `restaurant_id` nullable vào `AuthUser` và mọi dữ liệu nghiệp vụ qua migration additive. Backfill toàn bộ dữ liệu hiện có vào quán mặc định; không đổi endpoint công khai ở task này. Không thêm `Organization`, `Membership` hay bảng billing ở task này.
 
 **Xong khi:** dữ liệu cũ còn nguyên, FK/index/composite unique đúng, migration rehearsal + rollback plan + test backfill pass.
 
 ### `SA-04` — Tenant context & authorization · TODO
 
-JWT/membership phải xác định organization/restaurant đang thao tác. Tạo repository/service scope bắt buộc `restaurantId`; guest resolve qua QR token global unique và dùng guest-session capability được xác minh (không dựa vào UUID `sessionId` khó đoán). Không cho client chọn tenant bằng body/query không được xác minh; thay JWT query string của SSE bằng ticket ngắn hạn nếu cần.
+JWT của `AuthUser` phải xác định restaurant đang thao tác. Tạo repository/service scope bắt buộc `restaurantId`; guest resolve qua QR token global unique và dùng guest-session capability được xác minh (không dựa vào UUID `sessionId` khó đoán). Không cho client chọn tenant bằng body/query không được xác minh; thay JWT query string của SSE bằng ticket ngắn hạn nếu cần.
 
 **Xong khi:** test hai tenant chứng minh không thể GET/PATCH/stream/SSE dữ liệu chéo; log/audit có tenant context.
 
@@ -53,13 +53,13 @@ Dual-write/backfill/đổi query cho menu, bàn, session, order, call, idempoten
 
 ### `SA-06` — Owner registration & onboarding · TODO
 
-Tạo public flow đăng ký email/mật khẩu, xác minh email theo quyết định `SA-01`, rồi transaction tạo User + Organization + Restaurant + owner Membership + Subscription `TRIAL`. Cho phép tạo menu/bàn mẫu và in QR hostname production.
+Tạo public flow đăng ký email/mật khẩu, kích hoạt ngay (chưa xác minh email ở phiên bản đầu), rồi transaction tạo Restaurant + `AuthUser` role `OWNER` + `trialEndsAt` cố định 2 tháng. Một tài khoản chỉ tạo một quán; chi nhánh là quán/tài khoản độc lập. Cho phép tạo menu/bàn mẫu và in QR hostname production. Chưa tích hợp payment hay bảng subscription ở task này; rate-limit nghiêm ngặt endpoint đăng ký.
 
 **Xong khi:** một người mới tự tạo quán trong môi trường test, nhận trial 2 tháng cố định và không thấy dữ liệu quán khác.
 
 ### `SA-07` — SaaS admin shell · TODO
 
-Đổi admin auth/session cho membership, thêm chọn quán nếu policy cho phép nhiều quán, màn account/onboarding cơ bản. Không thay đổi luồng QR của khách.
+Đổi admin auth/session để lấy `restaurantId` từ JWT, thêm màn account/onboarding cơ bản. Không có chọn quán; một tài khoản chỉ có một quán. Không thay đổi luồng QR của khách.
 
 **Xong khi:** owner chỉ xem/quản trị restaurant được cấp quyền; staff PIN được gán đúng restaurant; loading/error/empty/a11y và build sạch.
 
@@ -99,11 +99,11 @@ Dashboard/support runbook cho payment fail, manual reconciliation có audit, web
 
 **Xong khi:** thêm feature/gói test không cần thêm nhánh business logic rải rác; feature snapshot/version có test regression.
 
-### `SA-14` — Multi-branch readiness · TODO
+### `SA-14` — Multi-branch readiness · TODO (chỉ khi cần)
 
-Cho phép một organization có nhiều Restaurant khi business chốt. Thêm switcher và policy billing theo organization hoặc branch, không migrate lại dữ liệu tenant lần nữa.
+Chỉ làm khi mô hình một tài khoản/một quán không còn phù hợp. Khi đó, thêm cơ chế một tài khoản quản lý nhiều quán, switcher và policy billing chung mà không làm rò dữ liệu tenant.
 
-**Xong khi:** cùng một owner quản lý hai restaurant cô lập dữ liệu/QR/menu/bàn; billing rule theo scope đã chọn được test.
+**Xong khi:** cùng một owner quản lý hai quán mà dữ liệu/QR/menu/bàn vẫn cô lập; billing rule theo scope đã chọn được test.
 
 ## Definition of Done bổ sung cho mọi `SA-*`
 

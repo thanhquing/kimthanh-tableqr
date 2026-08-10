@@ -97,7 +97,7 @@ Kịch bản kiểm tra đầy đủ cho từng mốc: [`ai-tasks/10-verificatio
 
 Ràng buộc này đã được tuân thủ và M5/M6 đã hoàn tất. Không diễn giải nó như cấm sửa backend hiện tại; thứ tự công việc hiện tại lấy từ [`ai-tasks/09-active-work.md`](ai-tasks/09-active-work.md). Roadmap SaaS sau M7 ở [`ai-tasks/13-saas-expansion.md`](ai-tasks/13-saas-expansion.md).
 
-M0 khung + docs → M1 packages → M2 guest → M3 staff → M4 admin → M5 polish/test/perf → M6 backend → M7 nối FE↔BE → M8–M11 SaaS.
+M0 khung + docs → M1 packages → M2 guest → M3 staff → M4 admin → M5 polish/test/perf → M6 backend → M7 nối FE↔BE → M8–M11 SaaS → `BE-13` kiểm thử thiết bị thật trước phát hành. Thứ tự chi tiết luôn lấy từ `09-active-work.md`.
 
 Làm **tuần tự guest → staff → admin**, không song song: app khách định hình `packages/ui`, hai app sau kế thừa.
 

@@ -74,7 +74,7 @@ Cân nhắc ở M6: job tự đóng phiên `OPEN` quá 6 giờ.
 
 ### Q11 — Cổng thanh toán và chính sách quá hạn cho SaaS?
 
-Định hướng đã chốt: chủ quán tự đăng ký, dùng miễn phí 2 tháng rồi trả **100.000 VND/tháng**, không giới hạn đơn. Chưa chốt provider nhận tiền, thời gian ân hạn, retry/dunning và quyền guest/staff/admin khi quá hạn.
+Định hướng đã chốt: chủ quán tự đăng ký, dùng miễn phí 2 tháng rồi trả **100.000 VND/tháng**, không giới hạn đơn. Mỗi tài khoản owner quản lý đúng một quán; mỗi chi nhánh là một quán/tài khoản độc lập (chốt 2026-08-10). Chưa chốt provider nhận tiền, thời gian ân hạn, retry/dunning và quyền guest/staff/admin khi quá hạn.
 
 **Giả định thiết kế:** tạo `Subscription` có `trialEndsAt` cố định (2 tháng lịch từ lúc đăng ký), số tiền lịch sử được snapshot; trạng thái billing được kiểm ở một `EntitlementService`. Không code payment hoặc chặn quán khi chưa làm `SA-01`. Chi tiết ở [../ai-docs/10-saas-evolution.md](../ai-docs/10-saas-evolution.md).
 

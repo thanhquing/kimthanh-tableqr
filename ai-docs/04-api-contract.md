@@ -42,6 +42,79 @@
 
 ---
 
+## Contract target — multi-tenant lite (`SA-03`…`SA-07`)
+
+Phần này là contract **đích, chưa có trong API đang chạy**. Khi triển khai, đổi đồng thời DTO/contract, backend và các client; endpoint MVP hiện hữu không được âm thầm đổi tenant qua payload client.
+
+### Tenant context
+
+| Loại request | Tenant context bắt buộc |
+| --- | --- |
+| Admin | JWT claim `{ sub, role: "owner", restaurantId }` |
+| Staff | JWT claim `{ sub, role: "staff", restaurantId }` |
+| Guest bootstrap | `qrToken` global unique → server resolve `restaurantId` |
+| Guest sau bootstrap | Header `X-Guest-Access: <server-signed-token>` chứa `sessionId`, `tableId`, `restaurantId`, expiry; không coi `sessionId` là quyền truy cập |
+
+Không endpoint nào nhận `restaurantId` từ body/query/path. Với resource ID, backend luôn truy vấn theo cả `id` và `restaurantId` từ context; không thuộc tenant trả `404` để không lộ sự tồn tại dữ liệu.
+
+### Error bổ sung
+
+| `code` | HTTP | Khi nào |
+| --- | --- | --- |
+| `EMAIL_ALREADY_IN_USE` | 409 | Email đã là owner của một quán khác |
+| `STAFF_LOGIN_INVALID` | 401 | Mã quán/PIN staff sai hoặc tài khoản staff bị khoá |
+| `GUEST_ACCESS_INVALID` | 401 | Thiếu, hết hạn hoặc sai guest capability |
+| `RESTAURANT_INACTIVE` | 403 | Quán không được phép nhận thao tác ghi theo billing status |
+
+### `POST /api/v1/public/owner-registration`
+
+Public, rate-limit nghiêm ngặt. Phiên bản đầu tạo quán dùng được ngay; xác minh email và payment không nằm trong endpoint này.
+
+**Request**
+```json
+{
+  "restaurantName": "Quán Cơm Mộc",
+  "ownerDisplayName": "Chị Mai",
+  "email": "mai@example.com",
+  "password": "mat-khau-dai-toi-thieu-8-ky-tu",
+  "staffPin": "123456"
+}
+```
+
+Trong một transaction, server tạo `Restaurant` (kèm `staffLoginCode`, `trialEndsAt = createdAt + 2 tháng lịch`, `billingStatus=TRIAL`), owner `AuthUser`, một `STAFF` service account dùng PIN đã hash, menu/bàn mẫu và QR token. Không log password/PIN.
+
+**201**
+```json
+{
+  "token": "...",
+  "role": "owner",
+  "displayName": "Chị Mai",
+  "restaurant": { "id": "...", "name": "Quán Cơm Mộc", "staffLoginCode": "KM7P4X" },
+  "trialEndsAt": "2026-10-10T00:00:00.000Z"
+}
+```
+
+**409** `EMAIL_ALREADY_IN_USE` · **400** `VALIDATION_ERROR`
+
+### Thay đổi endpoint xác thực
+
+`POST /staff/auth/login` đổi request thành `{ "staffLoginCode": "KM7P4X", "pin": "123456" }`; server chỉ tìm staff trong `Restaurant` có mã tương ứng. `POST /admin/auth/login` giữ request hiện tại; cả hai response thêm `restaurant: { id, name }`, còn JWT luôn có `restaurantId`.
+
+### Thay đổi guest và realtime
+
+`GET /guest/tables/:qrToken` giữ URL/response hiện hữu, bổ sung `guestAccessToken` chỉ dùng cho session hiện tại. Client phải gửi token này qua `X-Guest-Access` với `GET/POST /guest/sessions/:sessionId/*`; server kiểm tra token khớp session/table/restaurant trước khi xử lý.
+
+`GET /staff/stream` chỉ phát event của `restaurantId` trong JWT. Trước khi production hardening SSE ticket ngắn hạn, JWT qua `access_token` vẫn phải được HTTPS bảo vệ và proxy phải che query string khỏi log; ticket ngắn hạn là thay đổi tương thích sau đó.
+
+### Endpoint owner bổ sung tối thiểu
+
+| Method | Path | Auth | Request / kết quả |
+| --- | --- | --- | --- |
+| `GET` | `/admin/account` | owner | `{ displayName, email, restaurant: { id, name, staffLoginCode }, trialEndsAt, billingStatus }` |
+| `PATCH` | `/admin/staff-pin` | owner | `{ pin }`; đổi PIN hash của service account `STAFF` trong chính tenant |
+
+---
+
 # Guest — không đăng nhập
 
 ### `GET /api/v1/guest/tables/:qrToken`

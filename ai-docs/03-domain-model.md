@@ -16,13 +16,49 @@ AuthUser độc lập với các entity nghiệp vụ; chỉ dùng cho nhân vi�
 
 > **Phạm vi hiện tại:** đây là ERD single-restaurant đúng với schema PostgreSQL đang chạy; `Restaurant` và `AuthUser` chưa có FK vào dữ liệu nghiệp vụ. Thiết kế đích multi-tenant/billing (không phải schema đã áp dụng) xem [10-saas-evolution.md](10-saas-evolution.md).
 
+## Thiết kế target — multi-tenant lite (`SA-03`…`SA-07`)
+
+Mục tiêu là một deployment phục vụ nhiều quán **độc lập**. Một tài khoản owner chỉ thuộc một quán; một chi nhánh là một quán/tài khoản khác. Không có `Organization`, `Membership` hay chọn chi nhánh.
+
+```
+Restaurant 1──n AuthUser (OWNER / STAFF)
+Restaurant 1──n MenuCategory 1──n MenuItem
+Restaurant 1──n DiningTable 1──n TableSession 1──n Order 1──n OrderItem
+                                            └──n StaffCall
+```
+
+### Cột target và ràng buộc
+
+| Bảng | Thay đổi target |
+| --- | --- |
+| `restaurant` | Thêm `public_slug` unique, `staff_login_code` unique (mã tenant cho đăng nhập staff), `trial_ends_at`, `billing_status`. |
+| `auth_user` | Thêm `restaurant_id` FK bắt buộc sau backfill. `email` tiếp tục unique toàn hệ thống, nên một email chỉ sở hữu một quán. `role` giữ `OWNER` / `STAFF`; staff dùng PIN chung theo quán ở phiên bản đầu. |
+| `dining_table`, `menu_category`, `menu_item`, `table_session`, `order`, `staff_call`, `guest_order_request` | Thêm `restaurant_id` FK bắt buộc. API tự điền từ tenant context, không nhận cột này từ client. |
+
+Giữ `dining_table.qr_token` unique toàn hệ thống; đổi `dining_table.code` thành unique `(restaurant_id, code)`. Giữ các unique hiện hữu của session/order/idempotency vì mỗi ID cha đã thuộc một quán. Index query nóng bắt đầu bằng `restaurant_id` (ví dụ menu theo sort order, table/session OPEN, order theo created time).
+
+### Migration không mất dữ liệu
+
+1. Thêm các cột `restaurant_id` nullable và index/FK chưa bắt buộc.
+2. Tạo hoặc dùng quán Kim Thành hiện có làm tenant mặc định; backfill toàn bộ row hiện hữu và owner/staff hiện hữu vào đó.
+3. Đối soát row không null, đổi cột sang `NOT NULL`; thay unique `dining_table.code` bằng `(restaurant_id, code)`.
+4. Chỉ sau đó chuyển toàn bộ query/API sang bắt buộc tenant scope. Migration phải chạy trong transaction có kiểm tra số lượng trước/sau và có backup/restore rehearsal.
+
+### Tenant context bất biến
+
+- Admin/staff: JWT chứa `sub`, `role`, `restaurantId`; backend lấy `restaurantId` từ token, không lấy từ payload/path/query.
+- Guest: `qrToken` global unique resolve `DiningTable.restaurantId`. Sau bootstrap, app gửi guest capability server ký kèm các request theo session; UUID `sessionId` không phải quyền truy cập.
+- Write tạo `TableSession`, `Order`, `StaffCall`, idempotency record phải copy `restaurantId` từ entity cha trong transaction và kiểm tra chúng trùng nhau.
+- Mọi read/update/delete phải lọc `id` **và** `restaurant_id`; không được `findUnique({ id })` rồi sửa mà chưa xác nhận tenant.
+- Realtime chỉ publish/subscribe event theo `restaurantId`; không phát toàn cục.
+
 ---
 
 ## Entity
 
 ### `Restaurant`
 
-Thông tin quán. MVP một bản ghi duy nhất.
+Thông tin quán. MVP hiện có một bản ghi; target multi-tenant có một bản ghi cho mỗi quán độc lập.
 
 | Trường | Kiểu | Ghi chú |
 | --- | --- | --- |
@@ -30,6 +66,9 @@ Thông tin quán. MVP một bản ghi duy nhất.
 | `name` | string | "Quán Cơm Kim Thành" |
 | `logoUrl` | string \| null | |
 | `address` | string \| null | |
+| `staffLoginCode` | string | **Target:** mã ngẫu nhiên unique để staff chọn đúng quán trước khi nhập PIN. |
+| `trialEndsAt` | ISO datetime | **Target:** cố định lúc owner đăng ký, bằng ngày đăng ký + 2 tháng lịch. |
+| `billingStatus` | `TRIAL` \| `ACTIVE` \| `PAST_DUE` \| `SUSPENDED` | **Target:** ban đầu `TRIAL`; billing đầy đủ sẽ tách sang `Subscription`. |
 
 ### `DiningTable`
 
@@ -47,7 +86,7 @@ Thông tin quán. MVP một bản ghi duy nhất.
 
 ### `AuthUser`
 
-Tài khoản nội bộ, không có tài khoản khách. `STAFF` chỉ có `pinHash`; `OWNER` chỉ có `email` và `passwordHash`. Hash dùng bcrypt; tuyệt đối không lưu PIN/mật khẩu thô.
+Tài khoản nội bộ, không có tài khoản khách. `STAFF` chỉ có `pinHash`; `OWNER` chỉ có `email` và `passwordHash`. Hash dùng bcrypt; tuyệt đối không lưu PIN/mật khẩu thô. **Target:** thêm `restaurantId` bắt buộc; một tài khoản thuộc đúng một quán.
 
 ### `MenuCategory`
 
@@ -136,6 +175,7 @@ type OrderStatus     = 'NEW' | 'PREPARING' | 'SERVED' | 'CANCELLED'
 type StaffCallType   = 'CALL_STAFF' | 'REQUEST_BILL'
 type StaffCallStatus = 'PENDING' | 'DONE'
 type UserRole        = 'STAFF' | 'OWNER'
+type BillingStatus   = 'TRIAL' | 'ACTIVE' | 'PAST_DUE' | 'SUSPENDED'
 ```
 
 Chuyển trạng thái đơn hợp lệ:

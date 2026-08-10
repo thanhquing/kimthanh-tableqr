@@ -6,15 +6,17 @@
 
 ## Current task
 
-> ### `BE-13` — Verify thiết bị thật
+> ### `SA-00` — Production foundation
 >
-> **Mốc:** M7b · **Trạng thái:** BLOCKED bởi kiểm thử vật lý
+> **Mốc:** M8 · **Trạng thái:** TODO
 >
-> Chi tiết đầy đủ: [08-api-task-list.md § BE-13](08-api-task-list.md)
+> Ưu tiên đã đổi ngày 2026-08-10: làm lộ trình SaaS để hỗ trợ chủ quán tự đăng ký và đa tenant trước. `BE-13` được dời thành kiểm thử phát hành cuối cùng.
 >
-> **Đọc trước khi làm:** [`ai-tasks/08-api-task-list.md`](08-api-task-list.md), [`ai-docs/09-current-system-architecture.md`](../ai-docs/09-current-system-architecture.md).
+> Chi tiết đầy đủ: [13-saas-expansion.md § SA-00](13-saas-expansion.md)
 >
-> **Xong:** QR in thật được điện thoại dùng 4G quét; tablet bếp nhận đơn qua SSE dưới 2 giây không refresh; kiểm reset/session closed. Cần domain HTTPS public, QR giấy và hai thiết bị; không thể xác nhận bằng workspace local.
+> **Đọc trước khi làm:** [`ai-tasks/13-saas-expansion.md`](13-saas-expansion.md), [`ai-docs/10-saas-evolution.md`](../ai-docs/10-saas-evolution.md), [`ai-docs/09-current-system-architecture.md`](../ai-docs/09-current-system-architecture.md), [`ai-tasks/04-open-questions.md`](04-open-questions.md) Q8 và Q11.
+>
+> **Xong:** chọn và triển khai nền production: domain HTTPS QR ổn định, secrets production, health/ready checks và asset không phụ thuộc ổ đĩa ephemeral.
 
 ---
 
@@ -23,7 +25,7 @@
 | Task | Ngày | Ghi chú |
 | --- | --- | --- |
 | `BE-12b` — nối staff + admin | 2026-08-09 | Staff/admin mặc định gọi API thật qua proxy; toàn bộ staff endpoint dùng base URL cấu hình. Login + dữ liệu đã kiểm qua proxy đến Docker; production bundle của cả ba app không có MSW. |
-| `SA-00`…`SA-14` — roadmap SaaS | 2026-08-09 | Đã lập kế hoạch sau M7: production foundation, tenant isolation, owner signup, trial 2 tháng, 100.000 VND/tháng unlimited orders và chuẩn bị tiered plans. Chưa triển khai code/schema. |
+| `SA-00`…`SA-14` — roadmap SaaS | 2026-08-09 | Production foundation, tenant isolation, owner signup, trial 2 tháng, 100.000 VND/tháng unlimited orders và chuẩn bị tiered plans. Chưa triển khai code/schema. Ưu tiên tăng ngày 2026-08-10. |
 | `BE-12a` — nối lát cắt khách | 2026-08-09 | Guest chạy API thật qua Vite proxy; menu asset, mở phiên, gửi đơn, gọi nhân viên/xin bill đã kiểm qua proxy. Staff/admin vẫn mock. |
 | `BE-11` — SSE realtime | 2026-08-09 | `GET /staff/stream` có JWT, phát `order.created`, `order.status_changed`, `call.created`, `session.closed`; hook staff merge event, invalidate call/table liên quan và fallback polling sau 3 lỗi liên tiếp. Docker flow bắt đủ 4 event. |
 | `BE-10` — Script verify cURL | 2026-08-09 | `verify-flow-01-guest-order.sh` kiểm luồng guest/staff qua cURL: dọn bàn B01, mở phiên, order/idempotency, gọi thêm, gọi nhân viên, bếp chuyển `NEW → PREPARING → SERVED`, tính tiền, close, `SESSION_CLOSED`, rồi quét lại thấy phiên mới rỗng. |
@@ -80,7 +82,7 @@
 
 ## Tiếp theo (theo thứ tự, không đảo)
 
-`BE-13` (kiểm thử thiết bị thật) → `SA-00` (khi quyết định mở rộng SaaS).
+`SA-00` → `SA-01` → `SA-02` → `SA-03` → `SA-04` → `SA-05` → `SA-06` (đăng ký chủ quán) → `SA-07` → `SA-08`…`SA-13` → `BE-13` (kiểm thử thiết bị thật trước phát hành). `SA-14` chỉ làm sau này nếu mô hình một tài khoản/một quán không còn phù hợp.
 
 Cổng M1→M2 đã đạt ngày 2026-08-02: đối chiếu xong 28 handler M1 ở bảng cuối `ai-docs/04`, dòng 29 là SSE để M7; prototype đã duyệt; 3 package M1 build sạch.
 

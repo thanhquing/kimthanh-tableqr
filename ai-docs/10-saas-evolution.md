@@ -1,21 +1,25 @@
 # 10 — Mở rộng SaaS, đa quán và thuê bao
 
-Tài liệu này là thiết kế đích để TableQR phục vụ nhiều chủ quán trên một hệ thống. Nó **chưa thay đổi MVP đang chạy**. Chỉ bắt đầu migration khi `BE-13` và production foundation đã đạt; task theo thứ tự tại [../ai-tasks/13-saas-expansion.md](../ai-tasks/13-saas-expansion.md).
+Tài liệu này là thiết kế đích để TableQR phục vụ nhiều chủ quán trên một hệ thống. Nó **chưa thay đổi MVP đang chạy**. Theo ưu tiên đã đổi ngày 2026-08-10, migration bắt đầu với production foundation; `BE-13` được dời thành kiểm thử thiết bị thật bắt buộc trước phát hành. Task theo thứ tự tại [../ai-tasks/13-saas-expansion.md](../ai-tasks/13-saas-expansion.md).
 
 ## 1. Quy tắc sản phẩm đã chốt
 
 | Nội dung | Quy tắc phiên bản đầu |
 | --- | --- |
-| Người trả tiền | Chủ quán đăng ký tài khoản, tạo quán và là `OWNER` đầu tiên |
-| Dùng thử | Miễn phí 2 tháng kể từ khi tạo quán; lưu `trialEndsAt` cố định thay vì tính lại trong mỗi request |
+| Người trả tiền | Chủ quán đăng ký một tài khoản, tạo đúng một quán và là `OWNER` đầu tiên |
+| Dùng thử | Miễn phí 2 tháng kể từ khi tạo quán; giai đoạn onboarding lưu `trialEndsAt` cố định trên `Restaurant`, rồi chuyển sang `Subscription` khi làm billing |
 | Giá | 100.000 VND/tháng, không giới hạn số đơn |
 | Khi hết trial | Chủ quán xem/trả tiền được; quyền vận hành phải theo `Subscription.status` và grace period được cấu hình |
 | Khách QR | Không bị yêu cầu đăng nhập; chỉ được tiếp tục gọi món khi quán có quyền hoạt động |
 | Tương lai | Giá/gói tính năng được dữ liệu hoá, không hard-code `100000` khắp UI/API |
 
+Để giữ onboarding nhanh ở phiên bản đầu, account được kích hoạt ngay sau đăng ký; chưa có xác minh email. Endpoint đăng ký phải rate-limit nghiêm ngặt và không được làm lộ email đã tồn tại ngoài lỗi `EMAIL_ALREADY_IN_USE`. Xác minh email là hardening sau, không chặn tenant isolation.
+
 **Quy ước đề xuất:** trial là hai tháng lịch (`registeredAt` + 2 tháng) và một quán chỉ được trial một lần. `trialEndsAt` được ghi lúc đăng ký để xử lý đúng tháng ngắn và không đổi nếu kế hoạch giá thay đổi sau này.
 
-Các điều cần người quyết trước `SA-01`: cổng thanh toán, có/không grace period, chính sách quán quá hạn (chỉ khoá admin, hay dừng luôn guest order), quy tắc một chủ sở hữu có thể tạo bao nhiêu quán/chi nhánh.
+**Đã chốt 2026-08-10:** một tài khoản chủ quán quản lý đúng một quán. Mỗi chi nhánh được coi là một quán độc lập với tài khoản, menu, bàn, QR và thuê bao riêng; không có chuyển đổi chi nhánh trong phiên bản đầu.
+
+Các điều cần người quyết trước `SA-01`: cổng thanh toán, có/không grace period và chính sách quán quá hạn (chỉ khoá admin, hay dừng luôn guest order).
 
 ## 2. Mục tiêu kiến trúc
 
@@ -31,16 +35,14 @@ flowchart LR
   API --> Obs["Logs, metrics, alert\nbackup monitoring"]
 ```
 
-Một deployment chung phục vụ nhiều quán. Mọi truy vấn nghiệp vụ phải có `restaurantId`/tenant context; không được tin ID do frontend gửi nếu không xác nhận membership. Dùng QR token global unique để xác định quán cho public guest route mà không lộ `restaurantId`.
+Một deployment chung phục vụ nhiều quán độc lập. Mọi truy vấn nghiệp vụ phải có `restaurantId`/tenant context; không được tin ID do frontend gửi mà chỉ lấy tenant từ JWT hoặc QR token. Dùng QR token global unique để xác định quán cho public guest route mà không lộ `restaurantId`.
 
 ## 3. Mô hình dữ liệu đích
 
 ```mermaid
 erDiagram
-  USER ||--o{ MEMBERSHIP : joins
-  ORGANIZATION ||--o{ MEMBERSHIP : has
-  ORGANIZATION ||--o{ RESTAURANT : owns
-  ORGANIZATION ||--o{ SUBSCRIPTION : billed_for
+  RESTAURANT ||--o{ AUTH_USER : has
+  RESTAURANT ||--o{ SUBSCRIPTION : billed_for
   PLAN ||--o{ SUBSCRIPTION : selected_by
   SUBSCRIPTION ||--o{ SUBSCRIPTION_CYCLE : invoices
   SUBSCRIPTION_CYCLE ||--o{ PAYMENT : paid_by
@@ -54,30 +56,22 @@ erDiagram
   ORDER ||--o| GUEST_ORDER_REQUEST : retries
   TABLE_SESSION ||--o{ STAFF_CALL : has
 
-  USER {
-    uuid id PK
-    text email UK
-    text password_hash
-    text display_name
-    timestamptz created_at
-  }
-  ORGANIZATION {
-    uuid id PK
-    text name
-    timestamptz created_at
-  }
-  MEMBERSHIP {
-    uuid id PK
-    uuid organization_id FK
-    uuid user_id FK
-    enum role
-    enum status
-  }
   RESTAURANT {
     uuid id PK
-    uuid organization_id FK
     text name
     text public_slug UK
+    text staff_login_code UK
+    timestamptz trial_ends_at
+    enum billing_status
+  }
+  AUTH_USER {
+    uuid id PK
+    uuid restaurant_id FK
+    text email UK
+    text password_hash
+    text pin_hash
+    enum role
+    boolean is_active
   }
   PLAN {
     uuid id PK
@@ -90,7 +84,7 @@ erDiagram
   }
   SUBSCRIPTION {
     uuid id PK
-    uuid organization_id FK
+    uuid restaurant_id FK
     uuid plan_id FK
     enum status
     timestamptz trial_ends_at
@@ -158,18 +152,20 @@ erDiagram
   }
 ```
 
-### Vì sao có `Organization` trước `Restaurant`
+### Một tài khoản, một quán
 
-Hiện một chủ quán chỉ cần một quán, nhưng `Organization → Restaurant` giúp mở nhiều chi nhánh sau này mà không phải viết lại billing hoặc danh tính. Bản đầu tạo một organization và một restaurant trong cùng transaction khi đăng ký. `Subscription` gắn với organization; nếu sau này có nhiều chi nhánh, chính sách gói quyết định tính theo organization hay location.
+Phiên bản đầu không có `Organization` hay `Membership`. `AuthUser` có đúng một `restaurant_id`; role `OWNER`/`STAFF` có hiệu lực trong quán đó. Điều này giữ login, JWT, phân quyền và billing đơn giản. Nếu một chủ có nhiều chi nhánh, mỗi chi nhánh đăng ký như một quán độc lập; việc gộp chúng vào một tài khoản là scope tương lai, không phải nợ cần trả ngay.
+
+Mỗi `Restaurant` có một `staff_login_code` ngẫu nhiên, unique toàn hệ thống. Nhân viên đăng nhập bằng mã quán này và PIN dùng chung của quán; mã chỉ để xác định tenant, PIN vẫn là bí mật. Owner nhận mã khi đăng ký và có thể xem lại trong admin để chia sẻ cho nhân viên.
 
 ### Bảng/cột sẽ thêm hoặc đổi
 
 | Nhóm | Thay đổi |
 | --- | --- |
-| Danh tính | Tách `AuthUser` hiện tại thành `User` toàn cục và `Membership`; role thuộc membership thay vì một cột toàn cục. Giữ migration/backfill cho owner và staff hiện có. |
-| Tenant | Thêm `organization_id` vào `Restaurant`; thêm `restaurant_id` vào `DiningTable`, `MenuCategory`, `MenuItem`, `TableSession`, `Order`, `StaffCall` và bảng idempotency liên quan. |
+| Danh tính | Giữ `AuthUser`, thêm `restaurant_id` bắt buộc. Một email/tài khoản thuộc đúng một quán; role hiện tại giữ nguyên. Backfill owner và staff hiện có vào quán mặc định. |
+| Tenant | Thêm `restaurant_id` vào `DiningTable`, `MenuCategory`, `MenuItem`, `TableSession`, `Order`, `StaffCall` và bảng idempotency liên quan. Thêm `staff_login_code` global unique vào `Restaurant` để staff xác định quán khi đăng nhập. |
 | Uniqueness | Đổi `DiningTable.code` từ global unique sang unique `(restaurant_id, code)`; giữ `qr_token` global unique. Những index đọc thường xuyên bắt đầu bằng `restaurant_id`. |
-| Billing | `Plan`, `Subscription`, `SubscriptionCycle`, `Payment`, `PaymentWebhookEvent` (idempotency/audit). Amount là VND integer; lưu `priceVndSnapshot`/`amountVnd`, không đọc lại giá gói cũ. |
+| Billing | Giai đoạn onboarding chỉ thêm `trial_ends_at` và `billing_status` trên `Restaurant`. `Plan`, `Subscription`, `SubscriptionCycle`, `Payment`, `PaymentWebhookEvent` được tạo ở task billing sau; `Subscription` sẽ gắn trực tiếp với `Restaurant`. Amount là VND integer; lưu `priceVndSnapshot`/`amountVnd`, không đọc lại giá gói cũ. |
 | Vận hành | `AuditLog`, thời điểm tạo/cập nhật/soft-delete phù hợp. Không lưu số thẻ hoặc bí mật cổng thanh toán. |
 
 `restaurant_id` được lặp lại trên `Order`/`TableSession`/`StaffCall` dù có thể suy ra qua bàn. Đây là denormalization có chủ đích để tenant filter, index, RLS và audit không phải join dài; API phải tự điền trong transaction, không lấy từ body client.
@@ -178,7 +174,7 @@ Hiện một chủ quán chỉ cần một quán, nhưng `Organization → Resta
 
 ```mermaid
 flowchart TD
-  Request["Request staff/admin hoặc QR guest"] --> Resolve["Xác định restaurant\nJWT membership hoặc qrToken"]
+  Request["Request staff/admin hoặc QR guest"] --> Resolve["Xác định restaurant\nJWT user hoặc qrToken"]
   Resolve --> Active{"Subscription có quyền\nhoạt động?"}
   Active -->|"TRIAL / ACTIVE"| Allow["Cho phép luồng nghiệp vụ"]
   Active -->|"GRACE"| Warn["Cho phép tạm thời + nhắc chủ quán"]
@@ -194,9 +190,9 @@ Webhook thanh toán phải: xác minh chữ ký, lưu raw event tối thiểu c�
 ## 5. Lộ trình migration không downtime lớn
 
 1. **Production foundation:** domain HTTPS ổn định, secrets, backup/restore, object storage và observability trước khi mời quán thật.
-2. **Mở rộng additive:** tạo các bảng identity/billing, thêm cột nullable `restaurant_id` và backfill toàn bộ dữ liệu hiện có vào default organization/restaurant. Chưa đổi endpoint.
+2. **Mở rộng additive:** thêm cột nullable `restaurant_id` và backfill toàn bộ dữ liệu hiện có vào quán mặc định. Chưa đổi endpoint.
 3. **Dual-read/dual-write có kiểm soát:** service tự lấy tenant context; thêm composite unique/index, kiểm thử không thể đọc chéo tenant. Chỉ bỏ đường cũ sau khi đối soát.
-4. **Onboarding:** public owner registration → email/password → organization + restaurant + owner membership + subscription `TRIAL` trong một transaction. Tạo sẵn menu/bàn mẫu; QR dùng hostname production cố định.
+4. **Onboarding:** public owner registration → email/password → restaurant + owner `AuthUser` + `trialEndsAt` cố định trong một transaction. Tạo sẵn menu/bàn mẫu; QR dùng hostname production cố định.
 5. **Billing:** seed plan `starter-monthly` 100.000 VND, tạo cycle, tích hợp provider webhook, entitlement + dunning/grace. Đơn không có limit ở policy starter.
 6. **Tiered plans:** `feature_limits`/entitlement thay vì hard-code. Migrate plan version/pricing không sửa subscription lịch sử.
 
@@ -207,4 +203,4 @@ Mỗi migration phải có backup, kiểm thử restore, `EXPLAIN` cho các quer
 - Không tự thu tiền từ thẻ; dùng cổng thanh toán có webhook.
 - Không tính phí theo số đơn ở gói đầu.
 - Không mở marketplace/đồng bộ ảnh giữa quán cho tới khi có consent, licensing và object storage chung.
-- Không làm đa chi nhánh UI trước khi tenant isolation, subscription và onboarding an toàn.
+- Không làm một tài khoản quản lý nhiều quán, chuyển đổi chi nhánh hay gộp billing giữa các quán. Mỗi chi nhánh là một quán/tài khoản độc lập.
