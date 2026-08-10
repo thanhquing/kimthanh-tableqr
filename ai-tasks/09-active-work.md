@@ -14,7 +14,7 @@
 >
 > Chi tiết đầy đủ: [13-saas-expansion.md § SA-00](13-saas-expansion.md)
 >
-> **Đọc trước khi làm:** [`ai-tasks/13-saas-expansion.md`](13-saas-expansion.md), [`ai-docs/10-saas-evolution.md`](../ai-docs/10-saas-evolution.md), [`ai-docs/09-current-system-architecture.md`](../ai-docs/09-current-system-architecture.md), [`ai-tasks/04-open-questions.md`](04-open-questions.md) Q8 và Q11.
+> **Đọc trước khi làm:** [`ai-tasks/13-saas-expansion.md`](13-saas-expansion.md), [`ai-docs/10-saas-evolution.md`](../ai-docs/10-saas-evolution.md), [`ai-docs/09-current-system-architecture.md`](../ai-docs/09-current-system-architecture.md), [`ai-tasks/04-open-questions.md`](04-open-questions.md) Q11.
 >
 > **Xong:** chọn và triển khai nền production: domain HTTPS QR ổn định, secrets production, health/ready checks và asset không phụ thuộc ổ đĩa ephemeral.
 

@@ -25,8 +25,13 @@ Các điều cần người quyết trước `SA-01`: cổng thanh toán, có/kh
 
 ```mermaid
 flowchart LR
-  U["Chủ quán / nhân viên / khách"] --> CDN["HTTPS domain\nCDN + frontend tĩnh"]
-  CDN --> API["API stateless\nNestJS"]
+  Owner["Chủ quán"] --> Admin["https://tableqr.vn\nadmin frontend"]
+  Staff["Nhân viên"] --> StaffFE["https://staff.tableqr.vn\nstaff frontend"]
+  Guest["Khách quét QR"] --> GuestFE["https://guest.tableqr.vn\nguest frontend"]
+  Admin --> Proxy["Reverse proxy\n/api/v1 cùng origin"]
+  StaffFE --> Proxy
+  GuestFE --> Proxy
+  Proxy --> API["API stateless\nNestJS"]
   API --> PG[("Managed PostgreSQL\nRLS/tenant scope")]
   API --> Redis[("Redis\nrate-limit, cache, SSE fan-out")]
   API --> Object["Object storage\nảnh menu"]
@@ -36,6 +41,16 @@ flowchart LR
 ```
 
 Một deployment chung phục vụ nhiều quán độc lập. Mọi truy vấn nghiệp vụ phải có `restaurantId`/tenant context; không được tin ID do frontend gửi mà chỉ lấy tenant từ JWT hoặc QR token. Dùng QR token global unique để xác định quán cho public guest route mà không lộ `restaurantId`.
+
+### Hostname production đã chốt
+
+| Hostname | App | Đường vào chính |
+| --- | --- | --- |
+| `https://tableqr.vn` | Admin / chủ quán | Đăng ký, đăng nhập, quản lý menu/bàn/quán |
+| `https://staff.tableqr.vn` | Staff / bếp | Đăng nhập bằng mã quán + PIN, nhận SSE và xử lý đơn |
+| `https://guest.tableqr.vn` | Guest / khách | QR cố định: `https://guest.tableqr.vn/t/<qrToken>` |
+
+Mỗi hostname phục vụ đúng frontend tương ứng và cùng reverse proxy `/api/v1`, `/uploads`, `/menu-images` về một API NestJS. Vì frontend gọi API theo path tương đối (`VITE_API_BASE_URL=/api/v1`), không cần CORS giữa ba subdomain và token của từng app vẫn nằm trong origin riêng. `GUEST_BASE_URL` ở API và `VITE_GUEST_BASE_URL` của admin production đều là `https://guest.tableqr.vn`.
 
 ## 3. Mô hình dữ liệu đích
 

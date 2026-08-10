@@ -123,3 +123,5 @@ VITE_USE_MOCK=true
 ```
 VITE_GUEST_BASE_URL=http://localhost:5173   # dung de dung qrUrl khi in ma QR
 ```
+
+Production dùng ba hostname tách app nhưng vẫn proxy API cùng origin: `tableqr.vn` (admin), `staff.tableqr.vn` (staff), `guest.tableqr.vn` (guest). Vì vậy cả ba build giữ `VITE_API_BASE_URL=/api/v1`; riêng build admin đặt `VITE_GUEST_BASE_URL=https://guest.tableqr.vn` để URL QR không bao giờ trỏ về hostname admin.

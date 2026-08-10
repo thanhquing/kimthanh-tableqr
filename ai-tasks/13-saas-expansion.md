@@ -17,9 +17,9 @@ Nguồn thiết kế: [../ai-docs/10-saas-evolution.md](../ai-docs/10-saas-evolu
 
 ### `SA-00` — Production foundation · TODO
 
-Chọn deployment, domain/subdomain cho QR và HTTPS. Tách static frontend/API bằng reverse proxy hoặc cùng origin rõ ràng; đặt secrets qua environment manager; production `JWT_SECRET` bắt buộc khác dev.
+Chọn deployment và HTTPS cho domain đã chốt: `tableqr.vn` (admin), `staff.tableqr.vn` (staff), `guest.tableqr.vn` (guest/QR). Mỗi hostname reverse proxy `/api/v1`, `/uploads`, `/menu-images` về cùng API để giữ same-origin; đặt secrets qua environment manager; production `JWT_SECRET` bắt buộc khác dev.
 
-**Xong khi:** URL QR HTTPS ổn định, không có `localhost` trong build production, health/ready checks hoạt động, upload không phụ thuộc ổ đĩa ephemeral.
+**Xong khi:** QR HTTPS cố định `https://guest.tableqr.vn/t/<qrToken>`, không có `localhost` trong build production, health/ready checks hoạt động, upload không phụ thuộc ổ đĩa ephemeral.
 
 ### `SA-01` — Chốt chính sách billing · TODO · NEEDS DECISION
 

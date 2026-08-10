@@ -318,7 +318,7 @@ Request `{ "email": "...", "password": "..." }` → **200** `{ "token": "...", "
 | `PATCH` | `/admin/tables/:id` | `{ code?, displayName?, sortOrder?, isActive? }`. **Không cho đổi `qrToken`** (mã đã dán lên bàn rồi). |
 | `DELETE` | `/admin/tables/:id` | **409** nếu bàn có session `OPEN` |
 
-`qrUrl` = `<GUEST_BASE_URL>/t/<qrToken>`. `GUEST_BASE_URL` là biến cấu hình, không hardcode.
+`qrUrl` = `<GUEST_BASE_URL>/t/<qrToken>`. Production chốt `GUEST_BASE_URL=https://guest.tableqr.vn`, nên QR in ra luôn là `https://guest.tableqr.vn/t/<qrToken>`; local development dùng URL localhost tương ứng. Không hardcode hostname trong component.
 
 ### `GET` / `PATCH` `/api/v1/admin/restaurant`
 `{ name, logoUrl, address }`
