@@ -24,6 +24,8 @@
 > migration one-shot, secret production bắt buộc và upload volume bền qua
 > redeploy container. Đây không thay thế chọn nhà cung cấp, DNS thật, database
 > managed, object storage hoặc deployment HTTPS đã xác minh từ Internet.
+> Sau deploy, chạy `bash infra/production/verify-deployment.sh` từ mạng ngoài
+> VM để bắt DNS, TLS, health/ready, same-origin và HSTS trên cả ba hostname.
 
 > ### Bổ sung theo quyết định người dùng — tenant foundation · IN PROGRESS
 >

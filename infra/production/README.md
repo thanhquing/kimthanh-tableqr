@@ -27,9 +27,12 @@ docker compose --env-file .env.production -f infra/production/docker-compose.yml
 Sau khi tất cả service healthy, kiểm tra từ mạng ngoài VM:
 
 ```bash
-curl -fsS https://guest.tableqr.vn/api/v1/healthz
-curl -fsS https://guest.tableqr.vn/api/v1/readyz
+bash infra/production/verify-deployment.sh
 ```
+
+Script bắt buộc HTTPS/TLS 1.2+, health/ready qua **cả ba origin** và header
+HSTS. Có thể thay hostname qua biến `ADMIN_HOST`, `STAFF_HOST`, `GUEST_HOST`;
+hãy chạy lại sau mỗi lần đổi DNS, Caddy hoặc routing.
 
 Không chạy `down -v`: cờ `-v` sẽ xoá database, ảnh upload và chứng chỉ Caddy.
 `upload_data` là Docker volume bền qua redeploy container/image; đây là bước
