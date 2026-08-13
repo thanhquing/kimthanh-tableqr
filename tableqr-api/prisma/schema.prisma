@@ -85,6 +85,7 @@ model DiningTable {
   restaurant  Restaurant     @relation(fields: [restaurantId], references: [id])
 
   @@unique([restaurantId, code], map: "dining_table_restaurant_id_code_key")
+  @@unique([restaurantId, id], map: "dining_table_restaurant_id_id_key")
   @@index([restaurantId, sortOrder], map: "dining_table_restaurant_id_sort_order_idx")
   @@map("dining_table")
 }
@@ -99,6 +100,7 @@ model MenuCategory {
   restaurant Restaurant @relation(fields: [restaurantId], references: [id])
 
   @@index([restaurantId, sortOrder], map: "menu_category_restaurant_id_sort_order_idx")
+  @@unique([restaurantId, id], map: "menu_category_restaurant_id_id_key")
   @@map("menu_category")
 }
 
@@ -118,6 +120,7 @@ model MenuItem {
   restaurant  Restaurant   @relation(fields: [restaurantId], references: [id])
 
   @@index([restaurantId, categoryId], map: "menu_item_restaurant_id_category_id_idx")
+  @@unique([restaurantId, id], map: "menu_item_restaurant_id_id_key")
   @@map("menu_item")
 }
 
@@ -136,6 +139,7 @@ model TableSession {
   guestAccesses GuestSessionAccess[]
 
   @@index([restaurantId, tableId, status], map: "table_session_restaurant_table_status_idx")
+  @@unique([restaurantId, id], map: "table_session_restaurant_id_id_key")
   @@map("table_session")
 }
 
@@ -168,6 +172,7 @@ model Order {
   @@unique([restaurantId, sessionId, sequenceNo], map: "order_restaurant_session_sequence_no_key")
   @@index([restaurantId, createdAt], map: "order_restaurant_created_at_idx")
   @@index([restaurantId, tableId], map: "order_restaurant_table_id_idx")
+  @@unique([restaurantId, id], map: "order_restaurant_id_id_key")
   @@map("order")
 }
 
