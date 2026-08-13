@@ -13,11 +13,11 @@
 | **M6** | Backend `tableqr-api` | `BE-00`…`BE-10` | Endpoint khớp `ai-docs/04`; script verify cURL chạy hết luồng |
 | **M7a** | **Lát cắt dọc**: nối *chỉ* luồng gọi món của khách vào API thật | `BE-12a` | Quét QR → xem menu → gửi đơn chạy trên API thật. Hai app kia vẫn dùng mock. |
 | **M7b** | Nối nốt staff + admin, bật SSE | `BE-11`, `BE-12b` | Ba app gọi API thật; SSE phát và client xử lý đúng |
-| **M8** | Production foundation SaaS | `SA-00`…`SA-02` | HTTPS QR ổn định, backup/restore kiểm chứng, logging/alert và asset bền vững |
-| **M9** | Đa quán + owner self-service | `SA-03`…`SA-07` | Tenant isolation, đăng ký chủ quán, trial được tạo tự động |
-| **M10** | Billing tháng đầu | `SA-08`…`SA-12` | Trial 2 tháng, 100.000 VND/tháng unlimited orders, payment webhook/entitlement đúng |
+| **M8** | Đa quán + owner self-service | `SA-03`…`SA-07` | Tenant isolation, đăng ký chủ quán, trial được tạo tự động trong local/test |
+| **M9** | Chính sách + lifecycle billing | `SA-01`, `SA-08` | Trial 2 tháng, snapshot giá/gói, state machine và entitlement đúng |
+| **M10** | Billing tháng đầu | `SA-09`…`SA-12` | Payment webhook/entitlement đúng trong sandbox |
 | **M11** | Sẵn sàng nhiều gói | `SA-13` | Gói và feature data-driven |
-| **Release** | Kiểm thử thiết bị thật | `BE-13` | Điện thoại 4G quét QR in thật; tablet nhận đơn SSE < 2 giây không refresh; kiểm reset/phiên đóng |
+| **Release** | Production + kiểm thử thiết bị thật | `SA-00`, `SA-02`, `BE-13` | HTTPS QR, backup/restore, alert, asset bền; điện thoại 4G quét QR in thật; tablet SSE < 2 giây |
 
 ## Cổng chuyển mốc
 
@@ -45,4 +45,4 @@ Làm **tuần tự guest → staff → admin**, không song song. Lý do: app kh
 
 ## Sau M7
 
-Roadmap SaaS M8–M11 đã được lập riêng tại [`13-saas-expansion.md`](13-saas-expansion.md) và được ưu tiên trước `BE-13` theo quyết định ngày 2026-08-10. `BE-13` vẫn là cổng kiểm thử thiết bị thật trước phát hành. Thanh toán online tại bàn, báo cáo doanh thu/món bán chạy và nhiều chi nhánh vẫn là scope sau; xem `ai-docs/02-product-scope.md` để biết chỗ đã chừa sẵn.
+Roadmap SaaS M8–M11 đã được lập riêng tại [`13-saas-expansion.md`](13-saas-expansion.md). Theo quyết định ngày 2026-08-13, các task code multi-tenant/onboarding/billing chạy local trước; `SA-00`, `SA-02` và `BE-13` là cổng production/phát hành sau cùng. Thanh toán online tại bàn, báo cáo doanh thu/món bán chạy và nhiều chi nhánh vẫn là scope sau; xem `ai-docs/02-product-scope.md` để biết chỗ đã chừa sẵn.

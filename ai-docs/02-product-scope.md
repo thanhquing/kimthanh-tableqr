@@ -65,4 +65,4 @@ Khi phân vân giữa hai phương án, chọn phương án **ít bước hơn c
 - **"Reset bàn" không phải là xoá dữ liệu.** Xem [01-business-flow.md §2](01-business-flow.md#khi-khách-về).
 - **Khách không có tài khoản.** Đừng thêm màn hình "nhập tên", "nhập số điện thoại" dù nghe có vẻ tiện. Mỗi trường bắt nhập là một lý do để khách bỏ cuộc.
 - **Không có giỏ hàng đồng bộ giữa hai điện thoại cùng bàn.** Giỏ là cục bộ trên máy khách; chỉ khi bấm Gửi đơn thì đơn mới thuộc về phiên chung. Đồng bộ giỏ realtime là phức tạp thừa cho MVP.
-- **Đăng ký chủ quán và billing chưa thuộc runtime MVP.** Hướng mở rộng đã chốt: trial 2 tháng, sau đó 100.000 VND/tháng không giới hạn đơn. Xem [10-saas-evolution.md](10-saas-evolution.md); chỉ triển khai theo `SA-*` sau production foundation.
+- **Đăng ký chủ quán và billing chưa thuộc runtime MVP.** Hướng mở rộng đã chốt: trial 2 tháng, sau đó 100.000 VND/tháng không giới hạn đơn. Xem [10-saas-evolution.md](10-saas-evolution.md); triển khai theo thứ tự `SA-*`, với production foundation là cổng phát hành cuối.

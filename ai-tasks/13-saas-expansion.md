@@ -1,6 +1,6 @@
 # 13 — SaaS: đa quán, đăng ký và thuê bao
 
-Đây là roadmap mở rộng từ single-restaurant MVP sang SaaS đa quán. Theo ưu tiên đã đổi ngày 2026-08-10, thực hiện roadmap này **trước `BE-13`** để ưu tiên đăng ký chủ quán và đa tenant. `BE-13` được giữ lại như kiểm thử thiết bị thật bắt buộc trước phát hành. Không triển khai task dưới đây khi chưa đạt production foundation và các quyết định cần thiết ở `SA-01`.
+Đây là roadmap mở rộng từ single-restaurant MVP sang SaaS đa quán. Theo quyết định người dùng ngày 2026-08-13, ưu tiên hoàn thiện code multi-tenant, onboarding và billing trên môi trường local trước. `SA-00`, `SA-02` và `BE-13` là cổng DevOps/phát hành làm ở cuối; không đưa quán thật vào vận hành trước khi ba cổng này đạt. `SA-01` vẫn phải được chốt trước các task billing vì nó quyết định state machine và quyền khi quá hạn.
 
 Nguồn thiết kế: [../ai-docs/10-saas-evolution.md](../ai-docs/10-saas-evolution.md). Kiến trúc hiện tại: [../ai-docs/09-current-system-architecture.md](../ai-docs/09-current-system-architecture.md).
 
@@ -8,14 +8,32 @@ Nguồn thiết kế: [../ai-docs/10-saas-evolution.md](../ai-docs/10-saas-evolu
 
 | Mốc | Mục tiêu | Task | Cổng đạt |
 | --- | --- | --- | --- |
-| M8 | Đưa MVP lên production an toàn | `SA-00`…`SA-02` | HTTPS QR ổn định, backup restore đã thử, monitor/alert cơ bản |
-| M9 | Tenant isolation + onboarding | `SA-03`…`SA-07` | Hai quán không thể đọc/ghi dữ liệu chéo; chủ quán tự đăng ký được |
-| M10 | Trial và thu phí monthly | `SA-08`…`SA-12` | Trial 2 tháng, 100.000 VND/tháng, webhook idempotent, entitlement đúng |
+| M8 | Tenant isolation + onboarding | `SA-03`…`SA-07` | Hai quán không thể đọc/ghi dữ liệu chéo; chủ quán tự đăng ký được trong local/test |
+| M9 | Chính sách + lifecycle billing | `SA-01`, `SA-08` | Trial 2 tháng, snapshot giá/gói, state machine và entitlement được test |
+| M10 | Payment + owner self-service | `SA-09`…`SA-12` | Webhook idempotent, UI billing, entitlement và vận hành sandbox đúng |
 | M11 | Sẵn sàng nhiều gói | `SA-13` | Gói/feature data-driven; đổi giá không đổi lịch sử |
+| Release | Production + kiểm thử thiết bị | `SA-00`, `SA-02`, `BE-13` | HTTPS QR thật, backup/restore, monitor/alert, asset bền và thiết bị 4G/tablet đạt |
 
-## Task theo thứ tự
+## Thứ tự thực hiện
 
-### `SA-00` — Production foundation · TODO
+| Thứ tự | Task | Ghi chú |
+| --- | --- | --- |
+| 1 | `SA-03` + `SA-04` | Hoàn tất RLS và test tenant isolation local; đây là task hiện tại. |
+| 2 | `SA-05` | Đối soát query/index/business data tenant-scoped. |
+| 3 | `SA-06` → `SA-07` | Đăng ký chủ quán rồi hoàn thiện shell/onboarding admin. |
+| 4 | `SA-01` | Chốt policy billing trước khi tạo lifecycle. |
+| 5 | `SA-08` | Plan/subscription/entitlement bằng code và test local. |
+| 6 | `SA-09` → `SA-12` | Payment provider, UI, enforcement và acceptance sandbox. |
+| 7 | `SA-13` | Feature entitlement data-driven. |
+| 8 | `SA-00` → `SA-02` | Chọn provider, deploy HTTPS, managed DB/object storage, backup/observability. |
+| 9 | `BE-13` | Kiểm thử phát hành bằng QR giấy, điện thoại 4G và tablet thật. |
+| Sau này | `SA-14` | Chỉ khi mô hình một owner/một quán không còn phù hợp. |
+
+Các mô tả bên dưới không được sắp theo thứ tự thực hiện; luôn dùng bảng trên và `09-active-work.md` để chọn task kế tiếp.
+
+## Nội dung từng task
+
+### `SA-00` — Production foundation · TODO (Release gate)
 
 Chọn deployment và HTTPS cho domain đã chốt: `tableqr.vn` (admin), `staff.tableqr.vn` (staff), `guest.tableqr.vn` (guest/QR). Mỗi hostname reverse proxy `/api/v1`, `/uploads`, `/menu-images` về cùng API để giữ same-origin; đặt secrets qua environment manager; production `JWT_SECRET` bắt buộc khác dev.
 
@@ -27,19 +45,19 @@ Ghi quyết định cổng thanh toán, ngày kết thúc trial, grace period, r
 
 **Xong khi:** cập nhật `ai-docs/10`, enum status, state-transition và acceptance criteria; không còn quy tắc billing mơ hồ trong code task.
 
-### `SA-02` — Database operations & observability · TODO
+### `SA-02` — Database operations & observability · TODO (Release gate)
 
 Managed PostgreSQL hoặc phương án tương đương: backup tự động, restore drill, retention, migration runner một lần, structured logs, metrics/alerts và error tracking. Thêm object storage cho upload menu.
 
 **Xong khi:** restore thử thành công trong môi trường tách biệt; alert DB/API/backup lỗi; ảnh vẫn truy cập được sau redeploy.
 
-### `SA-03` — Tenant schema additive migration · TODO
+### `SA-03` — Tenant schema additive migration · IN PROGRESS
 
 Thêm `restaurant_id` nullable vào `AuthUser` và mọi dữ liệu nghiệp vụ qua migration additive. Backfill toàn bộ dữ liệu hiện có vào quán mặc định; không đổi endpoint công khai ở task này. Không thêm `Organization`, `Membership` hay bảng billing ở task này.
 
 **Xong khi:** dữ liệu cũ còn nguyên, FK/index/composite unique đúng, migration rehearsal + rollback plan + test backfill pass.
 
-### `SA-04` — Tenant context & authorization · TODO
+### `SA-04` — Tenant context & authorization · IN PROGRESS
 
 JWT của `AuthUser` phải xác định restaurant đang thao tác. Tạo repository/service scope bắt buộc `restaurantId`; guest resolve qua QR token global unique và dùng guest-session capability được xác minh (không dựa vào UUID `sessionId` khó đoán). Không cho client chọn tenant bằng body/query không được xác minh; thay JWT query string của SSE bằng ticket ngắn hạn nếu cần.
 

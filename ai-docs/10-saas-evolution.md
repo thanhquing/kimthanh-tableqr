@@ -204,12 +204,11 @@ Webhook thanh toán phải: xác minh chữ ký, lưu raw event tối thiểu c�
 
 ## 5. Lộ trình migration không downtime lớn
 
-1. **Production foundation:** domain HTTPS ổn định, secrets, backup/restore, object storage và observability trước khi mời quán thật.
-2. **Mở rộng additive:** thêm cột nullable `restaurant_id` và backfill toàn bộ dữ liệu hiện có vào quán mặc định. Chưa đổi endpoint.
-3. **Dual-read/dual-write có kiểm soát:** service tự lấy tenant context; thêm composite unique/index, kiểm thử không thể đọc chéo tenant. Chỉ bỏ đường cũ sau khi đối soát.
-4. **Onboarding:** public owner registration → email/password → restaurant + owner `AuthUser` + `trialEndsAt` cố định trong một transaction. Tạo sẵn menu/bàn mẫu; QR dùng hostname production cố định.
-5. **Billing:** seed plan `starter-monthly` 100.000 VND, tạo cycle, tích hợp provider webhook, entitlement + dunning/grace. Đơn không có limit ở policy starter.
-6. **Tiered plans:** `feature_limits`/entitlement thay vì hard-code. Migrate plan version/pricing không sửa subscription lịch sử.
+1. **Tenant foundation local:** mở rộng additive, backfill dữ liệu vào quán mặc định, tenant context và RLS; kiểm thử không thể đọc chéo qua REST/SSE. Chỉ bỏ đường cũ sau khi đối soát.
+2. **Onboarding local:** public owner registration → email/password → restaurant + owner `AuthUser` + `trialEndsAt` cố định trong một transaction. Tạo sẵn menu/bàn mẫu; QR dùng hostname production đã chốt.
+3. **Billing local/sandbox:** seed plan `starter-monthly` 100.000 VND, tạo cycle, tích hợp provider webhook, entitlement + dunning/grace. Đơn không có limit ở policy starter.
+4. **Tiered plans:** `feature_limits`/entitlement thay vì hard-code. Migrate plan version/pricing không sửa subscription lịch sử.
+5. **Production release gate:** sau khi code/sandbox đạt, chọn deployment; xác minh domain HTTPS, secrets, backup/restore, object storage, observability và thiết bị 4G/tablet thật trước khi mời quán thật.
 
 Mỗi migration phải có backup, kiểm thử restore, `EXPLAIN` cho các query tenant-scoped, migration rehearsal trên dữ liệu copy, và rollback plan. Không chạy một migration biến đổi toàn bộ bảng lớn trong giờ phục vụ.
 

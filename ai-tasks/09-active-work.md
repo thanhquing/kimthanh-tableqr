@@ -6,36 +6,19 @@
 
 ## Current task
 
-> ### `SA-00` — Production foundation
+> ### `SA-03` + `SA-04` — Tenant isolation hardening
 >
 > **Mốc:** M8 · **Trạng thái:** IN PROGRESS
 >
-> Ưu tiên đã đổi ngày 2026-08-10: làm lộ trình SaaS để hỗ trợ chủ quán tự đăng ký và đa tenant trước. `BE-13` được dời thành kiểm thử phát hành cuối cùng.
+> Theo quyết định người dùng ngày 2026-08-13, hoàn tất code multi-tenant local trước; các task DevOps (`SA-00`, `SA-02`) và verify thiết bị thật (`BE-13`) được dời thành cổng phát hành cuối.
 >
-> Chi tiết đầy đủ: [13-saas-expansion.md § SA-00](13-saas-expansion.md)
+> **Mục tiêu hiện tại:** thêm PostgreSQL RLS đúng tenant policy, kiểm tra REST/SSE không truy cập chéo tenant và hoàn tất migration/test/rollback plan local.
 >
-> **Đọc trước khi làm:** [`ai-tasks/13-saas-expansion.md`](13-saas-expansion.md), [`ai-docs/10-saas-evolution.md`](../ai-docs/10-saas-evolution.md), [`ai-docs/09-current-system-architecture.md`](../ai-docs/09-current-system-architecture.md), [`ai-tasks/04-open-questions.md`](04-open-questions.md) Q11.
+> **Đọc trước khi làm:** [`ai-tasks/13-saas-expansion.md`](13-saas-expansion.md), [`ai-docs/10-saas-evolution.md`](../ai-docs/10-saas-evolution.md), [`ai-docs/09-current-system-architecture.md`](../ai-docs/09-current-system-architecture.md), [`ai-docs/03-domain-model.md`](../ai-docs/03-domain-model.md).
 >
-> **Xong:** chọn và triển khai nền production: domain HTTPS QR ổn định, secrets production, health/ready checks và asset không phụ thuộc ổ đĩa ephemeral.
+> **Xong:** hai tenant không thể đọc/ghi/stream dữ liệu chéo kể cả khi bypass service scope; RLS policy, test regression, migration rehearsal và forward/rollback plan local đều đạt.
 >
-> **Tiến độ local/portable (2026-08-13):** đã thêm mô phỏng ba hostname
-> `*.localhost` để kiểm chứng same-origin/reverse proxy và QR trước khi mua
-> domain. Đã có stack Docker Compose tham chiếu cho một VM với Caddy HTTPS,
-> migration one-shot, secret production bắt buộc và upload volume bền qua
-> redeploy container. Đây không thay thế chọn nhà cung cấp, DNS thật, database
-> managed, object storage hoặc deployment HTTPS đã xác minh từ Internet.
-> Sau deploy, chạy `bash infra/production/verify-deployment.sh` từ mạng ngoài
-> VM để bắt DNS, TLS, health/ready, same-origin và HSTS trên cả ba hostname.
-
-> ### Bổ sung theo quyết định người dùng — tenant foundation · IN PROGRESS
->
-> Người dùng cho phép reset toàn bộ PostgreSQL local ngày 2026-08-13 để bắt đầu
-> sớm migration multi-tenant. Đã thêm `restaurant_id` vào dữ liệu nghiệp vụ,
-> JWT tenant context, staff ghép tablet bằng QR một-lần TTL 10 phút rồi đăng nhập PIN, SSE scope
-> theo quán và guest-session capability có hash trong DB. Composite foreign key
-> đã chặn trực tiếp menu/order/session/call nối chéo tenant. Đã seed/test hai
-> tenant: Staff Hương Quê không thể mở phiên Kim Thành. Chưa đánh dấu
-> `SA-03`/`SA-04` DONE: còn RLS.
+> **Tiến độ:** đã thêm `restaurant_id`, tenant context JWT, guest capability hash, SSE ticket scope và composite foreign key; hai tenant đã được seed/test. Phần còn lại là RLS.
 
 ---
 
@@ -101,7 +84,7 @@
 
 ## Tiếp theo (theo thứ tự, không đảo)
 
-`SA-00` → `SA-01` → `SA-02` → `SA-03` → `SA-04` → `SA-05` → `SA-06` (đăng ký chủ quán) → `SA-07` → `SA-08`…`SA-13` → `BE-13` (kiểm thử thiết bị thật trước phát hành). `SA-14` chỉ làm sau này nếu mô hình một tài khoản/một quán không còn phù hợp.
+`SA-03` + `SA-04` → `SA-05` → `SA-06` → `SA-07` → `SA-01` → `SA-08` → `SA-09`…`SA-12` → `SA-13` → `SA-00` → `SA-02` → `BE-13`. `SA-14` chỉ làm sau này nếu mô hình một tài khoản/một quán không còn phù hợp.
 
 Cổng M1→M2 đã đạt ngày 2026-08-02: đối chiếu xong 28 handler M1 ở bảng cuối `ai-docs/04`, dòng 29 là SSE để M7; prototype đã duyệt; 3 package M1 build sạch.
 
