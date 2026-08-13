@@ -72,6 +72,12 @@ Vite app và proxy. Nhấn `Ctrl-C` để dừng proxy/frontend; database/API Do
 vẫn giữ để lần sau chạy nhanh. QR được API tạo trong chế độ này luôn trỏ về
 hostname guest local, thay vì `localhost:5173`.
 
+Kiểm tra nhanh việc tách dữ liệu hai quán và quyền guest sau khi stack đang chạy:
+
+```bash
+bash tableqr-api/scripts/verify-tenant-isolation.sh
+```
+
 Ba app mặc định gọi API thật qua Vite proxy. Để chạy giao diện với MSW khi
 phát triển, đặt `VITE_USE_MOCK=true` trong file `.env.development` của app đó.
 

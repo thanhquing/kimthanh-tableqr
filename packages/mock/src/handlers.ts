@@ -53,6 +53,13 @@ function requireGuest(request: Request): void {
   if (!UUID_PATTERN.test(token)) throw new MockApiError(401, 'UNAUTHORIZED', 'Mã phiên khách không hợp lệ.')
 }
 
+function guestAccessToken(sessionId: string): string { return `mock-guest-access-${sessionId}` }
+function requireGuestAccess(request: Request, sessionId: string): void {
+  if (request.headers.get('X-Guest-Access') !== guestAccessToken(sessionId)) {
+    throw new MockApiError(401, 'GUEST_ACCESS_INVALID', 'Phiên quét mã không hợp lệ. Vui lòng quét lại mã QR.')
+  }
+}
+
 function bearerRole(request: Request): StaffRole | null {
   const authorization = request.headers.get('Authorization')
   if (authorization === `Bearer ${STAFF_TOKEN}`) return 'staff'
@@ -107,29 +114,36 @@ export function createHandlers(options: HandlerOptions = {}): HttpHandler[] {
     http.get(`${api}/guest/tables/:qrToken`, ({ request, params }) =>
       execute(request, chaosController, () => {
         requireGuest(request)
-        return HttpResponse.json(store.bootstrapGuest(String(params.qrToken)))
+        const bootstrap = store.bootstrapGuest(String(params.qrToken))
+        return HttpResponse.json({ ...bootstrap, guestAccessToken: guestAccessToken(bootstrap.session.id) })
       }),
     ),
     http.get(`${api}/guest/sessions/:sessionId/orders`, ({ request, params }) =>
       execute(request, chaosController, () => {
         requireGuest(request)
-        return HttpResponse.json(store.getGuestOrders(String(params.sessionId)))
+        const sessionId = String(params.sessionId)
+        requireGuestAccess(request, sessionId)
+        return HttpResponse.json(store.getGuestOrders(sessionId))
       }),
     ),
     http.post(`${api}/guest/sessions/:sessionId/orders`, ({ request, params }) =>
       execute(request, chaosController, async () => {
         requireGuest(request)
+        const sessionId = String(params.sessionId)
+        requireGuestAccess(request, sessionId)
         const requestId = request.headers.get(REQUEST_ID_HEADER)
         if (!requestId?.trim()) throw validationError({ requestId: 'Thiếu header X-Request-Id.' })
         if (!UUID_PATTERN.test(requestId)) throw validationError({ requestId: 'X-Request-Id phải là UUID.' })
         const body = parseCreateOrder(await readJson(request))
-        return HttpResponse.json(store.createOrder(String(params.sessionId), body, requestId), { status: 201 })
+        return HttpResponse.json(store.createOrder(sessionId, body, requestId), { status: 201 })
       }),
     ),
     http.post(`${api}/guest/sessions/:sessionId/calls`, ({ request, params }) =>
       execute(request, chaosController, async () => {
         requireGuest(request)
-        const result = store.createCall(String(params.sessionId), parseCreateCall(await readJson(request)))
+        const sessionId = String(params.sessionId)
+        requireGuestAccess(request, sessionId)
+        const result = store.createCall(sessionId, parseCreateCall(await readJson(request)))
         return HttpResponse.json(result.call, { status: result.status })
       }),
     ),

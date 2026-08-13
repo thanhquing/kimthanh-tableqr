@@ -133,9 +133,21 @@ model TableSession {
   orders   Order[]
   calls    StaffCall[]
   restaurant Restaurant  @relation(fields: [restaurantId], references: [id])
+  guestAccesses GuestSessionAccess[]
 
   @@index([restaurantId, tableId, status], map: "table_session_restaurant_table_status_idx")
   @@map("table_session")
+}
+
+model GuestSessionAccess {
+  id        String       @id @default(uuid()) @db.Uuid
+  sessionId String       @map("session_id") @db.Uuid
+  tokenHash String       @unique @map("token_hash")
+  createdAt DateTime     @default(now()) @map("created_at") @db.Timestamptz(3)
+  session   TableSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@index([sessionId], map: "guest_session_access_session_id_idx")
+  @@map("guest_session_access")
 }
 
 model Order {

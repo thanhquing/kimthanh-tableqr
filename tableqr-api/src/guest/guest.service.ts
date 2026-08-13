@@ -1,4 +1,5 @@
 import { HttpException, Injectable } from '@nestjs/common'
+import { createHash, randomBytes } from 'node:crypto'
 import { Prisma } from '@prisma/client'
 import { PrismaService } from '../prisma.service'
 import { GuestRateLimitService } from './guest-rate-limit.service'
@@ -27,6 +28,10 @@ export class GuestService {
         if (!session) throw error
       }
     }
+    // Mỗi lần quét QR tạo capability riêng. Hash nằm trong DB nên lần quét sau
+    // không làm hết hiệu lực điện thoại khách đang gọi món cùng phiên.
+    const guestAccessToken = this.newGuestAccessToken()
+    await this.prisma.guestSessionAccess.create({ data: { sessionId: session!.id, tokenHash: this.hashGuestAccessToken(guestAccessToken) } })
     const [restaurant, categories, items] = await Promise.all([
       this.prisma.restaurant.findUniqueOrThrow({ where: { id: activeTable.restaurantId } }),
       this.prisma.menuCategory.findMany({ where: { restaurantId: activeTable.restaurantId, isActive: true }, orderBy: { sortOrder: 'asc' } }),
@@ -36,13 +41,14 @@ export class GuestService {
       restaurant: { id: restaurant.id, name: restaurant.name, logoUrl: restaurant.logoUrl },
       table: { id: activeTable.id, code: activeTable.code, displayName: activeTable.displayName },
       session: { id: session!.id, status: session!.status, openedAt: session!.openedAt },
+      guestAccessToken,
       categories: categories.map(({ id, name, sortOrder }) => ({ id, name, sortOrder })),
       items: items.map(({ id, categoryId, name, description, priceVnd, imageUrl, isAvailable, sortOrder }) => ({ id, categoryId, name, description, priceVnd, imageUrl, isAvailable, sortOrder })),
     }
   }
 
-  async orders(sessionId: string) {
-    const session = await this.prisma.tableSession.findUnique({ where: { id: sessionId }, include: { orders: { include: { items: true }, orderBy: { sequenceNo: 'asc' } } } })
+  async orders(sessionId: string, guestAccessToken: string | undefined) {
+    const session = await this.sessionWithAccess(sessionId, guestAccessToken, { orders: { include: { items: true }, orderBy: { sequenceNo: 'asc' } } })
     if (!session || session.status !== 'OPEN') fail(409, 'SESSION_CLOSED', 'Phiên bàn đã kết thúc.')
     const openSession = session!
     const orders = await Promise.all(openSession.orders.map((order) => this.orderDto(order)))
@@ -50,11 +56,12 @@ export class GuestService {
     return { session: { id: openSession.id, status: openSession.status, totalVnd }, orders }
   }
 
-  async createOrder(sessionId: string, requestId: string | undefined, body: CreateOrderBody) {
+  async createOrder(sessionId: string, guestAccessToken: string | undefined, requestId: string | undefined, body: CreateOrderBody) {
     if (!requestId) fail(400, 'VALIDATION_ERROR', 'Thiếu mã yêu cầu gửi đơn.', { fields: { requestId: 'Thiếu X-Request-Id.' } })
     const safeRequestId = requestId!
     if (!Array.isArray(body.items) || body.items.length === 0) fail(400, 'EMPTY_ORDER', 'Vui lòng chọn ít nhất một món.')
     const result = await this.prisma.$transaction(async (tx) => {
+      await this.requireSessionAccess(tx, sessionId, guestAccessToken)
       const session = await tx.tableSession.findUnique({ where: { id: sessionId } })
       if (!session || session.status !== 'OPEN') fail(409, 'SESSION_CLOSED', 'Phiên bàn đã kết thúc.')
       const restaurantId = session.restaurantId
@@ -76,8 +83,9 @@ export class GuestService {
     return result
   }
 
-  async createCall(sessionId: string, body: CreateCallBody) {
+  async createCall(sessionId: string, guestAccessToken: string | undefined, body: CreateCallBody) {
     if (body.type !== 'CALL_STAFF' && body.type !== 'REQUEST_BILL') fail(400, 'VALIDATION_ERROR', 'Loại yêu cầu không hợp lệ.', { fields: { type: 'Chọn gọi nhân viên hoặc xin tính tiền.' } })
+    await this.requireSessionAccess(this.prisma, sessionId, guestAccessToken)
     const session = await this.prisma.tableSession.findUnique({ where: { id: sessionId } })
     if (!session || session.status !== 'OPEN') fail(409, 'SESSION_CLOSED', 'Phiên bàn đã kết thúc.')
     const callType = body.type as 'CALL_STAFF' | 'REQUEST_BILL'
@@ -90,5 +98,17 @@ export class GuestService {
   private async orderDto(order: { id: string; sequenceNo: number; status: string; createdAt: Date; note: string | null; items: Array<{ id: string; menuItemId: string; nameSnapshot: string; unitPriceVndSnapshot: number; quantity: number; note: string | null }> }) {
     const items = order.items.map(({ id, menuItemId, nameSnapshot, unitPriceVndSnapshot, quantity, note }) => ({ id, menuItemId, nameSnapshot, unitPriceVndSnapshot, quantity, note, lineTotalVnd: unitPriceVndSnapshot * quantity }))
     return { id: order.id, sequenceNo: order.sequenceNo, status: order.status, createdAt: order.createdAt, note: order.note, totalVnd: await calcOrderTotalFromContracts(order.items), items }
+  }
+
+  private newGuestAccessToken(): string { return randomBytes(32).toString('base64url') }
+  private hashGuestAccessToken(token: string): string { return createHash('sha256').update(token).digest('hex') }
+  private hashGuestAccessTokenOrNull(token: string | undefined): string { if (!token?.trim()) fail(401, 'GUEST_ACCESS_INVALID', 'Phiên quét mã không hợp lệ. Vui lòng quét lại mã QR.'); return this.hashGuestAccessToken(token) }
+  private async requireSessionAccess(client: Pick<PrismaService, 'guestSessionAccess'> | Prisma.TransactionClient, sessionId: string, token: string | undefined) {
+    const access = await client.guestSessionAccess.findFirst({ where: { sessionId, tokenHash: this.hashGuestAccessTokenOrNull(token) }, select: { id: true } })
+    if (!access) fail(401, 'GUEST_ACCESS_INVALID', 'Phiên quét mã không hợp lệ. Vui lòng quét lại mã QR.')
+  }
+  private async sessionWithAccess(sessionId: string, token: string | undefined, include: { orders: { include: { items: true }; orderBy: { sequenceNo: 'asc' } } }) {
+    await this.requireSessionAccess(this.prisma, sessionId, token)
+    return this.prisma.tableSession.findUnique({ where: { id: sessionId }, include })
   }
 }

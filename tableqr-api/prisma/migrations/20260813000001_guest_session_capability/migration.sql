@@ -1,0 +1,2 @@
+-- Capability da tach thanh bang guest_session_access o migration ke tiep de
+-- nhieu dien thoai co the cung truy cap mot phien ma khong thu hoi nhau.

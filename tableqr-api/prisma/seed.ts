@@ -22,6 +22,7 @@ function fixtureId(value: string): string {
 
 async function seed() {
   const restaurantId = fixtureId(RESTAURANT.id)
+  const demoRestaurantId = fixtureId('res-huong-que')
   const categoryIds = new Map(CATEGORIES.map((category) => [category.id, fixtureId(category.id)]))
   const itemIds = new Map(MENU_ITEMS.map((item) => [item.id, fixtureId(item.id)]))
   const tableIds = new Map(TABLES.map((table) => [table.id, fixtureId(table.id)]))
@@ -127,6 +128,40 @@ async function seed() {
         await tx.orderItem.upsert({ where: { id }, update: itemData, create: { id, ...itemData } })
       }
     }
+
+    // Tenant thứ hai chỉ dùng để kiểm tra isolation local. Không chia sẻ ID,
+    // menu, bàn, tài khoản hay mã QR với Kim Thành.
+    await tx.restaurant.upsert({
+      where: { id: demoRestaurantId },
+      update: { name: 'Quán Hương Quê', publicSlug: 'huong-que', staffLoginCode: 'HUONG-7391', logoUrl: null, address: '45 Lê Lợi, Quận 1, TP.HCM' },
+      create: { id: demoRestaurantId, name: 'Quán Hương Quê', publicSlug: 'huong-que', staffLoginCode: 'HUONG-7391', logoUrl: null, address: '45 Lê Lợi, Quận 1, TP.HCM' },
+    })
+    await tx.authUser.upsert({
+      where: { id: fixtureId('staff-huong-que') },
+      update: { restaurantId: demoRestaurantId, displayName: 'Nhân viên Hương Quê', isActive: true, pinHash: await hash('135790', 12) },
+      create: { id: fixtureId('staff-huong-que'), restaurantId: demoRestaurantId, role: 'STAFF', displayName: 'Nhân viên Hương Quê', pinHash: await hash('135790', 12) },
+    })
+    await tx.authUser.upsert({
+      where: { id: fixtureId('owner-huong-que') },
+      update: { restaurantId: demoRestaurantId, displayName: 'Chủ quán Hương Quê', email: 'chuquan@huongque.vn', isActive: true, passwordHash: await hash('huongque2026', 12) },
+      create: { id: fixtureId('owner-huong-que'), restaurantId: demoRestaurantId, role: 'OWNER', displayName: 'Chủ quán Hương Quê', email: 'chuquan@huongque.vn', passwordHash: await hash('huongque2026', 12) },
+    })
+    const demoCategoryId = fixtureId('cat-huong-que')
+    await tx.menuCategory.upsert({
+      where: { id: demoCategoryId },
+      update: { restaurantId: demoRestaurantId, name: 'Món nhà làm', sortOrder: 1, isActive: true },
+      create: { id: demoCategoryId, restaurantId: demoRestaurantId, name: 'Món nhà làm', sortOrder: 1, isActive: true },
+    })
+    await tx.menuItem.upsert({
+      where: { id: fixtureId('item-huong-que') },
+      update: { restaurantId: demoRestaurantId, categoryId: demoCategoryId, name: 'Cơm gà Hương Quê', description: 'Dữ liệu tenant kiểm thử', priceVnd: 49000, imageUrl: null, isAvailable: true, sortOrder: 1 },
+      create: { id: fixtureId('item-huong-que'), restaurantId: demoRestaurantId, categoryId: demoCategoryId, name: 'Cơm gà Hương Quê', description: 'Dữ liệu tenant kiểm thử', priceVnd: 49000, imageUrl: null, isAvailable: true, sortOrder: 1 },
+    })
+    await tx.diningTable.upsert({
+      where: { id: fixtureId('table-huong-que-01') },
+      update: { restaurantId: demoRestaurantId, code: 'B01', displayName: 'Bàn Hương Quê 1', qrToken: 'qr-huong-que-01-k9d2m7p4x', isActive: true, sortOrder: 1 },
+      create: { id: fixtureId('table-huong-que-01'), restaurantId: demoRestaurantId, code: 'B01', displayName: 'Bàn Hương Quê 1', qrToken: 'qr-huong-que-01-k9d2m7p4x', isActive: true, sortOrder: 1 },
+    })
   })
 }
 

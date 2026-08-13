@@ -15,6 +15,7 @@ API_BASE_URL="${API_BASE_URL:-http://localhost:3000/api/v1}"
 API_BASE_URL="${API_BASE_URL%/}"
 QR_TOKEN="${QR_TOKEN:-qr-ban-01-a7f3k9m2xp}"
 STAFF_PIN="${STAFF_PIN:-246810}"
+STAFF_LOGIN_CODE="${STAFF_LOGIN_CODE:-KIM-4821}"
 RESPONSE_FILE="$(mktemp)"
 
 cleanup() {
@@ -86,7 +87,7 @@ step() {
 
 printf 'Kiem tra flow API tai %s (QR %s)\n' "$API_BASE_URL" "$QR_TOKEN"
 
-api POST '/staff/auth/login' 200 "$(jq -nc --arg pin "$STAFF_PIN" '{pin: $pin}')"
+api POST '/staff/auth/login' 200 "$(jq -nc --arg code "$STAFF_LOGIN_CODE" --arg pin "$STAFF_PIN" '{staffLoginCode: $code, pin: $pin}')"
 STAFF_AUTH="Authorization: Bearer $(value '.token')"
 step 'Dang nhap nhan vien'
 
@@ -94,12 +95,14 @@ step 'Dang nhap nhan vien'
 GUEST_HEADER="X-Guest-Token: $(new_request_id)"
 api GET "/guest/tables/$QR_TOKEN" 200 '' "$GUEST_HEADER"
 STALE_SESSION_ID="$(value '.session.id')"
+GUEST_ACCESS="X-Guest-Access: $(value '.guestAccessToken')"
 api POST "/staff/sessions/$STALE_SESSION_ID/pay" 200 '' "$STAFF_AUTH"
 api POST "/staff/sessions/$STALE_SESSION_ID/close" 200 '' "$STAFF_AUTH"
 step 'Dat ban test ve trang thai trong'
 
 api GET "/guest/tables/$QR_TOKEN" 200 '' "$GUEST_HEADER"
 SESSION_ID="$(value '.session.id')"
+GUEST_ACCESS="X-Guest-Access: $(value '.guestAccessToken')"
 MENU_ITEM_ONE="$(value '.items[] | select(.isAvailable == true) | .id' | head -n 1)"
 MENU_ITEM_TWO="$(value '.items[] | select(.isAvailable == true) | .id' | sed -n '2p')"
 [[ -n "$MENU_ITEM_ONE" && -n "$MENU_ITEM_TWO" ]] || fail 'Fixture can it nhat hai mon dang con hang.'
@@ -107,24 +110,24 @@ step 'Quet QR va mo phien moi'
 
 ORDER_ONE_REQUEST_ID="$(new_request_id)"
 ORDER_ONE_BODY="$(jq -nc --arg item "$MENU_ITEM_ONE" '{note: "Don dau tien", items: [{menuItemId: $item, quantity: 2, note: "it da"}]}')"
-api POST "/guest/sessions/$SESSION_ID/orders" 201 "$ORDER_ONE_BODY" "$GUEST_HEADER" "X-Request-Id: $ORDER_ONE_REQUEST_ID"
+api POST "/guest/sessions/$SESSION_ID/orders" 201 "$ORDER_ONE_BODY" "$GUEST_HEADER" "$GUEST_ACCESS" "X-Request-Id: $ORDER_ONE_REQUEST_ID"
 ORDER_ONE_ID="$(value '.id')"
 ORDER_ONE_TOTAL="$(value '.totalVnd')"
 assert_jq '.sequenceNo == 1 and .status == "NEW" and (.items | length == 1)' 'Don dau tien phai la NEW, sequenceNo 1 va co mot dong mon.'
 step 'Gui don dau tien'
 
-api POST "/guest/sessions/$SESSION_ID/orders" 200 "$ORDER_ONE_BODY" "$GUEST_HEADER" "X-Request-Id: $ORDER_ONE_REQUEST_ID"
+api POST "/guest/sessions/$SESSION_ID/orders" 200 "$ORDER_ONE_BODY" "$GUEST_HEADER" "$GUEST_ACCESS" "X-Request-Id: $ORDER_ONE_REQUEST_ID"
 assert_jq ".id == \"$ORDER_ONE_ID\" and .sequenceNo == 1" 'Gui lai cung request ID phai tra ve dung don cu.'
 step 'Kiem tra idempotency cua gui don'
 
 ORDER_TWO_BODY="$(jq -nc --arg item "$MENU_ITEM_TWO" '{note: "Goi them", items: [{menuItemId: $item, quantity: 1, note: null}]}')"
-api POST "/guest/sessions/$SESSION_ID/orders" 201 "$ORDER_TWO_BODY" "$GUEST_HEADER" "X-Request-Id: $(new_request_id)"
+api POST "/guest/sessions/$SESSION_ID/orders" 201 "$ORDER_TWO_BODY" "$GUEST_HEADER" "$GUEST_ACCESS" "X-Request-Id: $(new_request_id)"
 ORDER_TWO_ID="$(value '.id')"
 ORDER_TWO_TOTAL="$(value '.totalVnd')"
 assert_jq '.sequenceNo == 2 and .status == "NEW"' 'Don goi them phai co sequenceNo 2 va trang thai NEW.'
 step 'Goi them mon'
 
-api POST "/guest/sessions/$SESSION_ID/calls" 201 "$(jq -nc '{type: "CALL_STAFF"}')" "$GUEST_HEADER"
+api POST "/guest/sessions/$SESSION_ID/calls" 201 "$(jq -nc '{type: "CALL_STAFF"}')" "$GUEST_HEADER" "$GUEST_ACCESS"
 CALL_ID="$(value '.id')"
 assert_jq '.type == "CALL_STAFF" and .status == "PENDING"' 'Yeu cau goi nhan vien phai o trang thai PENDING.'
 api GET '/staff/calls?status=PENDING' 200 '' "$STAFF_AUTH"
@@ -142,7 +145,7 @@ done
 step 'Bep chuyen trang thai hai don'
 
 EXPECTED_TOTAL=$((ORDER_ONE_TOTAL + ORDER_TWO_TOTAL))
-api GET "/guest/sessions/$SESSION_ID/orders" 200 '' "$GUEST_HEADER"
+api GET "/guest/sessions/$SESSION_ID/orders" 200 '' "$GUEST_HEADER" "$GUEST_ACCESS"
 assert_jq ".session.totalVnd == $EXPECTED_TOTAL and (.orders | length == 2)" 'Tong phien hoac so don khong dung sau khi goi them.'
 
 api POST "/staff/sessions/$SESSION_ID/pay" 200 '' "$STAFF_AUTH"
@@ -151,13 +154,14 @@ api POST "/staff/sessions/$SESSION_ID/close" 200 '' "$STAFF_AUTH"
 assert_jq '.status == "CLOSED" and .closedAt != null' 'Reset ban phai dong phien va luu closedAt.'
 step 'Thanh toan va reset ban'
 
-api GET "/guest/sessions/$SESSION_ID/orders" 409 '' "$GUEST_HEADER"
+api GET "/guest/sessions/$SESSION_ID/orders" 409 '' "$GUEST_HEADER" "$GUEST_ACCESS"
 assert_jq '.error.code == "SESSION_CLOSED"' 'Phien cu sau reset phai bi bao SESSION_CLOSED.'
 
 api GET "/guest/tables/$QR_TOKEN" 200 '' "$GUEST_HEADER"
 NEW_SESSION_ID="$(value '.session.id')"
+GUEST_ACCESS="X-Guest-Access: $(value '.guestAccessToken')"
 [[ "$NEW_SESSION_ID" != "$SESSION_ID" ]] || fail 'Quet lai phai mo mot phien moi.'
-api GET "/guest/sessions/$NEW_SESSION_ID/orders" 200 '' "$GUEST_HEADER"
+api GET "/guest/sessions/$NEW_SESSION_ID/orders" 200 '' "$GUEST_HEADER" "$GUEST_ACCESS"
 assert_jq '.session.status == "OPEN" and .session.totalVnd == 0 and (.orders | length == 0)' 'Quet lai phai nhan mot phien OPEN khong co don va tong 0.'
 step 'Quet lai nhan phien sach'
 

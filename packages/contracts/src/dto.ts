@@ -21,8 +21,10 @@ import type {
 
 export const API_BASE_PATH = '/api/v1'
 
-/** Header khach: uuid do client sinh, luu sessionStorage. Khong phai dang nhap. */
+/** Header client de rate limit/local tracing; khong phai quyen truy cap. */
 export const GUEST_TOKEN_HEADER = 'X-Guest-Token'
+/** Capability cua phien guest, server cap sau khi quet QR; luu sessionStorage. */
+export const GUEST_ACCESS_HEADER = 'X-Guest-Access'
 /** Header chong double-submit khi gui don. */
 export const REQUEST_ID_HEADER = 'X-Request-Id'
 
@@ -66,6 +68,7 @@ export interface GuestBootstrapResponse {
   restaurant: Pick<Restaurant, 'id' | 'name' | 'logoUrl'>
   table: TableRefDto
   session: { id: string; status: SessionStatus; openedAt: IsoDateTime }
+  guestAccessToken: string
   categories: Pick<MenuCategory, 'id' | 'name' | 'sortOrder'>[]
   items: MenuItem[]
 }

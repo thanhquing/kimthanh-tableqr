@@ -73,10 +73,10 @@ describe('handlers', () => {
 
   it('validate payload và bỏ qua giá client cố gửi lên', async () => {
     const bootstrap = await fetch(`${BASE}/guest/tables/qr-ban-01-a7f3k9m2xp`, { headers: guestHeaders })
-    const bootstrapBody = await bootstrap.json() as { session: { id: string } }
+    const bootstrapBody = await bootstrap.json() as { session: { id: string }; guestAccessToken: string }
     const response = await fetch(`${BASE}/guest/sessions/${bootstrapBody.session.id}/orders`, {
       method: 'POST',
-      headers: { ...guestHeaders, 'Content-Type': 'application/json', 'X-Request-Id': '00000000-0000-4000-8000-000000000002' },
+      headers: { ...guestHeaders, 'Content-Type': 'application/json', 'X-Guest-Access': bootstrapBody.guestAccessToken, 'X-Request-Id': '00000000-0000-4000-8000-000000000002' },
       body: JSON.stringify({
         note: null,
         items: [{ menuItemId: 'item-ca-phe-sua-da', quantity: 2, note: null, priceVnd: 1 }],
@@ -89,7 +89,7 @@ describe('handlers', () => {
 
     const invalid = await fetch(`${BASE}/guest/sessions/${bootstrapBody.session.id}/orders`, {
       method: 'POST',
-      headers: { ...guestHeaders, 'Content-Type': 'application/json', 'X-Request-Id': '00000000-0000-4000-8000-000000000003' },
+      headers: { ...guestHeaders, 'Content-Type': 'application/json', 'X-Guest-Access': bootstrapBody.guestAccessToken, 'X-Request-Id': '00000000-0000-4000-8000-000000000003' },
       body: JSON.stringify({ note: null, items: [{ menuItemId: 'missing', quantity: 0, note: null }] }),
     })
     expect(invalid.status).toBe(400)
@@ -98,17 +98,17 @@ describe('handlers', () => {
 
   it('chaos ép SESSION_CLOSED và ITEMS_UNAVAILABLE đúng code HTTP', async () => {
     const bootstrap = await fetch(`${BASE}/guest/tables/qr-ban-01-a7f3k9m2xp`, { headers: guestHeaders })
-    const { session } = await bootstrap.json() as { session: { id: string } }
+    const { session, guestAccessToken } = await bootstrap.json() as { session: { id: string }; guestAccessToken: string }
 
     chaos.set({ forceSessionClosed: true })
-    const closed = await fetch(`${BASE}/guest/sessions/${session.id}/orders`, { headers: guestHeaders })
+    const closed = await fetch(`${BASE}/guest/sessions/${session.id}/orders`, { headers: { ...guestHeaders, 'X-Guest-Access': guestAccessToken } })
     expect(closed.status).toBe(409)
     expect(await closed.json()).toMatchObject({ error: { code: 'SESSION_CLOSED' } })
 
     chaos.set({ forceSessionClosed: false, forceItemsUnavailable: true })
     const unavailable = await fetch(`${BASE}/guest/sessions/${session.id}/orders`, {
       method: 'POST',
-      headers: { ...guestHeaders, 'Content-Type': 'application/json', 'X-Request-Id': '00000000-0000-4000-8000-000000000004' },
+      headers: { ...guestHeaders, 'Content-Type': 'application/json', 'X-Guest-Access': guestAccessToken, 'X-Request-Id': '00000000-0000-4000-8000-000000000004' },
       body: JSON.stringify({ note: null, items: [{ menuItemId: 'item-ca-phe-sua-da', quantity: 1, note: null }] }),
     })
     expect(unavailable.status).toBe(409)

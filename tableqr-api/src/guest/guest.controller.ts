@@ -10,15 +10,15 @@ export class GuestController {
   constructor(private readonly guest: GuestService) {}
 
   @Get('tables/:qrToken') bootstrap(@Param('qrToken') qrToken: string) { return this.guest.bootstrap(qrToken) }
-  @Get('sessions/:sessionId/orders') orders(@Param('sessionId') sessionId: string) { return this.guest.orders(sessionId) }
-  @Post('sessions/:sessionId/orders') async createOrder(@Param('sessionId') sessionId: string, @Headers('x-request-id') requestId: string | undefined, @Body() body: CreateOrderBody, @Res({ passthrough: true }) response: Response) {
-    const result = await this.guest.createOrder(sessionId, requestId, body)
+  @Get('sessions/:sessionId/orders') orders(@Param('sessionId') sessionId: string, @Headers('x-guest-access') guestAccessToken: string | undefined) { return this.guest.orders(sessionId, guestAccessToken) }
+  @Post('sessions/:sessionId/orders') async createOrder(@Param('sessionId') sessionId: string, @Headers('x-guest-access') guestAccessToken: string | undefined, @Headers('x-request-id') requestId: string | undefined, @Body() body: CreateOrderBody, @Res({ passthrough: true }) response: Response) {
+    const result = await this.guest.createOrder(sessionId, guestAccessToken, requestId, body)
     response.status(result.reused ? 200 : 201)
     return result.order
   }
   @Post('sessions/:sessionId/calls') @HttpCode(201)
-  async createCall(@Param('sessionId') sessionId: string, @Body() body: CreateCallBody, @Res({ passthrough: true }) response: Response) {
-    const result = await this.guest.createCall(sessionId, body)
+  async createCall(@Param('sessionId') sessionId: string, @Headers('x-guest-access') guestAccessToken: string | undefined, @Body() body: CreateCallBody, @Res({ passthrough: true }) response: Response) {
+    const result = await this.guest.createCall(sessionId, guestAccessToken, body)
     response.status(result.reused ? 200 : 201)
     return result.call
   }

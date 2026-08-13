@@ -26,9 +26,10 @@
 >
 > Người dùng cho phép reset toàn bộ PostgreSQL local ngày 2026-08-13 để bắt đầu
 > sớm migration multi-tenant. Đã thêm `restaurant_id` vào dữ liệu nghiệp vụ,
-> JWT tenant context, staff login bằng mã quán + PIN và SSE scope theo quán.
-> Chưa đánh dấu `SA-03`/`SA-04` DONE: còn cần test hai tenant, guest-session
-> capability và RLS/composite foreign key trước khi kết luận không leak dữ liệu.
+> JWT tenant context, staff ghép tablet bằng QR rồi đăng nhập PIN, SSE scope
+> theo quán và guest-session capability có hash trong DB. Đã seed/test hai
+> tenant: Staff Hương Quê không thể mở phiên Kim Thành. Chưa đánh dấu
+> `SA-03`/`SA-04` DONE: còn RLS/composite foreign key và SSE ticket ngắn hạn.
 
 ---
 

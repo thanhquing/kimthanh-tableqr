@@ -1,5 +1,6 @@
 import {
   API_BASE_PATH,
+  GUEST_ACCESS_HEADER,
   GUEST_TOKEN_HEADER,
   isApiErrorBody,
   NETWORK_ERROR_MESSAGE,
@@ -8,6 +9,7 @@ import {
 } from '@kimthanh-tableqr/contracts'
 
 const GUEST_TOKEN_STORAGE_KEY = 'tableqr.guestToken'
+const GUEST_ACCESS_STORAGE_PREFIX = 'tableqr.guestAccess.'
 
 interface RequestOptions extends Omit<RequestInit, 'body' | 'headers'> {
   readonly body?: unknown
@@ -41,6 +43,19 @@ export function getGuestToken(): string {
   const token = createUuid()
   sessionStorage.setItem(GUEST_TOKEN_STORAGE_KEY, token)
   return token
+}
+
+export function setGuestAccessToken(sessionId: string, token: string): void {
+  sessionStorage.setItem(`${GUEST_ACCESS_STORAGE_PREFIX}${sessionId}`, token)
+}
+
+export function getGuestAccessToken(sessionId: string): string | null {
+  return sessionStorage.getItem(`${GUEST_ACCESS_STORAGE_PREFIX}${sessionId}`)
+}
+
+export function guestAccessHeaders(sessionId: string): HeadersInit {
+  const token = getGuestAccessToken(sessionId)
+  return token ? { [GUEST_ACCESS_HEADER]: token } : {}
 }
 
 function apiUrl(path: string): string {

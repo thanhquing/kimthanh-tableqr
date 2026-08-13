@@ -202,6 +202,7 @@ export class MockStore {
       },
       table: tableRef(table),
       session: { id: session.id, status: session.status, openedAt: session.openedAt },
+      guestAccessToken: '',
       categories: this.state.categories
         .filter((category) => category.isActive)
         .sort((a, b) => a.sortOrder - b.sortOrder)
