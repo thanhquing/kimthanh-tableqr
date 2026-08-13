@@ -99,6 +99,7 @@ export interface StaffCallDto {
 /* -------------------------------------------------------------- staff */
 
 export interface StaffLoginRequest {
+  staffLoginCode: string
   pin: string
 }
 

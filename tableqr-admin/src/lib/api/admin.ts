@@ -40,4 +40,5 @@ export const createTable = (token: string, body: CreateTableRequest) => adminReq
 export const updateTable = (token: string, id: string, body: UpdateTableRequest) => adminRequest<AdminTableDto>(token, `/admin/tables/${id}`, { method: 'PATCH', body: JSON.stringify(body) })
 export const deleteTable = (token: string, id: string) => adminRequest<void>(token, `/admin/tables/${id}`, { method: 'DELETE' })
 export const getRestaurant = (token: string) => adminRequest<Restaurant>(token, '/admin/restaurant')
+export const getStaffPairing = (token: string) => adminRequest<{ staffPairingUrl: string }>(token, '/admin/staff-pairing')
 export const updateRestaurant = (token: string, body: UpdateRestaurantRequest) => adminRequest<Restaurant>(token, '/admin/restaurant', { method: 'PATCH', body: JSON.stringify(body) })

@@ -137,7 +137,7 @@ export function createHandlers(options: HandlerOptions = {}): HttpHandler[] {
     http.post(`${api}/staff/auth/login`, ({ request }) =>
       execute(request, chaosController, async () => {
         const body = parseStaffLogin(await readJson(request))
-        if (body.pin !== STAFF_PIN) throw new MockApiError(401, 'UNAUTHORIZED', 'Mã PIN không đúng.')
+        if (body.staffLoginCode !== 'KIM-4821' || body.pin !== STAFF_PIN) throw new MockApiError(401, 'UNAUTHORIZED', 'Mã ghép thiết bị hoặc PIN không đúng.')
         return HttpResponse.json({ token: STAFF_TOKEN, role: 'staff', displayName: 'Nhân viên quầy' })
       }),
     ),

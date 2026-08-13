@@ -29,19 +29,19 @@ async function seed() {
   await prisma.$transaction(async (tx) => {
     await tx.restaurant.upsert({
       where: { id: restaurantId },
-      update: { name: RESTAURANT.name, logoUrl: RESTAURANT.logoUrl, address: RESTAURANT.address },
-      create: { id: restaurantId, name: RESTAURANT.name, logoUrl: RESTAURANT.logoUrl, address: RESTAURANT.address },
+      update: { name: RESTAURANT.name, publicSlug: 'kim-thanh', staffLoginCode: 'KIM-4821', logoUrl: RESTAURANT.logoUrl, address: RESTAURANT.address },
+      create: { id: restaurantId, name: RESTAURANT.name, publicSlug: 'kim-thanh', staffLoginCode: 'KIM-4821', logoUrl: RESTAURANT.logoUrl, address: RESTAURANT.address },
     })
 
     await tx.authUser.upsert({
       where: { id: fixtureId('staff-default') },
-      update: { displayName: 'Nhân viên quầy', isActive: true, pinHash: await hash(STAFF_PIN, 12) },
-      create: { id: fixtureId('staff-default'), role: 'STAFF', displayName: 'Nhân viên quầy', pinHash: await hash(STAFF_PIN, 12) },
+      update: { restaurantId, displayName: 'Nhân viên quầy', isActive: true, pinHash: await hash(STAFF_PIN, 12) },
+      create: { id: fixtureId('staff-default'), restaurantId, role: 'STAFF', displayName: 'Nhân viên quầy', pinHash: await hash(STAFF_PIN, 12) },
     })
     await tx.authUser.upsert({
       where: { id: fixtureId('owner-default') },
-      update: { displayName: 'Chủ quán', email: ADMIN_EMAIL, isActive: true, passwordHash: await hash(ADMIN_PASSWORD, 12) },
-      create: { id: fixtureId('owner-default'), role: 'OWNER', displayName: 'Chủ quán', email: ADMIN_EMAIL, passwordHash: await hash(ADMIN_PASSWORD, 12) },
+      update: { restaurantId, displayName: 'Chủ quán', email: ADMIN_EMAIL, isActive: true, passwordHash: await hash(ADMIN_PASSWORD, 12) },
+      create: { id: fixtureId('owner-default'), restaurantId, role: 'OWNER', displayName: 'Chủ quán', email: ADMIN_EMAIL, passwordHash: await hash(ADMIN_PASSWORD, 12) },
     })
 
     for (const category of CATEGORIES) {
@@ -49,8 +49,8 @@ async function seed() {
       if (!id) throw new Error(`Fixture thiếu ID danh mục ${category.id}`)
       await tx.menuCategory.upsert({
         where: { id },
-        update: { name: category.name, sortOrder: category.sortOrder, isActive: category.isActive },
-        create: { id, name: category.name, sortOrder: category.sortOrder, isActive: category.isActive },
+        update: { restaurantId, name: category.name, sortOrder: category.sortOrder, isActive: category.isActive },
+        create: { id, restaurantId, name: category.name, sortOrder: category.sortOrder, isActive: category.isActive },
       })
     }
 
@@ -59,6 +59,7 @@ async function seed() {
       const categoryId = categoryIds.get(item.categoryId)
       if (!id || !categoryId) throw new Error(`Fixture món không hợp lệ: ${item.id}`)
       const data = {
+        restaurantId,
         categoryId,
         name: item.name,
         description: item.description,
@@ -74,6 +75,7 @@ async function seed() {
       const id = tableIds.get(table.id)
       if (!id) throw new Error(`Fixture thiếu ID bàn ${table.id}`)
       const data = {
+        restaurantId,
         code: table.code,
         displayName: table.displayName,
         qrToken: table.qrToken,
@@ -89,20 +91,21 @@ async function seed() {
     const now = Date.now()
     await tx.tableSession.upsert({
       where: { id: sessionId },
-      update: { tableId, openedAt: new Date(now - 27 * 60_000), closedAt: null, status: 'OPEN', paidAt: null },
-      create: { id: sessionId, tableId, openedAt: new Date(now - 27 * 60_000), status: 'OPEN' },
+      update: { restaurantId, tableId, openedAt: new Date(now - 27 * 60_000), closedAt: null, status: 'OPEN', paidAt: null },
+      create: { id: sessionId, restaurantId, tableId, openedAt: new Date(now - 27 * 60_000), status: 'OPEN' },
     })
 
     for (const seededOrder of SEEDED_SESSION.orders) {
       const orderId = fixtureId(`ord-seed-${seededOrder.sequenceNo}`)
       const data = {
+        restaurantId,
         tableId,
         status: seededOrder.status,
         note: null,
         createdAt: new Date(now - seededOrder.minutesAgo * 60_000),
       }
       await tx.order.upsert({
-        where: { sessionId_sequenceNo: { sessionId, sequenceNo: seededOrder.sequenceNo } },
+        where: { restaurantId_sessionId_sequenceNo: { restaurantId, sessionId, sequenceNo: seededOrder.sequenceNo } },
         update: data,
         create: { id: orderId, sessionId, sequenceNo: seededOrder.sequenceNo, ...data },
       })
@@ -113,6 +116,7 @@ async function seed() {
         if (!menuItemId || !menuItem) throw new Error(`Fixture thiếu món ${seededItem.menuItemId}`)
         const id = fixtureId(`order-item-seed-${seededOrder.sequenceNo}-${index + 1}`)
         const itemData = {
+          restaurantId,
           orderId,
           menuItemId,
           nameSnapshot: menuItem.name,

@@ -1,0 +1,43 @@
+{
+	# Local simulation only: keep HTTP simple and avoid creating a local CA.
+	auto_https off
+	admin off
+}
+
+# Each hostname represents the production app boundary. API and image paths are
+# proxied to NestJS so every frontend still calls its API on the same origin.
+http://tableqr.localhost:8080 {
+	@api path /api/* /uploads/* /menu-images/*
+	handle @api {
+		reverse_proxy 127.0.0.1:3000
+	}
+	handle {
+		reverse_proxy [::1]:5175 {
+			header_up Host localhost:5175
+		}
+	}
+}
+
+http://staff.tableqr.localhost:8080 {
+	@api path /api/* /uploads/* /menu-images/*
+	handle @api {
+		reverse_proxy 127.0.0.1:3000
+	}
+	handle {
+		reverse_proxy [::1]:5174 {
+			header_up Host localhost:5174
+		}
+	}
+}
+
+http://guest.tableqr.localhost:8080 {
+	@api path /api/* /uploads/* /menu-images/*
+	handle @api {
+		reverse_proxy 127.0.0.1:3000
+	}
+	handle {
+		reverse_proxy [::1]:5173 {
+			header_up Host localhost:5173
+		}
+	}
+}

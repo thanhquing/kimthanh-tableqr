@@ -40,13 +40,13 @@ export function getStaffStreamUrl(token: string): string {
   return url.toString()
 }
 
-export async function loginStaff(pin: string): Promise<AuthResponse> {
+export async function loginStaff(staffLoginCode: string, pin: string): Promise<AuthResponse> {
   const response = await fetch(staffApiUrl('/staff/auth/login'), {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ pin }),
+    body: JSON.stringify({ staffLoginCode, pin }),
   })
-  if (!response.ok) throw new Error('Mã PIN không đúng. Thử lại.')
+  if (!response.ok) throw new Error('Mã quán hoặc PIN không đúng. Thử lại.')
   return response.json() as Promise<AuthResponse>
 }
 

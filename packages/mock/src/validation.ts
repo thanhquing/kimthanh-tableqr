@@ -62,7 +62,7 @@ function boolField(source: JsonObject, key: string, optional = false): boolean |
 
 export function parseStaffLogin(value: unknown): StaffLoginRequest {
   const body = object(value)
-  return { pin: stringField(body, 'pin')! }
+  return { staffLoginCode: stringField(body, 'staffLoginCode')!, pin: stringField(body, 'pin')! }
 }
 
 export function parseAdminLogin(value: unknown): AdminLoginRequest {

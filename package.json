@@ -16,6 +16,7 @@
     "dev:guest": "pnpm --filter tableqr-guest dev",
     "dev:staff": "pnpm --filter tableqr-staff dev",
     "dev:admin": "pnpm --filter tableqr-admin dev",
+    "dev:local-domains": "./scripts/dev-local-domains.sh",
     "build:packages": "pnpm --filter \"./packages/**\" build"
   }
 }

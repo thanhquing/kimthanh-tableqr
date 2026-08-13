@@ -35,10 +35,21 @@ enum UserRole {
 }
 
 model Restaurant {
-  id      String  @id @default(uuid()) @db.Uuid
-  name    String
-  logoUrl String? @map("logo_url")
-  address String?
+  id             String              @id @default(uuid()) @db.Uuid
+  name           String
+  publicSlug     String              @unique @map("public_slug")
+  staffLoginCode String              @unique @map("staff_login_code")
+  logoUrl        String?             @map("logo_url")
+  address        String?
+  authUsers      AuthUser[]
+  tables         DiningTable[]
+  categories     MenuCategory[]
+  menuItems      MenuItem[]
+  sessions       TableSession[]
+  orders         Order[]
+  guestRequests  GuestOrderRequest[]
+  orderItems     OrderItem[]
+  calls          StaffCall[]
 
   @@map("restaurant")
 }
@@ -52,14 +63,18 @@ model AuthUser {
   displayName  String   @map("display_name")
   isActive     Boolean  @default(true) @map("is_active")
   createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  restaurantId String   @map("restaurant_id") @db.Uuid
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id])
 
   @@index([role, isActive], map: "auth_user_role_is_active_idx")
+  @@index([restaurantId, role, isActive], map: "auth_user_restaurant_role_is_active_idx")
   @@map("auth_user")
 }
 
 model DiningTable {
   id          String         @id @default(uuid()) @db.Uuid
-  code        String         @unique
+  restaurantId String        @map("restaurant_id") @db.Uuid
+  code        String
   displayName String         @map("display_name")
   qrToken     String         @unique @map("qr_token")
   isActive    Boolean        @default(true) @map("is_active")
@@ -67,22 +82,29 @@ model DiningTable {
   sessions    TableSession[]
   orders      Order[]
   calls       StaffCall[]
+  restaurant  Restaurant     @relation(fields: [restaurantId], references: [id])
 
+  @@unique([restaurantId, code], map: "dining_table_restaurant_id_code_key")
+  @@index([restaurantId, sortOrder], map: "dining_table_restaurant_id_sort_order_idx")
   @@map("dining_table")
 }
 
 model MenuCategory {
   id        String     @id @default(uuid()) @db.Uuid
+  restaurantId String  @map("restaurant_id") @db.Uuid
   name      String
   sortOrder Int        @default(0) @map("sort_order")
   isActive  Boolean    @default(true) @map("is_active")
   items     MenuItem[]
+  restaurant Restaurant @relation(fields: [restaurantId], references: [id])
 
+  @@index([restaurantId, sortOrder], map: "menu_category_restaurant_id_sort_order_idx")
   @@map("menu_category")
 }
 
 model MenuItem {
   id          String       @id @default(uuid()) @db.Uuid
+  restaurantId String      @map("restaurant_id") @db.Uuid
   categoryId  String       @map("category_id") @db.Uuid
   name        String
   description String?
@@ -93,13 +115,15 @@ model MenuItem {
   deletedAt   DateTime?    @map("deleted_at") @db.Timestamptz(3)
   category    MenuCategory @relation(fields: [categoryId], references: [id])
   orderItems  OrderItem[]
+  restaurant  Restaurant   @relation(fields: [restaurantId], references: [id])
 
-  @@index([categoryId], map: "menu_item_category_id_idx")
+  @@index([restaurantId, categoryId], map: "menu_item_restaurant_id_category_id_idx")
   @@map("menu_item")
 }
 
 model TableSession {
   id       String        @id @default(uuid()) @db.Uuid
+  restaurantId String    @map("restaurant_id") @db.Uuid
   tableId  String        @map("table_id") @db.Uuid
   openedAt DateTime      @default(now()) @map("opened_at") @db.Timestamptz(3)
   closedAt DateTime?     @map("closed_at") @db.Timestamptz(3)
@@ -108,13 +132,15 @@ model TableSession {
   table    DiningTable   @relation(fields: [tableId], references: [id])
   orders   Order[]
   calls    StaffCall[]
+  restaurant Restaurant  @relation(fields: [restaurantId], references: [id])
 
-  @@index([tableId, status], map: "table_session_table_id_status_idx")
+  @@index([restaurantId, tableId, status], map: "table_session_restaurant_table_status_idx")
   @@map("table_session")
 }
 
 model Order {
   id         String       @id @default(uuid()) @db.Uuid
+  restaurantId String     @map("restaurant_id") @db.Uuid
   sessionId  String       @map("session_id") @db.Uuid
   tableId    String       @map("table_id") @db.Uuid
   sequenceNo Int          @map("sequence_no")
@@ -125,28 +151,32 @@ model Order {
   table      DiningTable  @relation(fields: [tableId], references: [id])
   items      OrderItem[]
   request    GuestOrderRequest?
+  restaurant Restaurant   @relation(fields: [restaurantId], references: [id])
 
-  @@unique([sessionId, sequenceNo], map: "order_session_id_sequence_no_key")
-  @@index([createdAt], map: "order_created_at_idx")
-  @@index([tableId], map: "order_table_id_idx")
+  @@unique([restaurantId, sessionId, sequenceNo], map: "order_restaurant_session_sequence_no_key")
+  @@index([restaurantId, createdAt], map: "order_restaurant_created_at_idx")
+  @@index([restaurantId, tableId], map: "order_restaurant_table_id_idx")
   @@map("order")
 }
 
 model GuestOrderRequest {
   id        String   @id @default(uuid()) @db.Uuid
+  restaurantId String @map("restaurant_id") @db.Uuid
   sessionId String   @map("session_id") @db.Uuid
   requestId String   @map("request_id")
   orderId   String   @unique @map("order_id") @db.Uuid
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
   order     Order    @relation(fields: [orderId], references: [id])
+  restaurant Restaurant @relation(fields: [restaurantId], references: [id])
 
-  @@unique([sessionId, requestId], map: "guest_order_request_session_id_request_id_key")
-  @@index([createdAt], map: "guest_order_request_created_at_idx")
+  @@unique([restaurantId, sessionId, requestId], map: "guest_order_request_restaurant_session_request_id_key")
+  @@index([restaurantId, createdAt], map: "guest_order_request_restaurant_created_at_idx")
   @@map("guest_order_request")
 }
 
 model OrderItem {
   id                   String   @id @default(uuid()) @db.Uuid
+  restaurantId         String   @map("restaurant_id") @db.Uuid
   orderId              String   @map("order_id") @db.Uuid
   menuItemId           String   @map("menu_item_id") @db.Uuid
   nameSnapshot         String   @map("name_snapshot")
@@ -155,14 +185,16 @@ model OrderItem {
   note                 String?
   order                Order    @relation(fields: [orderId], references: [id])
   menuItem             MenuItem @relation(fields: [menuItemId], references: [id])
+  restaurant           Restaurant @relation(fields: [restaurantId], references: [id])
 
-  @@index([orderId], map: "order_item_order_id_idx")
-  @@index([menuItemId], map: "order_item_menu_item_id_idx")
+  @@index([restaurantId, orderId], map: "order_item_restaurant_order_id_idx")
+  @@index([restaurantId, menuItemId], map: "order_item_restaurant_menu_item_id_idx")
   @@map("order_item")
 }
 
 model StaffCall {
   id        String          @id @default(uuid()) @db.Uuid
+  restaurantId String       @map("restaurant_id") @db.Uuid
   sessionId String          @map("session_id") @db.Uuid
   tableId   String          @map("table_id") @db.Uuid
   type      StaffCallType
@@ -170,8 +202,9 @@ model StaffCall {
   createdAt DateTime        @default(now()) @map("created_at") @db.Timestamptz(3)
   session   TableSession    @relation(fields: [sessionId], references: [id])
   table     DiningTable     @relation(fields: [tableId], references: [id])
+  restaurant Restaurant     @relation(fields: [restaurantId], references: [id])
 
-  @@index([status, createdAt], map: "staff_call_status_created_at_idx")
-  @@index([sessionId], map: "staff_call_session_id_idx")
+  @@index([restaurantId, status, createdAt], map: "staff_call_restaurant_status_created_at_idx")
+  @@index([restaurantId, sessionId], map: "staff_call_restaurant_session_id_idx")
   @@map("staff_call")
 }

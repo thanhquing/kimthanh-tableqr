@@ -1,25 +1,27 @@
 import { Injectable, type MessageEvent } from '@nestjs/common'
 import type { StaffCallWithTableDto, StaffOrderDto, StaffStreamEvent } from '@kimthanh-tableqr/contracts'
-import { Subject, type Observable, map } from 'rxjs'
+import { Subject, type Observable, filter, map } from 'rxjs'
 import { calcOrderTotalFromContracts } from '../common/totals'
 import { PrismaService } from '../prisma.service'
 
 @Injectable()
 export class RealtimeService {
-  private readonly events = new Subject<StaffStreamEvent>()
+  private readonly events = new Subject<{ restaurantId: string; event: StaffStreamEvent }>()
 
   constructor(private readonly prisma: PrismaService) {}
 
-  stream(): Observable<MessageEvent> {
-    return this.events.pipe(map((event) => ({ type: event.type, data: event.data })))
+  stream(restaurantId: string): Observable<MessageEvent> {
+    return this.events.pipe(filter((entry) => entry.restaurantId === restaurantId), map((entry) => ({ type: entry.event.type, data: entry.event.data })))
   }
 
   async publishOrderCreated(orderId: string): Promise<void> {
-    this.events.next({ type: 'order.created', data: await this.order(orderId) })
+    const { restaurantId, dto } = await this.order(orderId)
+    this.events.next({ restaurantId, event: { type: 'order.created', data: dto } })
   }
 
   async publishOrderStatusChanged(orderId: string): Promise<void> {
-    this.events.next({ type: 'order.status_changed', data: await this.order(orderId) })
+    const { restaurantId, dto } = await this.order(orderId)
+    this.events.next({ restaurantId, event: { type: 'order.status_changed', data: dto } })
   }
 
   async publishCallCreated(callId: string): Promise<void> {
@@ -31,14 +33,14 @@ export class RealtimeService {
       createdAt: call.createdAt.toISOString(),
       table: { id: call.table.id, code: call.table.code, displayName: call.table.displayName },
     }
-    this.events.next({ type: 'call.created', data })
+    this.events.next({ restaurantId: call.restaurantId, event: { type: 'call.created', data } })
   }
 
-  publishSessionClosed(sessionId: string, tableId: string): void {
-    this.events.next({ type: 'session.closed', data: { sessionId, tableId } })
+  publishSessionClosed(restaurantId: string, sessionId: string, tableId: string): void {
+    this.events.next({ restaurantId, event: { type: 'session.closed', data: { sessionId, tableId } } })
   }
 
-  private async order(orderId: string): Promise<StaffOrderDto> {
+  private async order(orderId: string): Promise<{ restaurantId: string; dto: StaffOrderDto }> {
     const order = await this.prisma.order.findUniqueOrThrow({ where: { id: orderId }, include: { table: true, items: true } })
     const items = order.items.map((item) => ({
       id: item.id,
@@ -49,7 +51,7 @@ export class RealtimeService {
       note: item.note,
       lineTotalVnd: item.unitPriceVndSnapshot * item.quantity,
     }))
-    return {
+    return { restaurantId: order.restaurantId, dto: {
       id: order.id,
       sessionId: order.sessionId,
       sequenceNo: order.sequenceNo,
@@ -59,6 +61,6 @@ export class RealtimeService {
       totalVnd: await calcOrderTotalFromContracts(order.items),
       table: { id: order.table.id, code: order.table.code, displayName: order.table.displayName },
       items,
-    }
+    } }
   }
 }

@@ -10,12 +10,14 @@ export class AuthService {
     private readonly jwt: JwtService,
   ) {}
 
-  async loginStaff(pin: string) {
+  async loginStaff(staffLoginCode: string, pin: string) {
+    const restaurant = await this.prisma.restaurant.findUnique({ where: { staffLoginCode: staffLoginCode.trim().toUpperCase() } })
+    if (!restaurant) this.reject()
     const user = await this.prisma.authUser.findFirst({
-      where: { role: 'STAFF', isActive: true, pinHash: { not: null } },
+      where: { restaurantId: restaurant!.id, role: 'STAFF', isActive: true, pinHash: { not: null } },
     })
     if (!user?.pinHash || !(await compare(pin, user.pinHash))) this.reject()
-    return this.response(user.id, 'staff', user.displayName)
+    return this.response(user.id, 'staff', user.displayName, restaurant!.id)
   }
 
   async loginOwner(email: string, password: string) {
@@ -23,12 +25,12 @@ export class AuthService {
       where: { role: 'OWNER', isActive: true, email },
     })
     if (!user?.passwordHash || !(await compare(password, user.passwordHash))) this.reject()
-    return this.response(user.id, 'owner', user.displayName)
+    return this.response(user.id, 'owner', user.displayName, user.restaurantId)
   }
 
-  private async response(id: string, role: 'staff' | 'owner', displayName: string) {
+  private async response(id: string, role: 'staff' | 'owner', displayName: string, restaurantId: string) {
     return {
-      token: await this.jwt.signAsync({ sub: id, role, displayName }),
+      token: await this.jwt.signAsync({ sub: id, role, displayName, restaurantId }),
       role,
       displayName,
     }

@@ -5,12 +5,14 @@ RUN apk add --no-cache openssl && corepack enable
 
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml tsconfig.base.json ./
 COPY packages/contracts/package.json ./packages/contracts/package.json
+COPY packages/mock/package.json ./packages/mock/package.json
 COPY tableqr-api/package.json ./tableqr-api/package.json
 RUN pnpm install --frozen-lockfile --filter tableqr-api...
 
 COPY packages/contracts ./packages/contracts
-COPY packages/mock/assets ./packages/mock/assets
+COPY packages/mock ./packages/mock
 RUN pnpm --filter @kimthanh-tableqr/contracts build
+RUN pnpm --filter @kimthanh-tableqr/mock build
 COPY tableqr-api ./tableqr-api
 WORKDIR /app/tableqr-api
 RUN pnpm prisma:generate

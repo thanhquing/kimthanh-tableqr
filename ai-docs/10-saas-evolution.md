@@ -1,6 +1,6 @@
 # 10 — Mở rộng SaaS, đa quán và thuê bao
 
-Tài liệu này là thiết kế đích để TableQR phục vụ nhiều chủ quán trên một hệ thống. Nó **chưa thay đổi MVP đang chạy**. Theo ưu tiên đã đổi ngày 2026-08-10, migration bắt đầu với production foundation; `BE-13` được dời thành kiểm thử thiết bị thật bắt buộc trước phát hành. Task theo thứ tự tại [../ai-tasks/13-saas-expansion.md](../ai-tasks/13-saas-expansion.md).
+Tài liệu này là thiết kế đích để TableQR phục vụ nhiều chủ quán trên một hệ thống. Theo quyết định người dùng ngày 2026-08-13, local database đã được reset để bắt đầu tenant foundation sớm: dữ liệu nghiệp vụ có `restaurant_id`, JWT mang tenant context, staff đăng nhập bằng mã quán + PIN và SSE scope theo quán. `SA-03`/`SA-04` vẫn chưa hoàn tất cho đến khi có test hai tenant, guest-session capability và DB enforcement. Task theo thứ tự tại [../ai-tasks/13-saas-expansion.md](../ai-tasks/13-saas-expansion.md).
 
 ## 1. Quy tắc sản phẩm đã chốt
 

@@ -226,7 +226,7 @@ Nếu đã có `StaffCall` `PENDING` cùng `type` trong phiên thì trả về c
 # Staff — bếp / quầy
 
 ### `POST /api/v1/staff/auth/login`
-Request `{ "pin": "123456" }` → **200** `{ "token": "...", "role": "staff", "displayName": "Nhân viên quầy" }` · **401** `UNAUTHORIZED`
+Request `{ "staffLoginCode": "KM7P4X", "pin": "123456" }` → **200** `{ "token": "...", "role": "staff", "displayName": "Nhân viên quầy" }` · **401** `UNAUTHORIZED`. `staffLoginCode` được tablet lấy từ QR ghép thiết bị, không cho nhân viên gõ/chọn tay.
 
 ### `GET /api/v1/staff/orders?status=&since=`
 

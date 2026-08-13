@@ -18,19 +18,19 @@ export class GuestService {
     const table = await this.prisma.diningTable.findFirst({ where: { qrToken, isActive: true } })
     if (!table) fail(404, 'TABLE_NOT_FOUND', 'Mã QR không hợp lệ, vui lòng gọi nhân viên.')
     const activeTable = table!
-    let session = await this.prisma.tableSession.findFirst({ where: { tableId: activeTable.id, status: 'OPEN' } })
+    let session = await this.prisma.tableSession.findFirst({ where: { restaurantId: activeTable.restaurantId, tableId: activeTable.id, status: 'OPEN' } })
     if (!session) {
-      try { session = await this.prisma.tableSession.create({ data: { tableId: activeTable.id } }) }
+      try { session = await this.prisma.tableSession.create({ data: { restaurantId: activeTable.restaurantId, tableId: activeTable.id } }) }
       catch (error: unknown) {
         if (!(error instanceof Prisma.PrismaClientKnownRequestError) || error.code !== 'P2002') throw error
-        session = await this.prisma.tableSession.findFirst({ where: { tableId: activeTable.id, status: 'OPEN' } })
+        session = await this.prisma.tableSession.findFirst({ where: { restaurantId: activeTable.restaurantId, tableId: activeTable.id, status: 'OPEN' } })
         if (!session) throw error
       }
     }
     const [restaurant, categories, items] = await Promise.all([
-      this.prisma.restaurant.findFirstOrThrow(),
-      this.prisma.menuCategory.findMany({ where: { isActive: true }, orderBy: { sortOrder: 'asc' } }),
-      this.prisma.menuItem.findMany({ where: { deletedAt: null, category: { isActive: true } }, orderBy: { sortOrder: 'asc' } }),
+      this.prisma.restaurant.findUniqueOrThrow({ where: { id: activeTable.restaurantId } }),
+      this.prisma.menuCategory.findMany({ where: { restaurantId: activeTable.restaurantId, isActive: true }, orderBy: { sortOrder: 'asc' } }),
+      this.prisma.menuItem.findMany({ where: { restaurantId: activeTable.restaurantId, deletedAt: null, category: { isActive: true } }, orderBy: { sortOrder: 'asc' } }),
     ])
     return {
       restaurant: { id: restaurant.id, name: restaurant.name, logoUrl: restaurant.logoUrl },
@@ -55,20 +55,21 @@ export class GuestService {
     const safeRequestId = requestId!
     if (!Array.isArray(body.items) || body.items.length === 0) fail(400, 'EMPTY_ORDER', 'Vui lòng chọn ít nhất một món.')
     const result = await this.prisma.$transaction(async (tx) => {
-      await tx.guestOrderRequest.deleteMany({ where: { createdAt: { lt: new Date(Date.now() - 60_000) } } })
-      const existing = await tx.guestOrderRequest.findUnique({ where: { sessionId_requestId: { sessionId, requestId: safeRequestId } } })
-      if (existing) return { order: await this.orderDto(await tx.order.findUniqueOrThrow({ where: { id: existing.orderId }, include: { items: true } })), reused: true }
       const session = await tx.tableSession.findUnique({ where: { id: sessionId } })
       if (!session || session.status !== 'OPEN') fail(409, 'SESSION_CLOSED', 'Phiên bàn đã kết thúc.')
+      const restaurantId = session.restaurantId
+      await tx.guestOrderRequest.deleteMany({ where: { restaurantId, createdAt: { lt: new Date(Date.now() - 60_000) } } })
+      const existing = await tx.guestOrderRequest.findFirst({ where: { restaurantId, sessionId, requestId: safeRequestId } })
+      if (existing) return { order: await this.orderDto(await tx.order.findUniqueOrThrow({ where: { id: existing.orderId }, include: { items: true } })), reused: true }
       this.rateLimit.take(`table:${session.tableId}`, 10)
       const lines = body.items as Array<{ menuItemId?: unknown; quantity?: unknown; note?: unknown }>
       if (lines.some((line) => typeof line.menuItemId !== 'string' || !Number.isInteger(line.quantity) || (line.quantity as number) < 1)) fail(400, 'VALIDATION_ERROR', 'Dữ liệu món không hợp lệ.', { fields: { items: 'Mỗi món cần mã và số lượng nguyên từ 1.' } })
-      const menuItems = await tx.menuItem.findMany({ where: { id: { in: lines.map((line) => line.menuItemId as string) }, deletedAt: null } })
+      const menuItems = await tx.menuItem.findMany({ where: { restaurantId, id: { in: lines.map((line) => line.menuItemId as string) }, deletedAt: null } })
       const unavailable = menuItems.filter((item) => !item.isAvailable)
       if (menuItems.length !== lines.length || unavailable.length) fail(409, 'ITEMS_UNAVAILABLE', 'Có món vừa hết. Vui lòng chọn món khác.', { unavailableItemIds: unavailable.map((item) => item.id) })
-      const max = await tx.order.aggregate({ where: { sessionId }, _max: { sequenceNo: true } })
-      const order = await tx.order.create({ data: { sessionId, tableId: session.tableId, sequenceNo: (max._max.sequenceNo ?? 0) + 1, note: typeof body.note === 'string' ? body.note : null, items: { create: lines.map((line) => { const item = menuItems.find((candidate) => candidate.id === line.menuItemId)!; return { menuItemId: item.id, nameSnapshot: item.name, unitPriceVndSnapshot: item.priceVnd, quantity: line.quantity as number, note: typeof line.note === 'string' ? line.note : null } }) } }, include: { items: true } })
-      await tx.guestOrderRequest.create({ data: { sessionId, requestId: safeRequestId, orderId: order.id } })
+      const max = await tx.order.aggregate({ where: { restaurantId, sessionId }, _max: { sequenceNo: true } })
+      const order = await tx.order.create({ data: { restaurantId, sessionId, tableId: session.tableId, sequenceNo: (max._max.sequenceNo ?? 0) + 1, note: typeof body.note === 'string' ? body.note : null, items: { create: lines.map((line) => { const item = menuItems.find((candidate) => candidate.id === line.menuItemId)!; return { restaurantId, menuItemId: item.id, nameSnapshot: item.name, unitPriceVndSnapshot: item.priceVnd, quantity: line.quantity as number, note: typeof line.note === 'string' ? line.note : null } }) } }, include: { items: true } })
+      await tx.guestOrderRequest.create({ data: { restaurantId, sessionId, requestId: safeRequestId, orderId: order.id } })
       return { order: await this.orderDto(order), reused: false }
     })
     if (!result.reused) await this.realtime.publishOrderCreated(result.order.id)
@@ -80,8 +81,8 @@ export class GuestService {
     const session = await this.prisma.tableSession.findUnique({ where: { id: sessionId } })
     if (!session || session.status !== 'OPEN') fail(409, 'SESSION_CLOSED', 'Phiên bàn đã kết thúc.')
     const callType = body.type as 'CALL_STAFF' | 'REQUEST_BILL'
-    const existing = await this.prisma.staffCall.findFirst({ where: { sessionId, type: callType, status: 'PENDING' } })
-    const call = existing ?? await this.prisma.staffCall.create({ data: { sessionId, tableId: session!.tableId, type: callType } })
+    const existing = await this.prisma.staffCall.findFirst({ where: { restaurantId: session.restaurantId, sessionId, type: callType, status: 'PENDING' } })
+    const call = existing ?? await this.prisma.staffCall.create({ data: { restaurantId: session.restaurantId, sessionId, tableId: session.tableId, type: callType } })
     if (!existing) await this.realtime.publishCallCreated(call.id)
     return { call: { id: call.id, type: call.type, status: call.status, createdAt: call.createdAt }, reused: Boolean(existing) }
   }

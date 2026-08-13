@@ -2,7 +2,7 @@ import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common'
 import { Throttle } from '@nestjs/throttler'
 import { AuthService } from './auth.service'
 
-type StaffLoginBody = { pin?: unknown }
+type StaffLoginBody = { staffLoginCode?: unknown; pin?: unknown }
 type OwnerLoginBody = { email?: unknown; password?: unknown }
 
 @Throttle({ default: { limit: 5, ttl: 60_000 } })
@@ -13,8 +13,8 @@ export class AuthController {
   @Post('staff/auth/login')
   @HttpCode(HttpStatus.OK)
   async loginStaff(@Body() body: StaffLoginBody) {
-    if (typeof body.pin !== 'string' || body.pin.length === 0) return this.auth.loginStaff('')
-    return this.auth.loginStaff(body.pin)
+    if (typeof body.staffLoginCode !== 'string' || typeof body.pin !== 'string') return this.auth.loginStaff('', '')
+    return this.auth.loginStaff(body.staffLoginCode, body.pin)
   }
 
   @Post('admin/auth/login')

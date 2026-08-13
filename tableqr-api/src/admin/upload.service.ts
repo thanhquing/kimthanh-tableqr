@@ -2,10 +2,7 @@ import { HttpException, Injectable } from '@nestjs/common'
 import { randomUUID } from 'node:crypto'
 import { mkdir, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
-import type { Sharp } from 'sharp'
-
-type SharpFactory = (input: Buffer, options: { failOn: 'error'; limitInputPixels: number }) => Sharp
-const sharp = require('sharp') as SharpFactory
+import sharp, { type Sharp } from 'sharp'
 
 export const MAX_MENU_IMAGE_BYTES = 5 * 1024 * 1024
 const MENU_IMAGE_WIDTH = 480

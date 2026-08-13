@@ -1,0 +1,21 @@
+# Local multi-domain simulation. Combine this file with docker-compose.yml.
+# It only changes the QR base URL and adds a one-off fixture seeder.
+services:
+  api:
+    environment:
+      GUEST_BASE_URL: http://guest.tableqr.localhost:8080
+      STAFF_BASE_URL: http://staff.tableqr.localhost:8080
+
+  api-seed:
+    profiles: [local]
+    build:
+      context: ..
+      dockerfile: tableqr-api/Dockerfile
+      target: build
+    working_dir: /app/tableqr-api
+    command: pnpm seed
+    environment:
+      DATABASE_URL: postgresql://tableqr:tableqr@db:5432/tableqr?schema=public
+    depends_on:
+      api:
+        condition: service_healthy

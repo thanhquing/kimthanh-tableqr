@@ -47,6 +47,31 @@ docker compose -f tableqr-api/docker-compose.yml up --build
 pnpm dev:guest      # http://localhost:5173/t/qr-ban-01-a7f3k9m2xp
 ```
 
+### Giả lập ba domain production trên máy local
+
+Không cần mua domain hoặc sửa DNS. `*.localhost` luôn trỏ về máy hiện tại;
+script dùng Caddy để tách đúng ba origin và reverse proxy API/ảnh theo từng
+origin. Cần Docker Desktop đang chạy và Caddy (`brew install caddy`) một lần.
+
+```bash
+nvm use 22
+pnpm dev:local-domains
+```
+
+Mở các URL sau (đều là HTTP local, nên **không** kiểm chứng được chứng chỉ
+HTTPS):
+
+| App | URL |
+| --- | --- |
+| Admin | `http://tableqr.localhost:8080` |
+| Staff | `http://staff.tableqr.localhost:8080` |
+| Guest/QR | `http://guest.tableqr.localhost:8080/t/qr-ban-01-a7f3k9m2xp` |
+
+Script tự khởi động PostgreSQL/API, seed dữ liệu demo idempotent, rồi chạy ba
+Vite app và proxy. Nhấn `Ctrl-C` để dừng proxy/frontend; database/API Docker
+vẫn giữ để lần sau chạy nhanh. QR được API tạo trong chế độ này luôn trỏ về
+hostname guest local, thay vì `localhost:5173`.
+
 Ba app mặc định gọi API thật qua Vite proxy. Để chạy giao diện với MSW khi
 phát triển, đặt `VITE_USE_MOCK=true` trong file `.env.development` của app đó.
 

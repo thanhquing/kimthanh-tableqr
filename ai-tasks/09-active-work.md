@@ -8,7 +8,7 @@
 
 > ### `SA-00` — Production foundation
 >
-> **Mốc:** M8 · **Trạng thái:** TODO
+> **Mốc:** M8 · **Trạng thái:** IN PROGRESS
 >
 > Ưu tiên đã đổi ngày 2026-08-10: làm lộ trình SaaS để hỗ trợ chủ quán tự đăng ký và đa tenant trước. `BE-13` được dời thành kiểm thử phát hành cuối cùng.
 >
@@ -17,6 +17,18 @@
 > **Đọc trước khi làm:** [`ai-tasks/13-saas-expansion.md`](13-saas-expansion.md), [`ai-docs/10-saas-evolution.md`](../ai-docs/10-saas-evolution.md), [`ai-docs/09-current-system-architecture.md`](../ai-docs/09-current-system-architecture.md), [`ai-tasks/04-open-questions.md`](04-open-questions.md) Q11.
 >
 > **Xong:** chọn và triển khai nền production: domain HTTPS QR ổn định, secrets production, health/ready checks và asset không phụ thuộc ổ đĩa ephemeral.
+>
+> **Tiến độ local (2026-08-13):** đã thêm mô phỏng ba hostname
+> `*.localhost` để kiểm chứng same-origin/reverse proxy và QR trước khi mua
+> domain. Đây không thay thế deployment HTTPS hoặc object storage production.
+
+> ### Bổ sung theo quyết định người dùng — tenant foundation · IN PROGRESS
+>
+> Người dùng cho phép reset toàn bộ PostgreSQL local ngày 2026-08-13 để bắt đầu
+> sớm migration multi-tenant. Đã thêm `restaurant_id` vào dữ liệu nghiệp vụ,
+> JWT tenant context, staff login bằng mã quán + PIN và SSE scope theo quán.
+> Chưa đánh dấu `SA-03`/`SA-04` DONE: còn cần test hai tenant, guest-session
+> capability và RLS/composite foreign key trước khi kết luận không leak dữ liệu.
 
 ---
 

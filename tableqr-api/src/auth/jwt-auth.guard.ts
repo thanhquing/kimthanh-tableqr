@@ -19,8 +19,10 @@ export class JwtAuthGuard implements CanActivate {
         sub: string
         role: 'staff' | 'owner'
         displayName: string
+        restaurantId: string
       }>(token)
-      request.user = { id: payload.sub, role: payload.role, displayName: payload.displayName }
+      if (!payload.restaurantId) throw new Error('Thiếu tenant.')
+      request.user = { id: payload.sub, role: payload.role, displayName: payload.displayName, restaurantId: payload.restaurantId }
       return true
     } catch {
       throw new UnauthorizedException('Token đăng nhập không hợp lệ.')
