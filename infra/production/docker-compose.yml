@@ -1,0 +1,85 @@
+# Stack production tham chiếu cho một VM. Caddy xin và gia hạn chứng chỉ HTTPS
+# sau khi cả ba bản ghi DNS A/AAAA trỏ về host này.
+#
+# Sao chép .env.production.example thành .env.production, điền đủ giá trị, rồi chạy:
+# docker compose --env-file .env.production -f infra/production/docker-compose.yml up -d --build
+services:
+  db:
+    image: postgres:15-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:?set POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER:?set POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  migrate:
+    build:
+      context: ../..
+      dockerfile: tableqr-api/Dockerfile
+    command: ["sh", "-c", "./node_modules/.bin/prisma migrate deploy"]
+    environment: &api_environment
+      NODE_ENV: production
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}?schema=public
+      JWT_SECRET: ${JWT_SECRET:?set JWT_SECRET}
+      GUEST_BASE_URL: https://${GUEST_HOST:?set GUEST_HOST}
+      STAFF_BASE_URL: https://${STAFF_HOST:?set STAFF_HOST}
+      UPLOAD_DIR: /app/uploads
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: "no"
+
+  api:
+    build:
+      context: ../..
+      dockerfile: tableqr-api/Dockerfile
+    command: ["node", "dist/main.js"]
+    restart: unless-stopped
+    environment: *api_environment
+    volumes:
+      # Volume có tên giữ được dữ liệu qua thay container/image API. Chuyển sang
+      # object storage managed ở SA-02 trước khi chạy nhiều API replica.
+      - upload_data:/app/uploads
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:3000/api/v1/readyz >/dev/null || exit 1"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  caddy:
+    build:
+      context: ../..
+      dockerfile: infra/production/Dockerfile
+      args:
+        VITE_GUEST_BASE_URL: https://${GUEST_HOST:?set GUEST_HOST}
+    restart: unless-stopped
+    environment:
+      ACME_EMAIL: ${ACME_EMAIL:?set ACME_EMAIL}
+      ADMIN_HOST: ${ADMIN_HOST:?set ADMIN_HOST}
+      STAFF_HOST: ${STAFF_HOST:?set STAFF_HOST}
+      GUEST_HOST: ${GUEST_HOST:?set GUEST_HOST}
+    depends_on:
+      api:
+        condition: service_healthy
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - caddy_data:/data
+      - caddy_config:/config
+
+volumes:
+  postgres_data:
+  upload_data:
+  caddy_data:
+  caddy_config:

@@ -72,6 +72,14 @@ Vite app và proxy. Nhấn `Ctrl-C` để dừng proxy/frontend; database/API Do
 vẫn giữ để lần sau chạy nhanh. QR được API tạo trong chế độ này luôn trỏ về
 hostname guest local, thay vì `localhost:5173`.
 
+### Production HTTPS
+
+Đã có stack Docker Compose tham chiếu cho một VM: Caddy tự quản lý HTTPS cho
+`tableqr.vn`, `staff.tableqr.vn`, `guest.tableqr.vn`; ba frontend và API giữ
+same-origin. Xem hướng dẫn, DNS/firewall và rollback ở
+[infra/production/](infra/production/README.md). Cần chọn nhà cung cấp VM,
+DNS và managed database/object storage trước khi đưa quán thật vào vận hành.
+
 Kiểm tra nhanh việc tách dữ liệu hai quán và quyền guest sau khi stack đang chạy:
 
 ```bash

@@ -84,9 +84,9 @@ flowchart TB
   AD -->|"proxy /api, /menu-images, /uploads"| API
 ```
 
-Compose khởi tạo database và API. Ba frontend hiện được Vite phục vụ cho development; proxy giữ frontend cùng origin với API trong quá trình này. Ảnh fixture được API phục vụ từ `/menu-images`, ảnh upload từ volume `tableqr-api/uploads` qua `/uploads`.
+Compose khởi tạo database và API. Ba frontend hiện được Vite phục vụ cho development; proxy giữ frontend cùng origin với API trong quá trình này. Ảnh fixture được API phục vụ từ `/menu-images`, ảnh upload từ volume `tableqr-api/uploads` qua `/uploads`. Stack HTTPS tham chiếu trên một VM nằm ở [`../infra/production/`](../infra/production/README.md): Caddy phục vụ đúng ba hostname production, chỉ mở port 80/443, API/PostgreSQL không public, migration là one-shot service và upload dùng volume bền qua redeploy container. Đây là bước chuyển tiếp; `SA-02` còn phải thay upload bằng object storage managed và chạy backup/restore drill.
 
-**Chưa phải production SaaS:** chưa có domain HTTPS ổn định, reverse proxy/CDN, object storage, managed PostgreSQL/backup, Redis hay worker nền. Vì vậy điện thoại 4G không thể quét một URL `localhost`; các khoảng thiếu này là một phần của roadmap SaaS.
+**Chưa phải production SaaS đã xác minh:** chưa chọn/triển khai VM, DNS và HTTPS thật từ Internet; cũng chưa có object storage, managed PostgreSQL/backup, Redis hay worker nền. Vì vậy điện thoại 4G vẫn không thể quét một URL `localhost`; các khoảng thiếu này là một phần của roadmap SaaS.
 
 ## 4. Xác thực và realtime
 
@@ -193,7 +193,7 @@ erDiagram
   DINING_TABLE ||--o{ STAFF_CALL : appears_at
 ```
 
-`Restaurant` và `AuthUser` **đang độc lập với các bảng nghiệp vụ**: ứng dụng hiện mặc định đúng một quán/một deployment. Đây là điểm cần thay đổi có chủ đích khi chuyển SaaS, không phải một quan hệ bị thiếu vô tình.
+`Restaurant` và `AuthUser` đã mang tenant context: `AuthUser.restaurant_id` xác định quán trong JWT, và dữ liệu nghiệp vụ có `restaurant_id` để query scope theo quán. ERD ở phần này chưa liệt kê đầy đủ các cột tenant/composite foreign key; sơ đồ đích và quy tắc isolation cập nhật nằm tại [10-saas-evolution.md](10-saas-evolution.md).
 
 ### Ràng buộc quan trọng trong DB
 

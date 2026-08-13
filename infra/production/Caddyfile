@@ -1,0 +1,33 @@
+{
+	email {$ACME_EMAIL}
+}
+
+(api) {
+	@api path /api/v1/* /uploads/* /menu-images/*
+	handle @api {
+		reverse_proxy api:3000
+	}
+}
+
+(spa) {
+	try_files {path} /index.html
+	file_server
+}
+
+https://{$ADMIN_HOST} {
+	import api
+	root * /srv/admin
+	import spa
+}
+
+https://{$STAFF_HOST} {
+	import api
+	root * /srv/staff
+	import spa
+}
+
+https://{$GUEST_HOST} {
+	import api
+	root * /srv/guest
+	import spa
+}

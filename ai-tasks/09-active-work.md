@@ -18,9 +18,12 @@
 >
 > **Xong:** chọn và triển khai nền production: domain HTTPS QR ổn định, secrets production, health/ready checks và asset không phụ thuộc ổ đĩa ephemeral.
 >
-> **Tiến độ local (2026-08-13):** đã thêm mô phỏng ba hostname
+> **Tiến độ local/portable (2026-08-13):** đã thêm mô phỏng ba hostname
 > `*.localhost` để kiểm chứng same-origin/reverse proxy và QR trước khi mua
-> domain. Đây không thay thế deployment HTTPS hoặc object storage production.
+> domain. Đã có stack Docker Compose tham chiếu cho một VM với Caddy HTTPS,
+> migration one-shot, secret production bắt buộc và upload volume bền qua
+> redeploy container. Đây không thay thế chọn nhà cung cấp, DNS thật, database
+> managed, object storage hoặc deployment HTTPS đã xác minh từ Internet.
 
 > ### Bổ sung theo quyết định người dùng — tenant foundation · IN PROGRESS
 >
