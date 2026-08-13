@@ -1,4 +1,4 @@
-import { API_BASE_PATH, type AdminCategoriesResponse, type AdminItemsResponse, type AdminTableDto, type AdminTablesResponse, type AuthResponse, type CreateCategoryRequest, type CreateMenuItemRequest, type CreateTableRequest, type MenuCategory, type MenuItem, type Restaurant, type UpdateCategoryRequest, type UpdateMenuItemRequest, type UpdateRestaurantRequest, type UpdateTableRequest, type UploadImageResponse } from '@kimthanh-tableqr/contracts'
+import { API_BASE_PATH, type AdminCategoriesResponse, type AdminItemsResponse, type AdminTableDto, type AdminTablesResponse, type AuthResponse, type CreateCategoryRequest, type CreateMenuItemRequest, type CreateTableRequest, type MenuCategory, type MenuItem, type Restaurant, type StaffDevicePairingResponse, type UpdateCategoryRequest, type UpdateMenuItemRequest, type UpdateRestaurantRequest, type UpdateTableRequest, type UploadImageResponse } from '@kimthanh-tableqr/contracts'
 
 const adminApiBaseUrl = import.meta.env.VITE_API_BASE_URL ?? API_BASE_PATH
 const adminApiUrl = (path: string) => `${adminApiBaseUrl.replace(/\/$/, '')}${path}`
@@ -40,5 +40,5 @@ export const createTable = (token: string, body: CreateTableRequest) => adminReq
 export const updateTable = (token: string, id: string, body: UpdateTableRequest) => adminRequest<AdminTableDto>(token, `/admin/tables/${id}`, { method: 'PATCH', body: JSON.stringify(body) })
 export const deleteTable = (token: string, id: string) => adminRequest<void>(token, `/admin/tables/${id}`, { method: 'DELETE' })
 export const getRestaurant = (token: string) => adminRequest<Restaurant>(token, '/admin/restaurant')
-export const getStaffPairing = (token: string) => adminRequest<{ staffPairingUrl: string }>(token, '/admin/staff-pairing')
+export const getStaffPairing = (token: string) => adminRequest<StaffDevicePairingResponse>(token, '/admin/staff-pairing', { method: 'POST' })
 export const updateRestaurant = (token: string, body: UpdateRestaurantRequest) => adminRequest<Restaurant>(token, '/admin/restaurant', { method: 'PATCH', body: JSON.stringify(body) })

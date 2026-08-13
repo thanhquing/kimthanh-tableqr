@@ -7,10 +7,11 @@ import type { AuthenticatedUser } from '../auth/auth.types'
 import { RolesGuard } from '../auth/roles.guard'
 import { Roles } from '../auth/roles.decorator'
 import { AdminService } from './admin.service'
+import { AuthService } from '../auth/auth.service'
 import { MAX_MENU_IMAGE_BYTES, type UploadedImage, UploadService } from './upload.service'
 @Controller('admin') @UseGuards(JwtAuthGuard, RolesGuard) @Roles('owner')
 export class AdminController {
-  constructor(private readonly admin: AdminService, private readonly uploads: UploadService) {}
+  constructor(private readonly admin: AdminService, private readonly uploads: UploadService, private readonly auth: AuthService) {}
   @Get('categories') categories(@CurrentUser() user: AuthenticatedUser) { return this.admin.categories(user.restaurantId) }
   @Post('categories') createCategory(@CurrentUser() user: AuthenticatedUser, @Body() body: Record<string, unknown>) { return this.admin.createCategory(user.restaurantId, body) }
   @Patch('categories/:id') updateCategory(@CurrentUser() user: AuthenticatedUser, @Param('id') id: string, @Body() body: Record<string, unknown>) { return this.admin.updateCategory(user.restaurantId, id, body) }
@@ -25,6 +26,6 @@ export class AdminController {
   @Patch('tables/:id') updateTable(@CurrentUser() user: AuthenticatedUser, @Param('id') id: string, @Body() body: Record<string, unknown>) { return this.admin.updateTable(user.restaurantId, id, body) }
   @Delete('tables/:id') deleteTable(@CurrentUser() user: AuthenticatedUser, @Param('id') id: string) { return this.admin.deleteTable(user.restaurantId, id) }
   @Get('restaurant') restaurant(@CurrentUser() user: AuthenticatedUser) { return this.admin.restaurant(user.restaurantId) }
-  @Get('staff-pairing') staffPairing(@CurrentUser() user: AuthenticatedUser) { return this.admin.staffPairing(user.restaurantId) }
+  @Post('staff-pairing') staffPairing(@CurrentUser() user: AuthenticatedUser) { return this.auth.createStaffDevicePairing(user.restaurantId) }
   @Patch('restaurant') updateRestaurant(@CurrentUser() user: AuthenticatedUser, @Body() body: Record<string, unknown>) { return this.admin.updateRestaurant(user.restaurantId, body) }
 }

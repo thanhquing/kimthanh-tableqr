@@ -1,4 +1,4 @@
-import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common'
+import { Body, Controller, HttpCode, HttpStatus, Param, Post } from '@nestjs/common'
 import { Throttle } from '@nestjs/throttler'
 import { AuthService } from './auth.service'
 
@@ -15,6 +15,12 @@ export class AuthController {
   async loginStaff(@Body() body: StaffLoginBody) {
     if (typeof body.staffLoginCode !== 'string' || typeof body.pin !== 'string') return this.auth.loginStaff('', '')
     return this.auth.loginStaff(body.staffLoginCode, body.pin)
+  }
+
+  @Post('staff/device-pairings/:pairingToken/claim')
+  @HttpCode(HttpStatus.OK)
+  claimStaffDevicePairing(@Param('pairingToken') pairingToken: string) {
+    return this.auth.claimStaffDevicePairing(pairingToken)
   }
 
   @Post('admin/auth/login')

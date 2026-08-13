@@ -117,6 +117,15 @@ export interface StaffStreamTicketResponse {
   expiresInSeconds: number
 }
 
+export interface StaffDevicePairingResponse {
+  staffPairingUrl: string
+  expiresAt: IsoDateTime
+}
+
+export interface StaffDevicePairingClaimResponse {
+  staffLoginCode: string
+}
+
 /** Don o man hinh bep — kem ban de khong phai join phia client. */
 export interface StaffOrderDto extends OrderDto {
   table: TableRefDto

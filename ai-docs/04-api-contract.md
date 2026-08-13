@@ -228,6 +228,12 @@ Nếu đã có `StaffCall` `PENDING` cùng `type` trong phiên thì trả về c
 ### `POST /api/v1/staff/auth/login`
 Request `{ "staffLoginCode": "KM7P4X", "pin": "123456" }` → **200** `{ "token": "...", "role": "staff", "displayName": "Nhân viên quầy" }` · **401** `UNAUTHORIZED`. `staffLoginCode` được tablet lấy từ QR ghép thiết bị, không cho nhân viên gõ/chọn tay.
 
+### `POST /api/v1/admin/staff-pairing`
+JWT owner → **201** `{ "staffPairingUrl": "https://staff.tableqr.vn/pair/<token>", "expiresAt": "…" }`. Token là ngẫu nhiên, TTL 10 phút, chỉ dùng một lần và server chỉ lưu hash.
+
+### `POST /api/v1/staff/device-pairings/:token/claim`
+Public từ tablet vừa quét QR → **200** `{ "staffLoginCode": "…" }`; lần claim lại/hết hạn → **401** `PAIRING_TOKEN_INVALID`. Tablet mới được lưu mã local và hiển thị PIN keypad.
+
 ### `GET /api/v1/staff/orders?status=&since=`
 
 Bảng đơn. `since` (ISO datetime) để polling lấy phần thay đổi; bỏ trống thì lấy đơn của các phiên đang `OPEN`.

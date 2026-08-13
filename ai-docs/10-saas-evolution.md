@@ -47,7 +47,7 @@ Một deployment chung phục vụ nhiều quán độc lập. Mọi truy vấn 
 | Hostname | App | Đường vào chính |
 | --- | --- | --- |
 | `https://tableqr.vn` | Admin / chủ quán | Đăng ký, đăng nhập, quản lý menu/bàn/quán |
-| `https://staff.tableqr.vn` | Staff / bếp | Đăng nhập bằng mã quán + PIN, nhận SSE và xử lý đơn |
+| `https://staff.tableqr.vn` | Staff / bếp | Quét QR ghép tablet một-lần, nhập PIN, nhận SSE và xử lý đơn |
 | `https://guest.tableqr.vn` | Guest / khách | QR cố định: `https://guest.tableqr.vn/t/<qrToken>` |
 
 Mỗi hostname phục vụ đúng frontend tương ứng và cùng reverse proxy `/api/v1`, `/uploads`, `/menu-images` về một API NestJS. Vì frontend gọi API theo path tương đối (`VITE_API_BASE_URL=/api/v1`), không cần CORS giữa ba subdomain và token của từng app vẫn nằm trong origin riêng. `GUEST_BASE_URL` ở API và `VITE_GUEST_BASE_URL` của admin production đều là `https://guest.tableqr.vn`.
@@ -171,7 +171,7 @@ erDiagram
 
 Phiên bản đầu không có `Organization` hay `Membership`. `AuthUser` có đúng một `restaurant_id`; role `OWNER`/`STAFF` có hiệu lực trong quán đó. Điều này giữ login, JWT, phân quyền và billing đơn giản. Nếu một chủ có nhiều chi nhánh, mỗi chi nhánh đăng ký như một quán độc lập; việc gộp chúng vào một tài khoản là scope tương lai, không phải nợ cần trả ngay.
 
-Mỗi `Restaurant` có một `staff_login_code` ngẫu nhiên, unique toàn hệ thống. Nhân viên đăng nhập bằng mã quán này và PIN dùng chung của quán; mã chỉ để xác định tenant, PIN vẫn là bí mật. Owner nhận mã khi đăng ký và có thể xem lại trong admin để chia sẻ cho nhân viên.
+Mỗi `Restaurant` có một `staff_login_code` ngẫu nhiên, unique toàn hệ thống. Mã chỉ dùng nội bộ để tablet đã ghép xác định tenant; UI không cho nhân viên gõ/chọn mã này. Admin tạo QR ghép thiết bị gồm token ngẫu nhiên một-lần, TTL 10 phút; server chỉ lưu SHA-256 hash, claim xong token bị vô hiệu và tablet mới lưu mã quán local. PIN dùng chung của quán vẫn là bí mật bắt buộc.
 
 ### Bảng/cột sẽ thêm hoặc đổi
 

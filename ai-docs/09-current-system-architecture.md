@@ -93,7 +93,7 @@ Compose khởi tạo database và API. Ba frontend hiện được Vite phục v
 | Đối tượng | Cách định danh | Quyền |
 | --- | --- | --- |
 | Khách | `qrToken` trong URL → capability trả sau bootstrap | Không đăng nhập. API chỉ cho đọc/gửi đơn/gọi nhân viên khi có `X-Guest-Access`; DB chỉ lưu SHA-256 hash trong `guest_session_access`, nên UUID `sessionId` không phải quyền truy cập. Mỗi lần quét có capability riêng, không vô hiệu điện thoại khác trong cùng phiên. |
-| Nhân viên | QR ghép thiết bị → mã quán local + PIN → JWT role `STAFF` | Orders, calls, bàn, thanh toán/reset |
+| Nhân viên | QR ghép một-lần (TTL 10 phút) → mã quán local + PIN → JWT role `STAFF` | QR chỉ chứa token ngẫu nhiên; server chỉ lưu hash và token bị vô hiệu sau claim. Orders, calls, bàn, thanh toán/reset |
 | Chủ quán | Email/mật khẩu → JWT role `OWNER` | Admin menu, bàn và cài đặt |
 | Realtime | REST đổi JWT lấy `stream_ticket` 60 giây, rồi `EventSource` gửi ticket đó trên query | Server phát `order.created`, `order.status_changed`, `call.created`, `session.closed`; client fallback polling sau 3 lỗi SSE |
 

@@ -5,6 +5,7 @@ import {
   type OrderStatus,
   type PaySessionResponse,
   type StaffCallDto,
+  type StaffDevicePairingClaimResponse,
   type StaffCallsResponse,
   type StaffOrderDto,
   type StaffOrdersResponse,
@@ -50,6 +51,12 @@ export async function loginStaff(staffLoginCode: string, pin: string): Promise<A
   })
   if (!response.ok) throw new Error('Mã quán hoặc PIN không đúng. Thử lại.')
   return response.json() as Promise<AuthResponse>
+}
+
+export async function claimStaffDevicePairing(pairingToken: string): Promise<StaffDevicePairingClaimResponse> {
+  const response = await fetch(staffApiUrl(`/staff/device-pairings/${encodeURIComponent(pairingToken)}/claim`), { method: 'POST' })
+  if (!response.ok) throw new Error('Mã ghép thiết bị không hợp lệ hoặc đã hết hạn. Hãy nhờ chủ quán tạo mã mới.')
+  return response.json() as Promise<StaffDevicePairingClaimResponse>
 }
 
 export const getStaffOrders = (token: string, since?: string) =>
