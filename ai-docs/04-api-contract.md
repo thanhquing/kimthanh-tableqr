@@ -104,7 +104,7 @@ Trong một transaction, server tạo `Restaurant` (kèm `staffLoginCode`, `tria
 
 `GET /guest/tables/:qrToken` giữ URL/response hiện hữu, bổ sung `guestAccessToken` chỉ dùng cho session hiện tại. Client phải gửi token này qua `X-Guest-Access` với `GET/POST /guest/sessions/:sessionId/*`; server kiểm tra token khớp session/table/restaurant trước khi xử lý.
 
-`GET /staff/stream` chỉ phát event của `restaurantId` trong JWT. Trước khi production hardening SSE ticket ngắn hạn, JWT qua `access_token` vẫn phải được HTTPS bảo vệ và proxy phải che query string khỏi log; ticket ngắn hạn là thay đổi tương thích sau đó.
+`POST /staff/stream-ticket` cần JWT header hợp lệ và trả `stream_ticket` TTL 60 giây. `GET /staff/stream` chỉ phát event của `restaurantId` trong ticket đó; query chỉ nhận `stream_ticket`, không nhận access JWT. Ticket không dùng được cho REST endpoint khác.
 
 ### Endpoint owner bổ sung tối thiểu
 
@@ -283,8 +283,11 @@ Chi tiết phiên: tất cả các lần gọi + tổng bill. Shape giống `GET
 ### `PATCH /api/v1/staff/calls/:callId`
 Request `{ "status": "DONE" }` → **200**
 
+### `POST /api/v1/staff/stream-ticket`
+JWT header, role `staff` hoặc `owner` → **201** `{ "ticket": "…", "expiresInSeconds": 60 }`.
+
 ### `GET /api/v1/staff/stream` — **chỉ từ M7**
-SSE. Event: `order.created`, `order.status_changed`, `call.created`, `session.closed`. Data là payload cùng shape với các endpoint tương ứng. Vì `EventSource` không gửi được header `Authorization`, client gửi JWT qua query `access_token`; endpoint vẫn bắt buộc role `staff` hoặc `owner`. Giai đoạn mock (M2–M5) **không** có endpoint này; client dùng polling `GET /staff/orders?since=`.
+SSE. Event: `order.created`, `order.status_changed`, `call.created`, `session.closed`. Data là payload cùng shape với các endpoint tương ứng. Vì `EventSource` không gửi được header `Authorization`, client đổi JWT qua `POST /staff/stream-ticket`, rồi gửi `?stream_ticket=…`; access JWT trên query bị từ chối. Giai đoạn mock (M2–M5) **không** có endpoint này; client dùng polling `GET /staff/orders?since=`.
 
 ---
 

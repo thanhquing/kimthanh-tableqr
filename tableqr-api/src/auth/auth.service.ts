@@ -2,6 +2,7 @@ import { Injectable, UnauthorizedException } from '@nestjs/common'
 import { JwtService } from '@nestjs/jwt'
 import { compare } from 'bcryptjs'
 import { PrismaService } from '../prisma.service'
+import type { AuthenticatedUser } from './auth.types'
 
 @Injectable()
 export class AuthService {
@@ -26,6 +27,16 @@ export class AuthService {
     })
     if (!user?.passwordHash || !(await compare(password, user.passwordHash))) this.reject()
     return this.response(user.id, 'owner', user.displayName, user.restaurantId)
+  }
+
+  async createStaffStreamTicket(user: AuthenticatedUser) {
+    return {
+      ticket: await this.jwt.signAsync(
+        { sub: user.id, role: user.role, displayName: user.displayName, restaurantId: user.restaurantId, tokenUse: 'staff_stream' },
+        { expiresIn: 60 },
+      ),
+      expiresInSeconds: 60,
+    }
   }
 
   private async response(id: string, role: 'staff' | 'owner', displayName: string, restaurantId: string) {

@@ -112,6 +112,11 @@ export interface AuthResponse {
   displayName: string
 }
 
+export interface StaffStreamTicketResponse {
+  ticket: string
+  expiresInSeconds: number
+}
+
 /** Don o man hinh bep — kem ban de khong phai join phia client. */
 export interface StaffOrderDto extends OrderDto {
   table: TableRefDto

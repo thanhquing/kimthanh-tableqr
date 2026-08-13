@@ -9,6 +9,7 @@ import {
   type StaffOrderDto,
   type StaffOrdersResponse,
   type StaffSessionDetailResponse,
+  type StaffStreamTicketResponse,
   type StaffTablesResponse,
 } from '@kimthanh-tableqr/contracts'
 
@@ -34,9 +35,10 @@ async function staffRequest<T>(token: string, path: string, init?: RequestInit):
   return response.json() as Promise<T>
 }
 
-export function getStaffStreamUrl(token: string): string {
+export async function getStaffStreamUrl(token: string): Promise<string> {
+  const { ticket } = await staffRequest<StaffStreamTicketResponse>(token, '/staff/stream-ticket', { method: 'POST' })
   const url = new URL(staffApiUrl('/staff/stream'), window.location.origin)
-  url.searchParams.set('access_token', token)
+  url.searchParams.set('stream_ticket', ticket)
   return url.toString()
 }
 

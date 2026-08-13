@@ -7,6 +7,7 @@ import { AuthController } from './auth.controller'
 import { AuthService } from './auth.service'
 import { JwtAuthGuard } from './jwt-auth.guard'
 import { RolesGuard } from './roles.guard'
+import { StaffStreamTicketGuard } from './staff-stream-ticket.guard'
 
 @Module({
   imports: [
@@ -18,9 +19,10 @@ import { RolesGuard } from './roles.guard'
     PrismaService,
     AuthService,
     JwtAuthGuard,
+    StaffStreamTicketGuard,
     RolesGuard,
     { provide: APP_GUARD, useClass: ThrottlerGuard },
   ],
-  exports: [JwtModule, AuthService, JwtAuthGuard, RolesGuard, PrismaService],
+  exports: [JwtModule, AuthService, JwtAuthGuard, StaffStreamTicketGuard, RolesGuard, PrismaService],
 })
 export class AuthModule {}

@@ -16,7 +16,8 @@ export function useOrderStream(): OrderStream {
   useEffect(() => { if (!query.data) return; since.current = query.data.serverTime; setOrders((current) => { const next = new Map(current.map((order) => [order.id, order])); query.data.orders.forEach((order) => next.set(order.id, order)); return [...next.values()].sort((a,b) => a.createdAt.localeCompare(b.createdAt)) }) }, [query.data])
   useEffect(() => {
     if (!auth || useMock || pollingFallback) return
-    const source = new EventSource(getStaffStreamUrl(auth.token))
+    let source: EventSource | undefined
+    let cancelled = false
     let errors = 0
     const upsertOrder = (event: MessageEvent<string>) => {
       const order = JSON.parse(event.data) as StaffOrderDto
@@ -33,15 +34,22 @@ export function useOrderStream(): OrderStream {
       void queryClient.invalidateQueries({ queryKey: ['staff-tables'] })
     }
     const refreshCalls = () => { void queryClient.invalidateQueries({ queryKey: ['staff-calls'] }) }
-    const onError = () => { errors += 1; if (errors >= 3) { source.close(); setPollingFallback(true) } }
+    const onError = () => { errors += 1; if (errors >= 3) { source?.close(); setPollingFallback(true) } }
     const onOpen = () => { errors = 0 }
-    source.addEventListener('order.created', upsertOrder)
-    source.addEventListener('order.status_changed', upsertOrder)
-    source.addEventListener('call.created', refreshCalls)
-    source.addEventListener('session.closed', removeClosedSession)
-    source.addEventListener('error', onError)
-    source.addEventListener('open', onOpen)
-    return () => source.close()
+    void getStaffStreamUrl(auth.token)
+      .then((url) => {
+        if (cancelled) return
+        const nextSource = new EventSource(url)
+        source = nextSource
+        nextSource.addEventListener('order.created', upsertOrder)
+        nextSource.addEventListener('order.status_changed', upsertOrder)
+        nextSource.addEventListener('call.created', refreshCalls)
+        nextSource.addEventListener('session.closed', removeClosedSession)
+        nextSource.addEventListener('error', onError)
+        nextSource.addEventListener('open', onOpen)
+      })
+      .catch(() => setPollingFallback(true))
+    return () => { cancelled = true; source?.close() }
   }, [auth, pollingFallback, queryClient, useMock])
   return { error: query.error, isLoading: query.isPending, orders, refetch: () => void query.refetch(), replaceOrder: (order) => setOrders((items) => items.map((item) => item.id === order.id ? order : item)) }
 }

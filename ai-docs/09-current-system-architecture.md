@@ -95,11 +95,11 @@ Compose khởi tạo database và API. Ba frontend hiện được Vite phục v
 | Khách | `qrToken` trong URL → capability trả sau bootstrap | Không đăng nhập. API chỉ cho đọc/gửi đơn/gọi nhân viên khi có `X-Guest-Access`; DB chỉ lưu SHA-256 hash trong `guest_session_access`, nên UUID `sessionId` không phải quyền truy cập. Mỗi lần quét có capability riêng, không vô hiệu điện thoại khác trong cùng phiên. |
 | Nhân viên | QR ghép thiết bị → mã quán local + PIN → JWT role `STAFF` | Orders, calls, bàn, thanh toán/reset |
 | Chủ quán | Email/mật khẩu → JWT role `OWNER` | Admin menu, bàn và cài đặt |
-| Realtime | `EventSource` với JWT query `access_token` | Server phát `order.created`, `order.status_changed`, `call.created`, `session.closed`; client fallback polling sau 3 lỗi SSE |
+| Realtime | REST đổi JWT lấy `stream_ticket` 60 giây, rồi `EventSource` gửi ticket đó trên query | Server phát `order.created`, `order.status_changed`, `call.created`, `session.closed`; client fallback polling sau 3 lỗi SSE |
 
 Mật khẩu/PIN chỉ lưu hash bcrypt. Rate limit hiện là in-process qua Nest throttler và guest rate limiter; khi chạy nhiều API instance, các giới hạn này phải chuyển sang Redis trước khi scale ngang.
 
-`X-Guest-Token` vẫn là client state/rate-limit local, không phải quyền. Quyền guest là `X-Guest-Access` capability theo phiên; API không dựa vào UUID "khó đoán". JWT trong URL SSE vẫn cần được thay bằng ticket ngắn hạn nếu hạ tầng log/proxy có thể ghi query string.
+`X-Guest-Token` vẫn là client state/rate-limit local, không phải quyền. Quyền guest là `X-Guest-Access` capability theo phiên; API không dựa vào UUID "khó đoán". SSE không đặt access JWT trong URL: API cấp `stream_ticket` riêng, TTL 60 giây, chỉ hợp lệ cho endpoint stream.
 
 ## 5. ERD — database hiện tại
 

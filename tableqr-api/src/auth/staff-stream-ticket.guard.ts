@@ -5,14 +5,15 @@ import type { AuthenticatedUser } from './auth.types'
 
 type RequestWithUser = Request & { user?: AuthenticatedUser }
 
+/** EventSource không gửi Authorization header; chỉ SSE được chấp nhận ticket query ngắn hạn. */
 @Injectable()
-export class JwtAuthGuard implements CanActivate {
+export class StaffStreamTicketGuard implements CanActivate {
   constructor(private readonly jwt: JwtService) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest<RequestWithUser>()
-    const token = request.headers.authorization?.replace(/^Bearer\s+/i, '')
-    if (!token) throw new UnauthorizedException('Thiếu token đăng nhập.')
+    const ticket = typeof request.query.stream_ticket === 'string' ? request.query.stream_ticket : undefined
+    if (!ticket) throw new UnauthorizedException('Thiếu stream ticket.')
     try {
       const payload = await this.jwt.verifyAsync<{
         sub: string
@@ -20,12 +21,12 @@ export class JwtAuthGuard implements CanActivate {
         displayName: string
         restaurantId: string
         tokenUse?: string
-      }>(token)
-      if (!payload.restaurantId || payload.tokenUse === 'staff_stream') throw new Error('Token không dùng cho REST.')
+      }>(ticket)
+      if (payload.tokenUse !== 'staff_stream' || !payload.restaurantId) throw new Error('Sai ticket.')
       request.user = { id: payload.sub, role: payload.role, displayName: payload.displayName, restaurantId: payload.restaurantId }
       return true
     } catch {
-      throw new UnauthorizedException('Token đăng nhập không hợp lệ.')
+      throw new UnauthorizedException('Stream ticket không hợp lệ hoặc đã hết hạn.')
     }
   }
 }
