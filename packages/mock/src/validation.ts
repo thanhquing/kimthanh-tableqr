@@ -13,6 +13,7 @@ import {
   type UpdateMenuItemRequest,
   type UpdateOrderStatusRequest,
   type UpdateRestaurantRequest,
+  type UpdateStaffPinRequest,
   type UpdateStaffCallRequest,
   type UpdateTableRequest,
 } from '@kimthanh-tableqr/contracts'
@@ -201,4 +202,11 @@ export function parseUpdateRestaurant(value: unknown): UpdateRestaurantRequest {
   if (logoUrl !== undefined) result.logoUrl = logoUrl
   if (address !== undefined) result.address = address
   return result
+}
+
+export function parseUpdateStaffPin(value: unknown): UpdateStaffPinRequest {
+  const body = object(value)
+  const pin = stringField(body, 'pin')!
+  if (!/^\d{6}$/.test(pin)) throw validationError({ pin: 'PIN phải gồm đúng 6 chữ số.' })
+  return { pin }
 }

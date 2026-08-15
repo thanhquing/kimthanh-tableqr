@@ -1,4 +1,4 @@
-import { API_BASE_PATH, type AdminCategoriesResponse, type AdminItemsResponse, type AdminTableDto, type AdminTablesResponse, type AuthResponse, type CreateCategoryRequest, type CreateMenuItemRequest, type CreateTableRequest, type MenuCategory, type MenuItem, type Restaurant, type StaffDevicePairingResponse, type UpdateCategoryRequest, type UpdateMenuItemRequest, type UpdateRestaurantRequest, type UpdateTableRequest, type UploadImageResponse } from '@kimthanh-tableqr/contracts'
+import { API_BASE_PATH, type AdminAccountResponse, type AdminCategoriesResponse, type AdminItemsResponse, type AdminTableDto, type AdminTablesResponse, type AuthResponse, type CreateCategoryRequest, type CreateMenuItemRequest, type CreateTableRequest, type MenuCategory, type MenuItem, type Restaurant, type StaffDevicePairingResponse, type UpdateCategoryRequest, type UpdateMenuItemRequest, type UpdateRestaurantRequest, type UpdateStaffPinRequest, type UpdateTableRequest, type UploadImageResponse } from '@kimthanh-tableqr/contracts'
 
 const adminApiBaseUrl = import.meta.env.VITE_API_BASE_URL ?? API_BASE_PATH
 const adminApiUrl = (path: string) => `${adminApiBaseUrl.replace(/\/$/, '')}${path}`
@@ -39,6 +39,8 @@ export const getTables = (token: string) => adminRequest<AdminTablesResponse>(to
 export const createTable = (token: string, body: CreateTableRequest) => adminRequest<AdminTableDto>(token, '/admin/tables', { method: 'POST', body: JSON.stringify(body) })
 export const updateTable = (token: string, id: string, body: UpdateTableRequest) => adminRequest<AdminTableDto>(token, `/admin/tables/${id}`, { method: 'PATCH', body: JSON.stringify(body) })
 export const deleteTable = (token: string, id: string) => adminRequest<void>(token, `/admin/tables/${id}`, { method: 'DELETE' })
+export const getAccount = (token: string) => adminRequest<AdminAccountResponse>(token, '/admin/account')
 export const getRestaurant = (token: string) => adminRequest<Restaurant>(token, '/admin/restaurant')
 export const getStaffPairing = (token: string) => adminRequest<StaffDevicePairingResponse>(token, '/admin/staff-pairing', { method: 'POST' })
+export const updateStaffPin = (token: string, body: UpdateStaffPinRequest) => adminRequest<{ updated: true }>(token, '/admin/staff-pin', { method: 'PATCH', body: JSON.stringify(body) })
 export const updateRestaurant = (token: string, body: UpdateRestaurantRequest) => adminRequest<Restaurant>(token, '/admin/restaurant', { method: 'PATCH', body: JSON.stringify(body) })

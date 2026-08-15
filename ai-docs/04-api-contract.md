@@ -44,7 +44,7 @@
 
 ## Contract target — multi-tenant lite (`SA-03`…`SA-07`)
 
-Phần này là contract multi-tenant. `SA-03`…`SA-06` đã triển khai tenant context, RLS và public owner registration; endpoint account/staff PIN cùng shell onboarding còn ở `SA-07`. Endpoint MVP hiện hữu không được âm thầm đổi tenant qua payload client.
+Phần này là contract multi-tenant đã được triển khai qua `SA-03`…`SA-07`: tenant context/RLS, public owner registration và admin account/PIN. Endpoint MVP hiện hữu không được âm thầm đổi tenant qua payload client.
 
 ### Tenant context
 
@@ -111,7 +111,9 @@ Trong một transaction, server tạo `Restaurant` (kèm `staffLoginCode`, `tria
 | Method | Path | Auth | Request / kết quả |
 | --- | --- | --- | --- |
 | `GET` | `/admin/account` | owner | `{ displayName, email, restaurant: { id, name, staffLoginCode }, trialEndsAt, billingStatus }` |
-| `PATCH` | `/admin/staff-pin` | owner | `{ pin }`; đổi PIN hash của service account `STAFF` trong chính tenant |
+| `PATCH` | `/admin/staff-pin` | owner | Request `{ pin: "123456" }`; PIN đúng 6 chữ số, đổi bcrypt hash của service account `STAFF` trong chính tenant và trả `{ updated: true }` |
+
+`GET /admin/account` và `PATCH /admin/staff-pin` chỉ lấy `restaurantId` từ JWT owner; không nhận tenant từ client. PIN không bao giờ xuất hiện trong response hoặc log. PIN sai định dạng trả `400 VALIDATION_ERROR`.
 
 ---
 

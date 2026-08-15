@@ -1,4 +1,5 @@
 import { HttpException, Injectable } from '@nestjs/common'
+import { hash } from 'bcryptjs'
 import { randomBytes } from 'node:crypto'
 import { PrismaService } from '../prisma.service'
 
@@ -56,5 +57,25 @@ export class AdminService {
   async updateTable(restaurantId: string, id: string, body: Record<string, unknown>) { return this.prisma.withTenant(restaurantId, async (tx) => { if (!await tx.diningTable.findFirst({ where: { id, restaurantId } })) fail(404, 'TABLE_NOT_FOUND', 'Không tìm thấy bàn.'); return tx.diningTable.update({ where: { id }, data: { ...(string(body.code) ? { code: string(body.code) } : {}), ...(string(body.displayName) ? { displayName: string(body.displayName) } : {}), ...(int(body.sortOrder) !== undefined ? { sortOrder: int(body.sortOrder) } : {}), ...(typeof body.isActive === 'boolean' ? { isActive: body.isActive } : {}) } }) }) }
   async deleteTable(restaurantId: string, id: string) { return this.prisma.withTenant(restaurantId, async (tx) => { if (await tx.tableSession.count({ where: { restaurantId, tableId: id, status: 'OPEN' } })) fail(409, 'TABLE_HAS_OPEN_SESSION', 'Bàn đang có khách.'); if (!(await tx.diningTable.deleteMany({ where: { id, restaurantId } })).count) fail(404, 'TABLE_NOT_FOUND', 'Không tìm thấy bàn.'); return { id } }) }
   restaurant(restaurantId: string) { return this.prisma.withTenant(restaurantId, (tx) => tx.restaurant.findUniqueOrThrow({ where: { id: restaurantId } })) }
+  async account(ownerId: string, restaurantId: string) {
+    return this.prisma.withTenant(restaurantId, async (tx) => {
+      const [owner, restaurant] = await Promise.all([
+        tx.authUser.findFirst({ where: { id: ownerId, restaurantId, role: 'OWNER', isActive: true }, select: { displayName: true, email: true } }),
+        tx.restaurant.findUniqueOrThrow({ where: { id: restaurantId }, select: { id: true, name: true, staffLoginCode: true, trialEndsAt: true, billingStatus: true } }),
+      ])
+      if (!owner?.email) return fail(404, 'OWNER_NOT_FOUND', 'Không tìm thấy tài khoản chủ quán.')
+      return { displayName: owner.displayName, email: owner.email, restaurant, trialEndsAt: restaurant.trialEndsAt, billingStatus: restaurant.billingStatus }
+    })
+  }
+  async updateStaffPin(restaurantId: string, body: Record<string, unknown>) {
+    const pin = string(body.pin)
+    if (!pin || !/^\d{6}$/.test(pin)) fail(400, 'VALIDATION_ERROR', 'PIN nhân viên phải gồm 6 chữ số.')
+    const pinHash = await hash(pin!, 12)
+    return this.prisma.withTenant(restaurantId, async (tx) => {
+      const result = await tx.authUser.updateMany({ where: { restaurantId, role: 'STAFF', isActive: true, pinHash: { not: null } }, data: { pinHash } })
+      if (!result.count) fail(404, 'STAFF_ACCOUNT_NOT_FOUND', 'Không tìm thấy tài khoản nhân viên của quán.')
+      return { updated: true }
+    })
+  }
   updateRestaurant(restaurantId: string, body: Record<string, unknown>) { return this.prisma.withTenant(restaurantId, (tx) => tx.restaurant.update({ where: { id: restaurantId }, data: { ...(string(body.name) ? { name: string(body.name) } : {}), ...(typeof body.logoUrl === 'string' || body.logoUrl === null ? { logoUrl: body.logoUrl } : {}), ...(typeof body.address === 'string' || body.address === null ? { address: body.address } : {}) } })) }
 }

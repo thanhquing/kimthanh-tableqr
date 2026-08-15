@@ -25,7 +25,9 @@ export class AdminController {
   @Post('tables') createTable(@CurrentUser() user: AuthenticatedUser, @Body() body: Record<string, unknown>) { return this.admin.createTable(user.restaurantId, body) }
   @Patch('tables/:id') updateTable(@CurrentUser() user: AuthenticatedUser, @Param('id') id: string, @Body() body: Record<string, unknown>) { return this.admin.updateTable(user.restaurantId, id, body) }
   @Delete('tables/:id') deleteTable(@CurrentUser() user: AuthenticatedUser, @Param('id') id: string) { return this.admin.deleteTable(user.restaurantId, id) }
+  @Get('account') account(@CurrentUser() user: AuthenticatedUser) { return this.admin.account(user.id, user.restaurantId) }
   @Get('restaurant') restaurant(@CurrentUser() user: AuthenticatedUser) { return this.admin.restaurant(user.restaurantId) }
   @Post('staff-pairing') staffPairing(@CurrentUser() user: AuthenticatedUser) { return this.auth.createStaffDevicePairing(user.restaurantId) }
+  @Patch('staff-pin') updateStaffPin(@CurrentUser() user: AuthenticatedUser, @Body() body: Record<string, unknown>) { return this.admin.updateStaffPin(user.restaurantId, body) }
   @Patch('restaurant') updateRestaurant(@CurrentUser() user: AuthenticatedUser, @Body() body: Record<string, unknown>) { return this.admin.updateRestaurant(user.restaurantId, body) }
 }

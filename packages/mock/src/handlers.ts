@@ -26,6 +26,7 @@ import {
   parseUpdateCategory,
   parseUpdateItem,
   parseUpdateRestaurant,
+  parseUpdateStaffPin,
   parseUpdateTable,
 } from './validation.js'
 
@@ -109,6 +110,7 @@ export function createHandlers(options: HandlerOptions = {}): HttpHandler[] {
   const guestBaseUrl = options.guestBaseUrl ?? 'http://localhost:5173'
   // Cùng một package phục vụ ba app khác origin (5173/5174/5175) và Vitest Node.
   const api = `*${API_BASE_PATH}`
+  let staffPin = STAFF_PIN
 
   return [
     http.get(`${api}/guest/tables/:qrToken`, ({ request, params }) =>
@@ -151,7 +153,7 @@ export function createHandlers(options: HandlerOptions = {}): HttpHandler[] {
     http.post(`${api}/staff/auth/login`, ({ request }) =>
       execute(request, chaosController, async () => {
         const body = parseStaffLogin(await readJson(request))
-        if (body.staffLoginCode !== 'KIM-4821' || body.pin !== STAFF_PIN) throw new MockApiError(401, 'UNAUTHORIZED', 'Mã ghép thiết bị hoặc PIN không đúng.')
+        if (body.staffLoginCode !== 'KIM-4821' || body.pin !== staffPin) throw new MockApiError(401, 'UNAUTHORIZED', 'Mã ghép thiết bị hoặc PIN không đúng.')
         return HttpResponse.json({ token: STAFF_TOKEN, role: 'staff', displayName: 'Nhân viên quầy' })
       }),
     ),
@@ -221,7 +223,7 @@ export function createHandlers(options: HandlerOptions = {}): HttpHandler[] {
         if (body.email !== ADMIN_EMAIL || body.password !== ADMIN_PASSWORD) {
           throw new MockApiError(401, 'UNAUTHORIZED', 'Email hoặc mật khẩu không đúng.')
         }
-        return HttpResponse.json({ token: OWNER_TOKEN, role: 'owner', displayName: 'Chủ quán Kim Thành' })
+        return HttpResponse.json({ token: OWNER_TOKEN, role: 'owner', displayName: 'Chủ quán Kim Thành', restaurant: { id: store.getRestaurant().id, name: store.getRestaurant().name } })
       }),
     ),
     http.get(`${api}/admin/categories`, ({ request }) =>
@@ -321,10 +323,24 @@ export function createHandlers(options: HandlerOptions = {}): HttpHandler[] {
         return HttpResponse.json(store.getRestaurant())
       }),
     ),
+    http.get(`${api}/admin/account`, ({ request }) =>
+      execute(request, chaosController, () => {
+        requireRole(request, ['owner'])
+        const restaurant = store.getRestaurant()
+        return HttpResponse.json({ displayName: 'Chủ quán Kim Thành', email: ADMIN_EMAIL, restaurant: { id: restaurant.id, name: restaurant.name, staffLoginCode: 'KIM-4821' }, trialEndsAt: '2026-10-15T00:00:00.000Z', billingStatus: 'TRIAL' })
+      }),
+    ),
     http.patch(`${api}/admin/restaurant`, ({ request }) =>
       execute(request, chaosController, async () => {
         requireRole(request, ['owner'])
         return HttpResponse.json(store.updateRestaurant(parseUpdateRestaurant(await readJson(request))))
+      }),
+    ),
+    http.patch(`${api}/admin/staff-pin`, ({ request }) =>
+      execute(request, chaosController, async () => {
+        requireRole(request, ['owner'])
+        staffPin = parseUpdateStaffPin(await readJson(request)).pin
+        return HttpResponse.json({ updated: true })
       }),
     ),
   ]

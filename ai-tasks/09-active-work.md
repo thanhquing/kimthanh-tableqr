@@ -6,19 +6,19 @@
 
 ## Current task
 
-> ### `SA-07` — SaaS admin shell
+> ### `SA-01` — Chốt chính sách billing
 >
-> **Mốc:** M8 · **Trạng thái:** TODO
+> **Mốc:** M9 · **Trạng thái:** NEEDS DECISION
 >
 > Theo quyết định người dùng ngày 2026-08-13, hoàn tất code multi-tenant local trước; các task DevOps (`SA-00`, `SA-02`) và verify thiết bị thật (`BE-13`) được dời thành cổng phát hành cuối.
 >
-> **Mục tiêu hiện tại:** hoàn thiện admin shell cho owner đã đăng ký: account/onboarding, tenant context từ JWT và quản lý PIN staff trong đúng quán.
+> **Mục tiêu hiện tại:** chốt cổng thanh toán, thời điểm trial kết thúc, grace period, retry/dunning, refund và quyền guest/staff/admin khi quá hạn.
 >
-> **Đọc trước khi làm:** [`ai-tasks/13-saas-expansion.md`](13-saas-expansion.md), [`ai-docs/10-saas-evolution.md`](../ai-docs/10-saas-evolution.md), [`ai-docs/09-current-system-architecture.md`](../ai-docs/09-current-system-architecture.md), [`ai-docs/03-domain-model.md`](../ai-docs/03-domain-model.md).
+> **Đọc trước khi làm:** [`ai-tasks/13-saas-expansion.md`](13-saas-expansion.md), [`ai-docs/10-saas-evolution.md`](../ai-docs/10-saas-evolution.md), [`ai-docs/04-api-contract.md`](../ai-docs/04-api-contract.md).
 >
-> **Xong:** owner chỉ xem/quản trị restaurant được cấp quyền; staff PIN thuộc đúng restaurant; UI đủ loading/error/empty/a11y và build sạch.
+> **Cần người dùng quyết:** provider thanh toán, mốc hết trial, grace/retry/refund và ma trận quyền/copy khi quá hạn. Chưa viết lifecycle hoặc enforcement trước khi có quyết định này.
 >
-> **Tiến độ:** chưa bắt đầu. `SA-03`…`SA-06` đã hoàn tất và kiểm thử local ngày 2026-08-15.
+> **Tiến độ:** đang chờ quyết định. M8 `SA-03`…`SA-07` đã hoàn tất và kiểm thử local ngày 2026-08-15.
 
 ---
 
@@ -26,6 +26,7 @@
 
 | Task | Ngày | Ghi chú |
 | --- | --- | --- |
+| `SA-07` — SaaS admin shell | 2026-08-15 | Admin login/shell dùng restaurant từ JWT; Settings có account/trial/mã staff và đổi PIN bcrypt tenant-scoped. Contract/mock/API/admin build pass; Docker smoke test xác nhận PIN Kim Thành không ảnh hưởng Hương Quê, rồi đã khôi phục fixture. |
 | `SA-06` — Owner registration & onboarding | 2026-08-15 | Public registration rate-limit 3/giờ tạo owner/quán trial, staff service account và dữ liệu mẫu trong transaction RLS; test trial/login/isolation/flow đều pass. |
 | `SA-05` — Business data tenant-scoped query/index audit | 2026-08-15 | Thêm index tenant-first cho query menu/order, script EXPLAIN regression; QR cũ, idempotency, snapshot giá và unique OPEN session đều pass local. |
 | `SA-03` + `SA-04` — Tenant isolation hardening | 2026-08-15 | Migration RLS PostgreSQL đã áp dụng local; role runtime `tableqr_app`, transaction tenant context, 12 bảng RLS, backfill/FK guest access. Seed hai tenant, GET/PATCH/SSE chéo tenant, raw RLS không context và full guest–staff flow đều pass. |

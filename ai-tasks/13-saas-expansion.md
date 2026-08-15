@@ -20,7 +20,7 @@ Nguồn thiết kế: [../ai-docs/10-saas-evolution.md](../ai-docs/10-saas-evolu
 | --- | --- | --- |
 | 1 | `SA-03` + `SA-04` | **DONE 2026-08-15** — RLS, tenant isolation REST/PATCH/SSE, migration rehearsal và forward/rollback plan local đã đạt. |
 | 2 | `SA-05` | **DONE 2026-08-15** — query/index audit, EXPLAIN regression và bất biến business data đã đạt. |
-| 3 | `SA-06` → `SA-07` | `SA-06` **DONE 2026-08-15** — đăng ký chủ quán/onboarding API; tiếp theo hoàn thiện shell/onboarding admin. |
+| 3 | `SA-06` → `SA-07` | **DONE 2026-08-15** — đăng ký/onboarding API, shell owner tenant-scoped, account/trial và đổi PIN staff đã kiểm local. |
 | 4 | `SA-01` | Chốt policy billing trước khi tạo lifecycle. |
 | 5 | `SA-08` | Plan/subscription/entitlement bằng code và test local. |
 | 6 | `SA-09` → `SA-12` | Payment provider, UI, enforcement và acceptance sandbox. |
@@ -83,11 +83,13 @@ Tạo public flow đăng ký email/mật khẩu, kích hoạt ngay (chưa xác m
 
 **Kết quả:** public registration 3 lần/giờ tạo `Restaurant` TRIAL, owner, staff PIN hash, 2 danh mục/3 món/4 bàn mẫu trong một transaction RLS. Trial dùng hai tháng lịch; email trùng trả `EMAIL_ALREADY_IN_USE`. Regression pass owner/staff login, dữ liệu mẫu, tenant isolation và full guest–staff flow.
 
-### `SA-07` — SaaS admin shell · TODO
+### `SA-07` — SaaS admin shell · DONE 2026-08-15
 
 Đổi admin auth/session để lấy `restaurantId` từ JWT, thêm màn account/onboarding cơ bản. Không có chọn quán; một tài khoản chỉ có một quán. Không thay đổi luồng QR của khách.
 
 **Xong khi:** owner chỉ xem/quản trị restaurant được cấp quyền; staff PIN được gán đúng restaurant; loading/error/empty/a11y và build sạch.
+
+**Kết quả:** admin login nhận restaurant summary từ JWT, shell không còn gắn cứng tên Kim Thành cho owner mới. Settings hiển thị account/onboarding, mã login nhân viên và trial/billing; đổi PIN kiểm 6 chữ số, hash bcrypt và chỉ update staff service account của tenant JWT. Contracts/mock/API/UI build sạch; Docker smoke test xác nhận Kim Thành đổi PIN không ảnh hưởng Hương Quê và PIN fixture đã được khôi phục.
 
 ### `SA-08` — Catalog gói & subscription lifecycle · TODO
 

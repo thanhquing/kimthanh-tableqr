@@ -19,6 +19,8 @@ Tài liệu này là thiết kế đích để TableQR phục vụ nhiều chủ
 
 `SA-06` đã triển khai `POST /public/owner-registration` với giới hạn 3 request/giờ. Transaction tạo quán `TRIAL`, owner, staff service account, menu/bàn mẫu và QR token; email được chuẩn hoá lowercase, password/PIN chỉ hash bcrypt và không ghi log. Script `verify-owner-registration.sh` kiểm trial hai tháng lịch, login owner/staff, dữ liệu mẫu, email trùng và tenant isolation.
 
+`SA-07` hoàn tất shell owner: login trả restaurant summary từ JWT, shell hiển thị đúng quán của phiên và Settings có thông tin account/onboarding, mã login staff, trial/billing status cùng đổi PIN 6 chữ số. `GET /admin/account` và `PATCH /admin/staff-pin` đều chạy trong tenant transaction; smoke test local đã xác nhận đổi PIN Kim Thành không ảnh hưởng staff Hương Quê rồi khôi phục fixture.
+
 **Đã chốt 2026-08-10:** một tài khoản chủ quán quản lý đúng một quán. Mỗi chi nhánh được coi là một quán độc lập với tài khoản, menu, bàn, QR và thuê bao riêng; không có chuyển đổi chi nhánh trong phiên bản đầu.
 
 Các điều cần người quyết trước `SA-01`: cổng thanh toán, có/không grace period và chính sách quán quá hạn (chỉ khoá admin, hay dừng luôn guest order).

@@ -110,6 +110,20 @@ export interface AuthResponse {
   token: string
   role: StaffRole
   displayName: string
+  /** Quán luôn được server xác định từ JWT; client không được chọn hoặc gửi id này. */
+  restaurant?: Pick<Restaurant, 'id' | 'name'>
+}
+
+export interface AdminAccountResponse {
+  displayName: string
+  email: string
+  restaurant: Pick<Restaurant, 'id' | 'name'> & { staffLoginCode: string }
+  trialEndsAt: IsoDateTime
+  billingStatus: 'TRIAL' | 'ACTIVE' | 'PAST_DUE' | 'SUSPENDED'
+}
+
+export interface UpdateStaffPinRequest {
+  pin: string
 }
 
 export interface StaffStreamTicketResponse {
