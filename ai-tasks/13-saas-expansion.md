@@ -19,7 +19,7 @@ Nguồn thiết kế: [../ai-docs/10-saas-evolution.md](../ai-docs/10-saas-evolu
 | Thứ tự | Task | Ghi chú |
 | --- | --- | --- |
 | 1 | `SA-03` + `SA-04` | **DONE 2026-08-15** — RLS, tenant isolation REST/PATCH/SSE, migration rehearsal và forward/rollback plan local đã đạt. |
-| 2 | `SA-05` | Đối soát query/index/business data tenant-scoped. |
+| 2 | `SA-05` | **DONE 2026-08-15** — query/index audit, EXPLAIN regression và bất biến business data đã đạt. |
 | 3 | `SA-06` → `SA-07` | Đăng ký chủ quán rồi hoàn thiện shell/onboarding admin. |
 | 4 | `SA-01` | Chốt policy billing trước khi tạo lifecycle. |
 | 5 | `SA-08` | Plan/subscription/entitlement bằng code và test local. |
@@ -67,11 +67,13 @@ JWT của `AuthUser` phải xác định restaurant đang thao tác. Tạo repos
 
 **Kết quả:** API runtime dùng role `tableqr_app` không `BYPASSRLS`; Prisma đặt tenant context transaction-local. Script regression đã pass guest capability, GET/PATCH cross-tenant, event SSE chỉ tới đúng quán, và stream ticket không dùng được cho REST.
 
-### `SA-05` — Chuyển business data sang tenant-scoped · TODO
+### `SA-05` — Chuyển business data sang tenant-scoped · DONE 2026-08-15
 
 Dual-write/backfill/đổi query cho menu, bàn, session, order, call, idempotency và asset. Đổi uniqueness của mã bàn thành `(restaurant_id, code)`, giữ QR token global unique; thêm index bắt đầu bằng `restaurant_id` cho query nóng.
 
 **Xong khi:** `EXPLAIN` không quét chéo tenant, QR cũ hoạt động, totals/snapshot/idempotency và unique OPEN session vẫn đúng.
+
+**Kết quả:** migration `20260815000001_tenant_query_indexes` thêm index menu guest/admin và order theo status; query plan regression xác nhận tenant condition, không sequential scan và có đủ index nóng. QR cũ, idempotency/full flow, snapshot giá và unique OPEN session đều pass local.
 
 ### `SA-06` — Owner registration & onboarding · TODO
 

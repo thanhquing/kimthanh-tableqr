@@ -6,19 +6,19 @@
 
 ## Current task
 
-> ### `SA-05` — Business data tenant-scoped query/index audit
+> ### `SA-06` — Owner registration & onboarding
 >
 > **Mốc:** M8 · **Trạng thái:** TODO
 >
 > Theo quyết định người dùng ngày 2026-08-13, hoàn tất code multi-tenant local trước; các task DevOps (`SA-00`, `SA-02`) và verify thiết bị thật (`BE-13`) được dời thành cổng phát hành cuối.
 >
-> **Mục tiêu hiện tại:** đối soát toàn bộ query/index business data tenant-scoped; xác nhận QR cũ, idempotency, snapshot totals và unique OPEN session vẫn đúng với dữ liệu nhiều tenant.
+> **Mục tiêu hiện tại:** tạo public flow đăng ký quán/owner, khởi tạo trial 2 tháng và dữ liệu mẫu trong một transaction mà không lộ dữ liệu tenant khác.
 >
 > **Đọc trước khi làm:** [`ai-tasks/13-saas-expansion.md`](13-saas-expansion.md), [`ai-docs/10-saas-evolution.md`](../ai-docs/10-saas-evolution.md), [`ai-docs/09-current-system-architecture.md`](../ai-docs/09-current-system-architecture.md), [`ai-docs/03-domain-model.md`](../ai-docs/03-domain-model.md).
 >
-> **Xong:** `EXPLAIN` query nóng không quét chéo tenant; QR cũ, totals/snapshot/idempotency và unique OPEN session vẫn đúng.
+> **Xong:** người mới tự tạo quán local/test, nhận trial 2 tháng cố định và chỉ thấy dữ liệu quán của mình.
 >
-> **Tiến độ:** chưa bắt đầu. Tenant foundation `SA-03` + `SA-04` đã hoàn tất và kiểm thử local ngày 2026-08-15.
+> **Tiến độ:** chưa bắt đầu. `SA-03`…`SA-05` đã hoàn tất và kiểm thử local ngày 2026-08-15.
 
 ---
 
@@ -26,6 +26,7 @@
 
 | Task | Ngày | Ghi chú |
 | --- | --- | --- |
+| `SA-05` — Business data tenant-scoped query/index audit | 2026-08-15 | Thêm index tenant-first cho query menu/order, script EXPLAIN regression; QR cũ, idempotency, snapshot giá và unique OPEN session đều pass local. |
 | `SA-03` + `SA-04` — Tenant isolation hardening | 2026-08-15 | Migration RLS PostgreSQL đã áp dụng local; role runtime `tableqr_app`, transaction tenant context, 12 bảng RLS, backfill/FK guest access. Seed hai tenant, GET/PATCH/SSE chéo tenant, raw RLS không context và full guest–staff flow đều pass. |
 | `BE-12b` — nối staff + admin | 2026-08-09 | Staff/admin mặc định gọi API thật qua proxy; toàn bộ staff endpoint dùng base URL cấu hình. Login + dữ liệu đã kiểm qua proxy đến Docker; production bundle của cả ba app không có MSW. |
 | `SA-00`…`SA-14` — roadmap SaaS | 2026-08-09 | Production foundation, tenant isolation, owner signup, trial 2 tháng, 100.000 VND/tháng unlimited orders và chuẩn bị tiered plans. Chưa triển khai code/schema. Ưu tiên tăng ngày 2026-08-10. |

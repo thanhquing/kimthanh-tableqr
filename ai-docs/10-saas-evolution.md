@@ -185,6 +185,8 @@ Mỗi `Restaurant` có một `staff_login_code` ngẫu nhiên, unique toàn hệ
 
 `restaurant_id` được lặp lại trên `Order`/`TableSession`/`StaffCall` dù có thể suy ra qua bàn. Đây là denormalization có chủ đích để tenant filter, index, RLS và audit không phải join dài; API phải tự điền trong transaction, không lấy từ body client.
 
+Ngày 2026-08-15, `SA-05` bổ sung index tenant-first cho menu guest (`restaurant_id, sort_order` khi chưa xoá), menu admin (`restaurant_id, category_id, sort_order`) và board đơn theo trạng thái (`restaurant_id, status, created_at`). Script `verify-tenant-query-plans.sh` kiểm catalog index, `EXPLAIN` không có sequential scan với tenant condition, uniqueness `(restaurant_id, code)`, snapshot giá và unique OPEN session. QR fixture cũ và idempotency tiếp tục được kiểm bởi `verify-flow-01-guest-order.sh`.
+
 ## 4. Quyền truy cập và billing enforcement
 
 ```mermaid

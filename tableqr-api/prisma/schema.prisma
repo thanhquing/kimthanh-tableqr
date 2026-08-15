@@ -134,7 +134,8 @@ model MenuItem {
   orderItems  OrderItem[]
   restaurant  Restaurant   @relation(fields: [restaurantId], references: [id])
 
-  @@index([restaurantId, categoryId], map: "menu_item_restaurant_id_category_id_idx")
+  @@index([restaurantId, categoryId, sortOrder], map: "menu_item_restaurant_category_sort_order_idx")
+  @@index([restaurantId, sortOrder], map: "menu_item_restaurant_sort_order_idx")
   @@unique([restaurantId, id], map: "menu_item_restaurant_id_id_key")
   @@map("menu_item")
 }
@@ -189,6 +190,7 @@ model Order {
 
   @@unique([restaurantId, sessionId, sequenceNo], map: "order_restaurant_session_sequence_no_key")
   @@index([restaurantId, createdAt], map: "order_restaurant_created_at_idx")
+  @@index([restaurantId, status, createdAt], map: "order_restaurant_status_created_at_idx")
   @@index([restaurantId, tableId], map: "order_restaurant_table_id_idx")
   @@unique([restaurantId, id], map: "order_restaurant_id_id_key")
   @@map("order")

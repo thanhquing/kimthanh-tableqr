@@ -175,4 +175,4 @@ Hoàn thiện checklist test ở mục D của `ai-docs/07`. Test logic thuần,
 | `WS-06` | Bổ sung test logic | M5 | **DONE** — D checklist covered by 61 existing tests |
 | `WS-07` | Ngân sách hiệu năng | M5 | **DONE** — 74,429 B gzip, no MSW production artifact |
 | `BE-00`…`BE-13` | Backend + nối FE↔BE | M6–M7 / Release | **BLOCKED** — `BE-00`…`BE-12b` DONE 2026-08-09; `BE-13` chờ kiểm thử điện thoại 4G + tablet thật, được dời xuống kiểm thử phát hành cuối theo ưu tiên 2026-08-10 |
-| `SA-00`…`SA-14` | Production SaaS: đa quán, đăng ký, trial và billing | M8–M11 / Release | **IN PROGRESS** — `SA-03`/`SA-04` RLS local đã xong; tiếp theo `SA-05` audit query/index tenant-scoped. `SA-00`, `SA-02`, `BE-13` là cổng DevOps/phát hành cuối. Chi tiết [13-saas-expansion.md](13-saas-expansion.md) |
+| `SA-00`…`SA-14` | Production SaaS: đa quán, đăng ký, trial và billing | M8–M11 / Release | **IN PROGRESS** — `SA-03`…`SA-05` tenant foundation đã xong; tiếp theo `SA-06` owner registration/onboarding. `SA-00`, `SA-02`, `BE-13` là cổng DevOps/phát hành cuối. Chi tiết [13-saas-expansion.md](13-saas-expansion.md) |
