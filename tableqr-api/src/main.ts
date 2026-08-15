@@ -7,7 +7,7 @@ import { validateRuntimeConfig } from './runtime-config'
 
 async function bootstrap() {
   validateRuntimeConfig()
-  const app = await NestFactory.create<NestExpressApplication>(AppModule)
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, { rawBody: true })
   app.setGlobalPrefix('api/v1')
   app.useStaticAssets(process.env.MENU_IMAGE_DIR ?? join(process.cwd(), '../packages/mock/assets'), { prefix: '/menu-images/', maxAge: '30d', immutable: true })
   app.useStaticAssets(process.env.UPLOAD_DIR ?? join(process.cwd(), 'uploads'), { prefix: '/uploads/', maxAge: '30d', immutable: true })

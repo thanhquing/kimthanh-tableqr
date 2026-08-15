@@ -60,6 +60,13 @@ enum SubscriptionCycleStatus {
   VOID
 }
 
+enum PaymentStatus {
+  PENDING
+  SUCCEEDED
+  FAILED
+  REFUNDED
+}
+
 model Restaurant {
   id             String              @id @default(uuid()) @db.Uuid
   name           String
@@ -82,6 +89,8 @@ model Restaurant {
   staffDevicePairings StaffDevicePairing[]
   subscriptions  Subscription[]
   subscriptionCycles SubscriptionCycle[]
+  payments       Payment[]
+  paymentWebhookEvents PaymentWebhookEvent[]
 
   @@map("restaurant")
 }
@@ -132,9 +141,41 @@ model SubscriptionCycle {
   createdAt      DateTime                @default(now()) @map("created_at") @db.Timestamptz(3)
   restaurant     Restaurant              @relation(fields: [restaurantId], references: [id], onDelete: Restrict)
   subscription   Subscription            @relation(fields: [subscriptionId], references: [id], onDelete: Restrict)
+  payments       Payment[]
   @@unique([subscriptionId, sequenceNo], map: "subscription_cycle_subscription_sequence_no_key")
   @@index([restaurantId, status, dueAt], map: "subscription_cycle_restaurant_status_due_at_idx")
   @@map("subscription_cycle")
+}
+
+model Payment {
+  id                  String        @id @default(uuid()) @db.Uuid
+  restaurantId        String        @map("restaurant_id") @db.Uuid
+  subscriptionCycleId String        @map("subscription_cycle_id") @db.Uuid
+  provider            String
+  paymentCode         String        @unique @map("payment_code")
+  providerTransactionId String?     @unique @map("provider_transaction_id")
+  amountVnd           Int           @map("amount_vnd")
+  status              PaymentStatus @default(PENDING)
+  createdAt           DateTime      @default(now()) @map("created_at") @db.Timestamptz(3)
+  paidAt              DateTime?     @map("paid_at") @db.Timestamptz(3)
+  restaurant          Restaurant    @relation(fields: [restaurantId], references: [id], onDelete: Restrict)
+  subscriptionCycle   SubscriptionCycle @relation(fields: [subscriptionCycleId], references: [id], onDelete: Restrict)
+  @@index([restaurantId, status], map: "payment_restaurant_status_idx")
+  @@map("payment")
+}
+
+model PaymentWebhookEvent {
+  id              String   @id @default(uuid()) @db.Uuid
+  restaurantId    String   @map("restaurant_id") @db.Uuid
+  provider        String
+  providerEventId String   @map("provider_event_id")
+  payload         Json
+  receivedAt      DateTime @default(now()) @map("received_at") @db.Timestamptz(3)
+  processedAt     DateTime? @map("processed_at") @db.Timestamptz(3)
+  restaurant      Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Restrict)
+  @@unique([provider, providerEventId], map: "payment_webhook_event_provider_event_id_key")
+  @@index([restaurantId, receivedAt], map: "payment_webhook_event_restaurant_received_at_idx")
+  @@map("payment_webhook_event")
 }
 
 model AuthUser {

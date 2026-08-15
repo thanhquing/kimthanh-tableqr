@@ -1,0 +1,19 @@
+import { Body, Controller, Post, UseGuards } from '@nestjs/common'
+import { JwtAuthGuard } from '../auth/jwt-auth.guard'
+import { CurrentUser } from '../auth/current-user.decorator'
+import type { AuthenticatedUser } from '../auth/auth.types'
+import { Roles } from '../auth/roles.decorator'
+import { RolesGuard } from '../auth/roles.guard'
+import { PaymentService } from './payment.service'
+
+@Controller('admin/billing')
+@UseGuards(JwtAuthGuard, RolesGuard)
+@Roles('owner')
+export class PaymentIntentController {
+  constructor(private readonly payments: PaymentService) {}
+
+  @Post('payment-intents')
+  create(@CurrentUser() user: AuthenticatedUser, @Body() body: { provider?: unknown }) {
+    return this.payments.createIntent(user.restaurantId, typeof body.provider === 'string' ? body.provider : 'sepay')
+  }
+}

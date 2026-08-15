@@ -219,6 +219,8 @@ Refund không tạo tự động từ UI hoặc webhook. Nhân sự hỗ trợ �
 
 Adapter provider phải xác thực chữ ký trên raw body, kiểm timestamp/nonce chống replay khi provider hỗ trợ và so sánh secret constant-time. Lưu payload tối thiểu đã che dữ liệu nhạy cảm, unique theo `provider_event_id`/mã giao dịch, xử lý idempotent trong transaction; chỉ worker/API server-side mới cập nhật subscription. Không nhận hoặc lưu dữ liệu thẻ. `SA-09` định nghĩa interface adapter chung, rồi thêm implementation theo quốc gia/provider mà không đổi lifecycle hoặc controller nghiệp vụ.
 
+**Implementation đầu tiên (2026-08-15):** `PaymentProviderAdapter` giữ hai trách nhiệm provider-specific là `paymentInstruction()` và `verifyWebhook()`. `PaymentService` giữ intent, audit, idempotency và lifecycle dùng chung. SePay Việt Nam xác thực HMAC-SHA256 trên `{timestamp}.{raw_body}`; `Payment` lookup dưới RLS chỉ được phép theo `app.payment_code`, rồi mọi ghi dữ liệu diễn ra trong `app.restaurant_id` của payment đã khớp. Event tiền vào chỉ settle khi đúng amount; cùng `provider_event_id` trả thành công nhưng không chạy lại. Payment trả trước giữ cycle `PAID` và chỉ kích hoạt `ACTIVE` tại đầu kỳ, không làm ngắn trial/kỳ đã trả.
+
 ## 5. Lộ trình migration không downtime lớn
 
 1. **Tenant foundation local:** mở rộng additive, backfill dữ liệu vào quán mặc định, tenant context và RLS; kiểm thử không thể đọc chéo qua REST/SSE. Chỉ bỏ đường cũ sau khi đối soát.

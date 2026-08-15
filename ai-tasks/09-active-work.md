@@ -8,17 +8,17 @@
 
 > ### `SA-09` — Payment provider adapter
 >
-> **Mốc:** M10 · **Trạng thái:** NEEDS PROVIDER
+> **Mốc:** M10 · **Trạng thái:** DONE
 >
 > Theo quyết định người dùng ngày 2026-08-13, hoàn tất code multi-tenant local trước; các task DevOps (`SA-00`, `SA-02`) và verify thiết bị thật (`BE-13`) được dời thành cổng phát hành cuối.
 >
-> **Mục tiêu hiện tại:** định nghĩa adapter payment server-side generic, rồi hiện thực provider đầu tiên theo quốc gia đã chọn; tạo payment intent/link, xác thực webhook, idempotency và audit.
+> **Kết quả:** adapter generic đã có `paymentInstruction` + `verifyWebhook`; implementation đầu tiên SePay (Việt Nam) dùng HMAC raw-body/timestamp. Owner tạo intent server-side, mã `TQR` + 10 số; event được audit unique và xử lý tenant-scoped/idempotent. Sandbox SePay xác thực endpoint thật 200; local E2E xác nhận settle, replay và mismatch amount.
 >
 > **Đọc trước khi làm:** [`ai-tasks/13-saas-expansion.md`](13-saas-expansion.md), [`ai-docs/10-saas-evolution.md`](../ai-docs/10-saas-evolution.md), tài liệu chính thức của provider đã chọn.
 >
 > **Policy đầu vào:** payment provider adapter generic với webhook xác thực/chống replay; trial 2 tháng lịch; grace 7 ngày, dunning ngày 1/3/7; `PAST_DUE` dừng guest/staff ghi nghiệp vụ và chỉ cho owner đọc/thanh toán/cập nhật account; refund thủ công, không prorate mặc định.
 >
-> **Cần người dùng cung cấp:** quốc gia để ưu tiên provider đầu tiên và tài khoản sandbox/API credentials khi đã chọn. Chưa cần tạo account ở `SA-08`.
+> **Đã chốt:** Việt Nam là thị trường/provider implementation đầu tiên. **Cần người dùng cung cấp:** chọn provider Việt Nam và tài khoản sandbox/API credentials khi đã chọn. Đề xuất implementation đầu tiên là SePay vì có Test mode cô lập, mô phỏng giao dịch và webhook ký HMAC; adapter vẫn không phụ thuộc SePay.
 
 ---
 
@@ -26,6 +26,7 @@
 
 | Task | Ngày | Ghi chú |
 | --- | --- | --- |
+| `SA-09` — Payment provider adapter | 2026-08-15 | `PaymentProviderAdapter` generic; SePay HMAC SHA-256 raw body/timestamp, owner intent `POST /admin/billing/payment-intents`, RLS lookup tối thiểu theo payment code rồi tenant transaction. Payment/cycle/event audit unique; settle chỉ khi tiền vào + đúng số tiền, replay/mismatch an toàn. SePay sandbox endpoint thật 200; Docker E2E `SUCCEEDED/PAID`, duplicate và mismatch amount pass. |
 | `SA-08` — Catalog/lifecycle/entitlement | 2026-08-15 | Plan/subscription/cycle RLS, seed starter snapshot giá/feature, lifecycle grace 7 ngày và 4 unit test transition. Migration + seed local, contracts/API/admin checks đều pass. |
 | `SA-01` — Chính sách billing | 2026-08-15 | Đã chốt provider adapter generic với webhook xác thực/chống replay, trial hai tháng lịch, grace 7 ngày/dunning 1–3–7, matrix quyền `PAST_DUE`/`SUSPENDED` và refund thủ công không prorate. Docs/contract/acceptance criteria đã đồng bộ. |
 | `SA-07` — SaaS admin shell | 2026-08-15 | Admin login/shell dùng restaurant từ JWT; Settings có account/trial/mã staff và đổi PIN bcrypt tenant-scoped. Contract/mock/API/admin build pass; Docker smoke test xác nhận PIN Kim Thành không ảnh hưởng Hương Quê, rồi đã khôi phục fixture. |

@@ -97,11 +97,11 @@ Tạo `Plan`, `Subscription`, `SubscriptionCycle`, enum lifecycle và `Entitleme
 
 **Kết quả:** migration tạo `Plan`, `Subscription`, `SubscriptionCycle` với RLS tenant scope và seed `starter-monthly` 100.000 VND/tháng, `orders: unlimited`. Subscription snapshot giá/feature; owner registration và seed đều tạo subscription tenant-scoped. `EntitlementService` chuyển `TRIAL`/`ACTIVE` hết hạn sang grace 7 ngày rồi `PAST_DUE`; `SUSPENDED` bất biến. Logic transition có 4 unit test, contract/API/admin build sạch và migration + seed đã chạy local. Enforcement route thuộc `SA-11`; provider adapter thuộc `SA-09`.
 
-### `SA-09` — Payment provider adapter · TODO · NEEDS PROVIDER
+### `SA-09` — Payment provider adapter · DONE
 
-Định nghĩa interface server-side generic cho provider: tạo payment intent/link, verify webhook signature, unique event/provider transaction, retry an toàn, audit payload tối thiểu. Provider implementation đầu tiên sẽ được chọn theo quốc gia; không nhận hoặc lưu dữ liệu thẻ.
+Đã định nghĩa interface server-side generic cho provider: tạo payment instruction, verify webhook signature, unique event/provider transaction, retry an toàn, audit payload tối thiểu. Provider đầu tiên Việt Nam là SePay: HMAC-SHA256 ký `{timestamp}.{raw_body}`, owner tạo intent server-side, và webhook chỉ tra payment bằng payment code trước khi chuyển sang tenant transaction. Không nhận hoặc lưu dữ liệu thẻ.
 
-**Xong khi:** sandbox chạy đủ paid/failed/duplicate webhook/out-of-order webhook; chỉ webhook hợp lệ cập nhật subscription.
+**Đã kiểm:** SePay Test mode xác thực endpoint HMAC thật 200; Docker E2E tạo intent, settle `Payment`/`SubscriptionCycle`, replay duplicate và amount mismatch audit mà không đổi state. Cycle trả trước chỉ kích hoạt `ACTIVE` khi period bắt đầu để không cắt trial/kỳ đang chạy.
 
 ### `SA-10` — Billing UI & owner self-service · TODO
 

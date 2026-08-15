@@ -8,6 +8,12 @@ Khi có câu trả lời: cập nhật `ai-docs` liên quan, ghi ngày chốt v�
 
 ## Đang mở
 
+### Q12 — Provider Việt Nam đầu tiên cho payment adapter?
+
+**Đã chốt:** Việt Nam là thị trường đầu tiên (2026-08-15). Adapter payment giữ interface generic để thêm provider/quốc gia khác mà không đổi lifecycle/entitlement.
+
+**Đã triển khai:** SePay cho implementation đầu tiên vì có Test mode cô lập, giao dịch mô phỏng và webhook có HMAC-SHA256. Sandbox endpoint thật đã xác thực 200; secret chỉ nằm ở `.env` local, không ghi vào Git. Nếu thêm MoMo/ZaloPay/VNPay, giữ `PaymentProviderAdapter`/`PaymentService` và chỉ thêm implementation/test fixture provider.
+
 ### Q1 — Đã quyết định chuyển "Reset bàn" thành đóng phiên thay vì xoá dữ liệu. Có đúng ý không?
 
 Mô tả ban đầu viết *"toàn bộ dữ liệu order của bàn đó bị xóa"*. Hệ thống đang làm: đóng `TableSession`, giữ nguyên đơn.

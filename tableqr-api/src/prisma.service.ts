@@ -33,6 +33,15 @@ export class PrismaService extends PrismaClient implements OnModuleDestroy {
     return this.withContext({ 'app.staff_pairing_token_hash': tokenHash }, callback)
   }
 
+  /**
+   * Webhook is not authenticated as a restaurant. It may only resolve the
+   * globally unique payment code; subsequent reads and writes must use
+   * withTenant() after the owning restaurant has been found.
+   */
+  async withPaymentCode<T>(paymentCode: string, callback: (tx: TenantTransaction) => Promise<T>): Promise<T> {
+    return this.withContext({ 'app.payment_code': paymentCode }, callback)
+  }
+
   async setTenant(tx: TenantTransaction, restaurantId: string): Promise<void> {
     await tx.$executeRaw`SELECT set_config('app.restaurant_id', ${restaurantId}, true)`
   }

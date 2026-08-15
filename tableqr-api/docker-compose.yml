@@ -22,6 +22,7 @@ services:
       NODE_ENV: development
       PORT: 3000
       UPLOAD_DIR: /app/uploads
+    env_file: .env
     depends_on:
       migrate:
         condition: service_completed_successfully

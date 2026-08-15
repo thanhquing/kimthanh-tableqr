@@ -12,6 +12,22 @@ export class EntitlementService {
   async status(restaurantId: string, now = new Date()): Promise<SubscriptionStatus> {
     return this.prisma.withTenant(restaurantId, async (tx) => {
       const subscription = await tx.subscription.findUniqueOrThrow({ where: { restaurantId } })
+      // A restaurant can pay its next cycle before the trial/current period
+      // expires. Promote that already-paid cycle only once its own period has
+      // started; this preserves the promised trial and avoids shortening a
+      // live subscription.
+      const paidCycle = await tx.subscriptionCycle.findFirst({
+        where: { subscriptionId: subscription.id, status: 'PAID', periodStartsAt: { lte: now }, periodEndsAt: { gt: now } },
+        orderBy: { periodStartsAt: 'desc' },
+      })
+      if (paidCycle && subscription.currentPeriodEndsAt?.valueOf() !== paidCycle.periodEndsAt.valueOf()) {
+        await tx.subscription.update({
+          where: { id: subscription.id },
+          data: { status: 'ACTIVE', graceEndsAt: null, currentPeriodStartsAt: paidCycle.periodStartsAt, currentPeriodEndsAt: paidCycle.periodEndsAt },
+        })
+        await tx.restaurant.update({ where: { id: restaurantId }, data: { billingStatus: 'ACTIVE' } })
+        return 'ACTIVE'
+      }
       const next = nextSubscriptionState(subscription, now)
       if (next.status !== subscription.status || next.graceEndsAt?.valueOf() !== subscription.graceEndsAt?.valueOf()) {
         await tx.subscription.update({ where: { id: subscription.id }, data: next })
