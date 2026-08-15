@@ -20,7 +20,7 @@ Nguồn thiết kế: [../ai-docs/10-saas-evolution.md](../ai-docs/10-saas-evolu
 | --- | --- | --- |
 | 1 | `SA-03` + `SA-04` | **DONE 2026-08-15** — RLS, tenant isolation REST/PATCH/SSE, migration rehearsal và forward/rollback plan local đã đạt. |
 | 2 | `SA-05` | **DONE 2026-08-15** — query/index audit, EXPLAIN regression và bất biến business data đã đạt. |
-| 3 | `SA-06` → `SA-07` | Đăng ký chủ quán rồi hoàn thiện shell/onboarding admin. |
+| 3 | `SA-06` → `SA-07` | `SA-06` **DONE 2026-08-15** — đăng ký chủ quán/onboarding API; tiếp theo hoàn thiện shell/onboarding admin. |
 | 4 | `SA-01` | Chốt policy billing trước khi tạo lifecycle. |
 | 5 | `SA-08` | Plan/subscription/entitlement bằng code và test local. |
 | 6 | `SA-09` → `SA-12` | Payment provider, UI, enforcement và acceptance sandbox. |
@@ -75,11 +75,13 @@ Dual-write/backfill/đổi query cho menu, bàn, session, order, call, idempoten
 
 **Kết quả:** migration `20260815000001_tenant_query_indexes` thêm index menu guest/admin và order theo status; query plan regression xác nhận tenant condition, không sequential scan và có đủ index nóng. QR cũ, idempotency/full flow, snapshot giá và unique OPEN session đều pass local.
 
-### `SA-06` — Owner registration & onboarding · TODO
+### `SA-06` — Owner registration & onboarding · DONE 2026-08-15
 
 Tạo public flow đăng ký email/mật khẩu, kích hoạt ngay (chưa xác minh email ở phiên bản đầu), rồi transaction tạo Restaurant + `AuthUser` role `OWNER` + `trialEndsAt` cố định 2 tháng. Một tài khoản chỉ tạo một quán; chi nhánh là quán/tài khoản độc lập. Cho phép tạo menu/bàn mẫu và in QR hostname production. Chưa tích hợp payment hay bảng subscription ở task này; rate-limit nghiêm ngặt endpoint đăng ký.
 
 **Xong khi:** một người mới tự tạo quán trong môi trường test, nhận trial 2 tháng cố định và không thấy dữ liệu quán khác.
+
+**Kết quả:** public registration 3 lần/giờ tạo `Restaurant` TRIAL, owner, staff PIN hash, 2 danh mục/3 món/4 bàn mẫu trong một transaction RLS. Trial dùng hai tháng lịch; email trùng trả `EMAIL_ALREADY_IN_USE`. Regression pass owner/staff login, dữ liệu mẫu, tenant isolation và full guest–staff flow.
 
 ### `SA-07` — SaaS admin shell · TODO
 

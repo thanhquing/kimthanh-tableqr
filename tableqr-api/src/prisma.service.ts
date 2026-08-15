@@ -21,6 +21,10 @@ export class PrismaService extends PrismaClient implements OnModuleDestroy {
     return this.withContext({ 'app.owner_email': email }, callback)
   }
 
+  async withOwnerRegistration<T>(restaurantId: string, email: string, callback: (tx: TenantTransaction) => Promise<T>): Promise<T> {
+    return this.withContext({ 'app.restaurant_id': restaurantId, 'app.owner_email': email }, callback)
+  }
+
   async withGuestSessionAccess<T>(sessionId: string, tokenHash: string, callback: (tx: TenantTransaction) => Promise<T>): Promise<T> {
     return this.withContext({ 'app.guest_session_id': sessionId, 'app.guest_access_token_hash': tokenHash }, callback)
   }

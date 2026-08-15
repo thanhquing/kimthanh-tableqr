@@ -1,6 +1,6 @@
 # 10 — Mở rộng SaaS, đa quán và thuê bao
 
-Tài liệu này là thiết kế đích để TableQR phục vụ nhiều chủ quán trên một hệ thống. Theo quyết định người dùng ngày 2026-08-13, local database đã được reset để bắt đầu tenant foundation sớm: dữ liệu nghiệp vụ có `restaurant_id`, JWT mang tenant context, staff ghép tablet bằng QR rồi đăng nhập PIN và SSE scope theo quán. Kiểm tra với hai tenant đã chặn truy cập chéo; guest dùng capability hash thay vì UUID session; PostgreSQL có composite foreign key nên tự chặn quan hệ nghiệp vụ chéo quán; SSE dùng ticket 60 giây thay access JWT trên URL. Ngày 2026-08-15, `SA-03`/`SA-04` hoàn tất local sau khi migration RLS, REST/PATCH/SSE isolation, direct-query guard và full guest–staff flow cùng pass. Task theo thứ tự tại [../ai-tasks/13-saas-expansion.md](../ai-tasks/13-saas-expansion.md).
+Tài liệu này là thiết kế đích để TableQR phục vụ nhiều chủ quán trên một hệ thống. Theo quyết định người dùng ngày 2026-08-13, local database đã được reset để bắt đầu tenant foundation sớm: dữ liệu nghiệp vụ có `restaurant_id`, JWT mang tenant context, staff ghép tablet bằng QR rồi đăng nhập PIN và SSE scope theo quán. Kiểm tra với hai tenant đã chặn truy cập chéo; guest dùng capability hash thay vì UUID session; PostgreSQL có composite foreign key nên tự chặn quan hệ nghiệp vụ chéo quán; SSE dùng ticket 60 giây thay access JWT trên URL. Ngày 2026-08-15, `SA-03`…`SA-06` hoàn tất local: RLS, query audit và owner registration/onboarding đều đã qua regression. Task theo thứ tự tại [../ai-tasks/13-saas-expansion.md](../ai-tasks/13-saas-expansion.md).
 
 ## 1. Quy tắc sản phẩm đã chốt
 
@@ -16,6 +16,8 @@ Tài liệu này là thiết kế đích để TableQR phục vụ nhiều chủ
 Để giữ onboarding nhanh ở phiên bản đầu, account được kích hoạt ngay sau đăng ký; chưa có xác minh email. Endpoint đăng ký phải rate-limit nghiêm ngặt và không được làm lộ email đã tồn tại ngoài lỗi `EMAIL_ALREADY_IN_USE`. Xác minh email là hardening sau, không chặn tenant isolation.
 
 **Quy ước đề xuất:** trial là hai tháng lịch (`registeredAt` + 2 tháng) và một quán chỉ được trial một lần. `trialEndsAt` được ghi lúc đăng ký để xử lý đúng tháng ngắn và không đổi nếu kế hoạch giá thay đổi sau này.
+
+`SA-06` đã triển khai `POST /public/owner-registration` với giới hạn 3 request/giờ. Transaction tạo quán `TRIAL`, owner, staff service account, menu/bàn mẫu và QR token; email được chuẩn hoá lowercase, password/PIN chỉ hash bcrypt và không ghi log. Script `verify-owner-registration.sh` kiểm trial hai tháng lịch, login owner/staff, dữ liệu mẫu, email trùng và tenant isolation.
 
 **Đã chốt 2026-08-10:** một tài khoản chủ quán quản lý đúng một quán. Mỗi chi nhánh được coi là một quán độc lập với tài khoản, menu, bàn, QR và thuê bao riêng; không có chuyển đổi chi nhánh trong phiên bản đầu.
 

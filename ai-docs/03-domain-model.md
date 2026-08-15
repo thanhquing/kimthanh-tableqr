@@ -31,7 +31,7 @@ Restaurant 1──n DiningTable 1──n TableSession 1──n Order 1──n Or
 
 | Bảng | Thay đổi target |
 | --- | --- |
-| `restaurant` | Thêm `public_slug` unique, `staff_login_code` unique (mã tenant cho đăng nhập staff), `trial_ends_at`, `billing_status`. |
+| `restaurant` | Có `public_slug` unique, `staff_login_code` unique (mã tenant cho đăng nhập staff), `trial_ends_at`, `billing_status`. |
 | `auth_user` | Thêm `restaurant_id` FK bắt buộc sau backfill. `email` tiếp tục unique toàn hệ thống, nên một email chỉ sở hữu một quán. `role` giữ `OWNER` / `STAFF`; staff dùng PIN chung theo quán ở phiên bản đầu. |
 | `dining_table`, `menu_category`, `menu_item`, `table_session`, `order`, `staff_call`, `guest_order_request` | Thêm `restaurant_id` FK bắt buộc. API tự điền từ tenant context, không nhận cột này từ client. |
 
@@ -67,8 +67,8 @@ Thông tin quán. MVP hiện có một bản ghi; target multi-tenant có một 
 | `logoUrl` | string \| null | |
 | `address` | string \| null | |
 | `staffLoginCode` | string | **Target:** mã ngẫu nhiên unique để staff chọn đúng quán trước khi nhập PIN. |
-| `trialEndsAt` | ISO datetime | **Target:** cố định lúc owner đăng ký, bằng ngày đăng ký + 2 tháng lịch. |
-| `billingStatus` | `TRIAL` \| `ACTIVE` \| `PAST_DUE` \| `SUSPENDED` | **Target:** ban đầu `TRIAL`; billing đầy đủ sẽ tách sang `Subscription`. |
+| `trialEndsAt` | ISO datetime | Cố định lúc owner đăng ký, bằng ngày đăng ký + 2 tháng lịch. |
+| `billingStatus` | `TRIAL` \| `ACTIVE` \| `PAST_DUE` \| `SUSPENDED` | Ban đầu `TRIAL`; billing đầy đủ sẽ tách sang `Subscription`. |
 
 ### `DiningTable`
 

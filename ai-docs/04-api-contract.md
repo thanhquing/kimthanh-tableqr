@@ -44,7 +44,7 @@
 
 ## Contract target — multi-tenant lite (`SA-03`…`SA-07`)
 
-Phần này là contract **đích, chưa có trong API đang chạy**. Khi triển khai, đổi đồng thời DTO/contract, backend và các client; endpoint MVP hiện hữu không được âm thầm đổi tenant qua payload client.
+Phần này là contract multi-tenant. `SA-03`…`SA-06` đã triển khai tenant context, RLS và public owner registration; endpoint account/staff PIN cùng shell onboarding còn ở `SA-07`. Endpoint MVP hiện hữu không được âm thầm đổi tenant qua payload client.
 
 ### Tenant context
 
@@ -68,7 +68,7 @@ Không endpoint nào nhận `restaurantId` từ body/query/path. Với resource 
 
 ### `POST /api/v1/public/owner-registration`
 
-Public, rate-limit nghiêm ngặt. Phiên bản đầu tạo quán dùng được ngay; xác minh email và payment không nằm trong endpoint này.
+Public, rate-limit 3 lần/giờ. Phiên bản đầu tạo quán dùng được ngay; xác minh email và payment không nằm trong endpoint này.
 
 **Request**
 ```json

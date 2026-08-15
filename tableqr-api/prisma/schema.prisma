@@ -34,6 +34,13 @@ enum UserRole {
   OWNER
 }
 
+enum BillingStatus {
+  TRIAL
+  ACTIVE
+  PAST_DUE
+  SUSPENDED
+}
+
 model Restaurant {
   id             String              @id @default(uuid()) @db.Uuid
   name           String
@@ -41,6 +48,8 @@ model Restaurant {
   staffLoginCode String              @unique @map("staff_login_code")
   logoUrl        String?             @map("logo_url")
   address        String?
+  trialEndsAt    DateTime            @map("trial_ends_at") @db.Timestamptz(3)
+  billingStatus  BillingStatus       @default(TRIAL) @map("billing_status")
   authUsers      AuthUser[]
   tables         DiningTable[]
   categories     MenuCategory[]
