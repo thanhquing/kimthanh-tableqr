@@ -74,6 +74,10 @@ export class AuthService {
         const created = await this.prisma.withOwnerRegistration(restaurantId, email, async (tx) => {
           if (await tx.authUser.findFirst({ where: { email }, select: { id: true } })) fail(409, 'EMAIL_ALREADY_IN_USE', 'Email này đã được dùng để đăng ký quán.')
           const restaurant = await tx.restaurant.create({ data: { id: restaurantId, name: restaurantName, publicSlug, staffLoginCode, trialEndsAt, billingStatus: 'TRIAL' } })
+          const starter = await tx.plan.findUnique({ where: { code: 'starter-monthly' } })
+          if (!starter) fail(503, 'REGISTRATION_UNAVAILABLE', 'Gói dịch vụ mặc định chưa sẵn sàng.')
+          const starterPlan = starter as NonNullable<typeof starter>
+          await tx.subscription.create({ data: { restaurantId, planId: starterPlan.id, status: 'TRIAL', trialEndsAt, priceVndSnapshot: starterPlan.priceVnd, featureLimitsSnapshot: starterPlan.featureLimits as Prisma.InputJsonValue } })
           const owner = await tx.authUser.create({ data: { restaurantId, role: 'OWNER', email, passwordHash, displayName: ownerDisplayName } })
           await tx.authUser.create({ data: { restaurantId, role: 'STAFF', pinHash, displayName: 'Nhân viên quầy' } })
           const mainCategoryId = randomUUID()

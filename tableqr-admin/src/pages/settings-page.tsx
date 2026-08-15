@@ -8,7 +8,7 @@ import { getAccount, getRestaurant, getStaffPairing, updateRestaurant, updateSta
 type RestaurantForm = { name: string; logoUrl: string; address: string }
 type PinForm = { pin: string; confirmation: string }
 
-const billingStatus = { TRIAL: 'Đang dùng thử', ACTIVE: 'Đang hoạt động', PAST_DUE: 'Cần thanh toán', SUSPENDED: 'Tạm ngưng' } as const
+const billingStatus = { TRIAL: 'Đang dùng thử', ACTIVE: 'Đang hoạt động', GRACE: 'Gia hạn thanh toán', PAST_DUE: 'Cần thanh toán', SUSPENDED: 'Tạm ngưng' } as const
 const formatDate = (value: string) => new Intl.DateTimeFormat('vi-VN', { dateStyle: 'long' }).format(new Date(value))
 
 export function SettingsPage() {

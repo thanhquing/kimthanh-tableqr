@@ -26,13 +26,23 @@ async function seed() {
   const categoryIds = new Map(CATEGORIES.map((category) => [category.id, fixtureId(category.id)]))
   const itemIds = new Map(MENU_ITEMS.map((item) => [item.id, fixtureId(item.id)]))
   const tableIds = new Map(TABLES.map((table) => [table.id, fixtureId(table.id)]))
+  const trialEndsAt = new Date()
+  trialEndsAt.setUTCMonth(trialEndsAt.getUTCMonth() + 2)
+
+  const starter = await prisma.plan.upsert({
+    where: { code: 'starter-monthly' },
+    update: { name: 'Starter', priceVnd: 100000, interval: 'MONTHLY', featureLimits: { orders: 'unlimited' }, isActive: true },
+    create: { code: 'starter-monthly', name: 'Starter', priceVnd: 100000, interval: 'MONTHLY', featureLimits: { orders: 'unlimited' } },
+  })
 
   await prisma.$transaction(async (tx) => {
     await tx.restaurant.upsert({
       where: { id: restaurantId },
       update: { name: RESTAURANT.name, publicSlug: 'kim-thanh', staffLoginCode: 'KIM-4821', logoUrl: RESTAURANT.logoUrl, address: RESTAURANT.address },
-      create: { id: restaurantId, name: RESTAURANT.name, publicSlug: 'kim-thanh', staffLoginCode: 'KIM-4821', logoUrl: RESTAURANT.logoUrl, address: RESTAURANT.address },
+      create: { id: restaurantId, name: RESTAURANT.name, publicSlug: 'kim-thanh', staffLoginCode: 'KIM-4821', logoUrl: RESTAURANT.logoUrl, address: RESTAURANT.address, trialEndsAt },
     })
+    const kimThanh = await tx.restaurant.findUniqueOrThrow({ where: { id: restaurantId } })
+    await tx.subscription.upsert({ where: { restaurantId }, update: { planId: starter.id, trialEndsAt: kimThanh.trialEndsAt, priceVndSnapshot: starter.priceVnd, featureLimitsSnapshot: starter.featureLimits }, create: { restaurantId, planId: starter.id, status: 'TRIAL', trialEndsAt: kimThanh.trialEndsAt, priceVndSnapshot: starter.priceVnd, featureLimitsSnapshot: starter.featureLimits } })
 
     await tx.authUser.upsert({
       where: { id: fixtureId('staff-default') },
@@ -134,8 +144,10 @@ async function seed() {
     await tx.restaurant.upsert({
       where: { id: demoRestaurantId },
       update: { name: 'Quán Hương Quê', publicSlug: 'huong-que', staffLoginCode: 'HUONG-7391', logoUrl: null, address: '45 Lê Lợi, Quận 1, TP.HCM' },
-      create: { id: demoRestaurantId, name: 'Quán Hương Quê', publicSlug: 'huong-que', staffLoginCode: 'HUONG-7391', logoUrl: null, address: '45 Lê Lợi, Quận 1, TP.HCM' },
+      create: { id: demoRestaurantId, name: 'Quán Hương Quê', publicSlug: 'huong-que', staffLoginCode: 'HUONG-7391', logoUrl: null, address: '45 Lê Lợi, Quận 1, TP.HCM', trialEndsAt },
     })
+    const huongQue = await tx.restaurant.findUniqueOrThrow({ where: { id: demoRestaurantId } })
+    await tx.subscription.upsert({ where: { restaurantId: demoRestaurantId }, update: { planId: starter.id, trialEndsAt: huongQue.trialEndsAt, priceVndSnapshot: starter.priceVnd, featureLimitsSnapshot: starter.featureLimits }, create: { restaurantId: demoRestaurantId, planId: starter.id, status: 'TRIAL', trialEndsAt: huongQue.trialEndsAt, priceVndSnapshot: starter.priceVnd, featureLimitsSnapshot: starter.featureLimits } })
     await tx.authUser.upsert({
       where: { id: fixtureId('staff-huong-que') },
       update: { restaurantId: demoRestaurantId, displayName: 'Nhân viên Hương Quê', isActive: true, pinHash: await hash('135790', 12) },

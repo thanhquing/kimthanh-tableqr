@@ -115,6 +115,14 @@ Trong một transaction, server tạo `Restaurant` (kèm `staffLoginCode`, `tria
 
 `GET /admin/account` và `PATCH /admin/staff-pin` chỉ lấy `restaurantId` từ JWT owner; không nhận tenant từ client. PIN không bao giờ xuất hiện trong response hoặc log. PIN sai định dạng trả `400 VALIDATION_ERROR`.
 
+### Contract target — billing lifecycle (`SA-08` trở đi)
+
+Cho đến khi `SA-08` triển khai, `billingStatus` trên `Restaurant` chỉ là trạng thái onboarding và chưa có enforcement. Sau đó `EntitlementService` là nơi duy nhất quyết định quyền theo `Subscription.status` (`TRIAL`, `ACTIVE`, `GRACE`, `PAST_DUE`, `SUSPENDED`) và trả **403** `RESTAURANT_INACTIVE` cho thao tác bị chặn.
+
+Các endpoint đọc không bị chặn toàn bộ: guest/staff giữ quyền xem đúng dữ liệu đã được tenant/capability scope; owner vẫn đọc dữ liệu, cập nhật account và vào luồng thanh toán. Với `PAST_DUE`, guest bị chặn `POST /guest/orders` và `POST /guest/calls`; staff bị chặn mọi `PATCH`/`POST` làm đổi nghiệp vụ; owner bị chặn mọi thay đổi menu/bàn/PIN/quán ngoài account/billing. Với `SUSPENDED`, quyền giống `PAST_DUE` nhưng payment không tự khôi phục dịch vụ.
+
+`message` của `RESTAURANT_INACTIVE` phải theo đúng copy đã chốt trong `ai-docs/10-saas-evolution.md` §4, không trả status nội bộ hay hướng dẫn kỹ thuật cho khách. API billing/payment và webhook sẽ được bổ sung ở `SA-09`; endpoint webhook không dùng JWT frontend và chỉ chấp nhận xác thực HMAC provider trên raw body.
+
 ---
 
 # Guest — không đăng nhập

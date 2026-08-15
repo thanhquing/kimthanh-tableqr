@@ -6,19 +6,19 @@
 
 ## Current task
 
-> ### `SA-01` — Chốt chính sách billing
+> ### `SA-09` — Payment provider adapter
 >
-> **Mốc:** M9 · **Trạng thái:** NEEDS DECISION
+> **Mốc:** M10 · **Trạng thái:** NEEDS PROVIDER
 >
 > Theo quyết định người dùng ngày 2026-08-13, hoàn tất code multi-tenant local trước; các task DevOps (`SA-00`, `SA-02`) và verify thiết bị thật (`BE-13`) được dời thành cổng phát hành cuối.
 >
-> **Mục tiêu hiện tại:** chốt cổng thanh toán, thời điểm trial kết thúc, grace period, retry/dunning, refund và quyền guest/staff/admin khi quá hạn.
+> **Mục tiêu hiện tại:** định nghĩa adapter payment server-side generic, rồi hiện thực provider đầu tiên theo quốc gia đã chọn; tạo payment intent/link, xác thực webhook, idempotency và audit.
 >
-> **Đọc trước khi làm:** [`ai-tasks/13-saas-expansion.md`](13-saas-expansion.md), [`ai-docs/10-saas-evolution.md`](../ai-docs/10-saas-evolution.md), [`ai-docs/04-api-contract.md`](../ai-docs/04-api-contract.md).
+> **Đọc trước khi làm:** [`ai-tasks/13-saas-expansion.md`](13-saas-expansion.md), [`ai-docs/10-saas-evolution.md`](../ai-docs/10-saas-evolution.md), tài liệu chính thức của provider đã chọn.
 >
-> **Cần người dùng quyết:** provider thanh toán, mốc hết trial, grace/retry/refund và ma trận quyền/copy khi quá hạn. Chưa viết lifecycle hoặc enforcement trước khi có quyết định này.
+> **Policy đầu vào:** payment provider adapter generic với webhook xác thực/chống replay; trial 2 tháng lịch; grace 7 ngày, dunning ngày 1/3/7; `PAST_DUE` dừng guest/staff ghi nghiệp vụ và chỉ cho owner đọc/thanh toán/cập nhật account; refund thủ công, không prorate mặc định.
 >
-> **Tiến độ:** đang chờ quyết định. M8 `SA-03`…`SA-07` đã hoàn tất và kiểm thử local ngày 2026-08-15.
+> **Cần người dùng cung cấp:** quốc gia để ưu tiên provider đầu tiên và tài khoản sandbox/API credentials khi đã chọn. Chưa cần tạo account ở `SA-08`.
 
 ---
 
@@ -26,6 +26,8 @@
 
 | Task | Ngày | Ghi chú |
 | --- | --- | --- |
+| `SA-08` — Catalog/lifecycle/entitlement | 2026-08-15 | Plan/subscription/cycle RLS, seed starter snapshot giá/feature, lifecycle grace 7 ngày và 4 unit test transition. Migration + seed local, contracts/API/admin checks đều pass. |
+| `SA-01` — Chính sách billing | 2026-08-15 | Đã chốt provider adapter generic với webhook xác thực/chống replay, trial hai tháng lịch, grace 7 ngày/dunning 1–3–7, matrix quyền `PAST_DUE`/`SUSPENDED` và refund thủ công không prorate. Docs/contract/acceptance criteria đã đồng bộ. |
 | `SA-07` — SaaS admin shell | 2026-08-15 | Admin login/shell dùng restaurant từ JWT; Settings có account/trial/mã staff và đổi PIN bcrypt tenant-scoped. Contract/mock/API/admin build pass; Docker smoke test xác nhận PIN Kim Thành không ảnh hưởng Hương Quê, rồi đã khôi phục fixture. |
 | `SA-06` — Owner registration & onboarding | 2026-08-15 | Public registration rate-limit 3/giờ tạo owner/quán trial, staff service account và dữ liệu mẫu trong transaction RLS; test trial/login/isolation/flow đều pass. |
 | `SA-05` — Business data tenant-scoped query/index audit | 2026-08-15 | Thêm index tenant-first cho query menu/order, script EXPLAIN regression; QR cũ, idempotency, snapshot giá và unique OPEN session đều pass local. |

@@ -119,7 +119,7 @@ export interface AdminAccountResponse {
   email: string
   restaurant: Pick<Restaurant, 'id' | 'name'> & { staffLoginCode: string }
   trialEndsAt: IsoDateTime
-  billingStatus: 'TRIAL' | 'ACTIVE' | 'PAST_DUE' | 'SUSPENDED'
+  billingStatus: 'TRIAL' | 'ACTIVE' | 'GRACE' | 'PAST_DUE' | 'SUSPENDED'
 }
 
 export interface UpdateStaffPinRequest {

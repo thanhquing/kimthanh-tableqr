@@ -9,13 +9,13 @@ Tài liệu này là thiết kế đích để TableQR phục vụ nhiều chủ
 | Người trả tiền | Chủ quán đăng ký một tài khoản, tạo đúng một quán và là `OWNER` đầu tiên |
 | Dùng thử | Miễn phí 2 tháng kể từ khi tạo quán; giai đoạn onboarding lưu `trialEndsAt` cố định trên `Restaurant`, rồi chuyển sang `Subscription` khi làm billing |
 | Giá | 100.000 VND/tháng, không giới hạn số đơn |
-| Khi hết trial | Chủ quán xem/trả tiền được; quyền vận hành phải theo `Subscription.status` và grace period được cấu hình |
+| Khi hết trial | Bắt đầu grace period 7 ngày; trong thời gian này quán vẫn hoạt động và owner được nhắc thanh toán vào ngày 1, 3 và 7 |
 | Khách QR | Không bị yêu cầu đăng nhập; chỉ được tiếp tục gọi món khi quán có quyền hoạt động |
 | Tương lai | Giá/gói tính năng được dữ liệu hoá, không hard-code `100000` khắp UI/API |
 
 Để giữ onboarding nhanh ở phiên bản đầu, account được kích hoạt ngay sau đăng ký; chưa có xác minh email. Endpoint đăng ký phải rate-limit nghiêm ngặt và không được làm lộ email đã tồn tại ngoài lỗi `EMAIL_ALREADY_IN_USE`. Xác minh email là hardening sau, không chặn tenant isolation.
 
-**Quy ước đề xuất:** trial là hai tháng lịch (`registeredAt` + 2 tháng) và một quán chỉ được trial một lần. `trialEndsAt` được ghi lúc đăng ký để xử lý đúng tháng ngắn và không đổi nếu kế hoạch giá thay đổi sau này.
+**Quy ước đã chốt 2026-08-15:** trial là hai tháng lịch (`registeredAt` + 2 tháng) và một quán chỉ được trial một lần. `trialEndsAt` được ghi lúc đăng ký để xử lý đúng tháng ngắn và không đổi nếu kế hoạch giá thay đổi sau này.
 
 `SA-06` đã triển khai `POST /public/owner-registration` với giới hạn 3 request/giờ. Transaction tạo quán `TRIAL`, owner, staff service account, menu/bàn mẫu và QR token; email được chuẩn hoá lowercase, password/PIN chỉ hash bcrypt và không ghi log. Script `verify-owner-registration.sh` kiểm trial hai tháng lịch, login owner/staff, dữ liệu mẫu, email trùng và tenant isolation.
 
@@ -23,7 +23,7 @@ Tài liệu này là thiết kế đích để TableQR phục vụ nhiều chủ
 
 **Đã chốt 2026-08-10:** một tài khoản chủ quán quản lý đúng một quán. Mỗi chi nhánh được coi là một quán độc lập với tài khoản, menu, bàn, QR và thuê bao riêng; không có chuyển đổi chi nhánh trong phiên bản đầu.
 
-Các điều cần người quyết trước `SA-01`: cổng thanh toán, có/không grace period và chính sách quán quá hạn (chỉ khoá admin, hay dừng luôn guest order).
+**Chính sách billing đã chốt 2026-08-15 (`SA-01`):** payment provider là adapter generic, không gắn với một quốc gia hay cổng cụ thể. Provider được chọn ở `SA-09` phải hỗ trợ tạo yêu cầu thanh toán và webhook có chữ ký/xác thực chống replay. Hết trial hoặc hết kỳ đã thanh toán sẽ vào `GRACE` 7 × 24 giờ; ghi nhận dunning tại ngày 1, 3, 7 của grace và bắt buộc hiển thị trong admin (email là kênh bổ sung khi worker gửi mail đã sẵn sàng). Hết grace chuyển `PAST_DUE`: guest không gửi đơn/gọi nhân viên, staff không thao tác nghiệp vụ; owner chỉ đọc dữ liệu, thanh toán và cập nhật tài khoản. Hoàn tiền không tự động, xử lý thủ công theo từng trường hợp với audit; không hoàn tiền theo tỷ lệ mặc định.
 
 ## 2. Mục tiêu kiến trúc
 
@@ -184,7 +184,7 @@ Mỗi `Restaurant` có một `staff_login_code` ngẫu nhiên, unique toàn hệ
 | Danh tính | Giữ `AuthUser`, thêm `restaurant_id` bắt buộc. Một email/tài khoản thuộc đúng một quán; role hiện tại giữ nguyên. Backfill owner và staff hiện có vào quán mặc định. |
 | Tenant | Thêm `restaurant_id` vào `DiningTable`, `MenuCategory`, `MenuItem`, `TableSession`, `Order`, `StaffCall` và bảng idempotency liên quan. Thêm `staff_login_code` global unique vào `Restaurant` để staff xác định quán khi đăng nhập. |
 | Uniqueness | Đổi `DiningTable.code` từ global unique sang unique `(restaurant_id, code)`; giữ `qr_token` global unique. Những index đọc thường xuyên bắt đầu bằng `restaurant_id`. |
-| Billing | Giai đoạn onboarding chỉ thêm `trial_ends_at` và `billing_status` trên `Restaurant`. `Plan`, `Subscription`, `SubscriptionCycle`, `Payment`, `PaymentWebhookEvent` được tạo ở task billing sau; `Subscription` sẽ gắn trực tiếp với `Restaurant`. Amount là VND integer; lưu `priceVndSnapshot`/`amountVnd`, không đọc lại giá gói cũ. |
+| Billing | Giai đoạn onboarding chỉ thêm `trial_ends_at` và `billing_status` trên `Restaurant`. `Plan`, `Subscription`, `SubscriptionCycle`, `Payment`, `PaymentWebhookEvent` được tạo ở task billing sau; `Subscription` sẽ gắn trực tiếp với `Restaurant`. Lifecycle đích là `TRIAL`, `ACTIVE`, `GRACE`, `PAST_DUE`, `SUSPENDED`; amount là VND integer; lưu `priceVndSnapshot`/`amountVnd`, không đọc lại giá gói cũ. |
 | Vận hành | `AuditLog`, thời điểm tạo/cập nhật/soft-delete phù hợp. Không lưu số thẻ hoặc bí mật cổng thanh toán. |
 
 `restaurant_id` được lặp lại trên `Order`/`TableSession`/`StaffCall` dù có thể suy ra qua bàn. Đây là denormalization có chủ đích để tenant filter, index, RLS và audit không phải join dài; API phải tự điền trong transaction, không lấy từ body client.
@@ -199,14 +199,25 @@ flowchart TD
   Resolve --> Active{"Subscription có quyền\nhoạt động?"}
   Active -->|"TRIAL / ACTIVE"| Allow["Cho phép luồng nghiệp vụ"]
   Active -->|"GRACE"| Warn["Cho phép tạm thời + nhắc chủ quán"]
-  Active -->|"PAST_DUE / SUSPENDED / CANCELED"| Block["Chặn thao tác ghi\ntrả lỗi/copy rõ ràng"]
+  Active -->|"PAST_DUE / SUSPENDED"| Block["Chặn thao tác ghi\ntrả lỗi/copy rõ ràng"]
   Allow --> Scope["Query luôn scope restaurant_id"]
   Warn --> Scope
 ```
 
-Không chặn mù tất cả GET ngay ngày hết hạn: chủ quán vẫn cần vào xem hoá đơn và thanh toán. Chính sách cụ thể (guest read/order, staff read/write, admin/billing) phải được chốt trong `SA-01`, sau đó thể hiện bằng một `EntitlementService` duy nhất, không rải `if subscription...` trong controller.
+Không chặn mù tất cả GET ngay ngày hết hạn: chủ quán vẫn cần vào xem hoá đơn và thanh toán. `SA-08` phải thể hiện toàn bộ matrix dưới đây bằng một `EntitlementService` duy nhất, không rải `if subscription...` trong controller.
 
-Webhook thanh toán phải: xác minh chữ ký, lưu raw event tối thiểu có che dữ liệu nhạy cảm, unique theo `provider_event_id`, xử lý idempotent trong transaction, và chỉ worker/API server-side mới cập nhật subscription.
+| Subscription status | Guest QR | Staff | Owner admin | Copy bắt buộc |
+| --- | --- | --- | --- | --- |
+| `TRIAL`, `ACTIVE` | Đọc menu và toàn bộ thao tác gọi món | Đọc/ghi nghiệp vụ bình thường | Đầy đủ | Không có cảnh báo billing |
+| `GRACE` | Như bình thường | Như bình thường | Đầy đủ, có banner/link thanh toán | “Quán sẽ tạm ngưng nhận đơn sau ngày {graceEndsAt}. Hãy thanh toán để tiếp tục sử dụng.” |
+| `PAST_DUE` | Chỉ xem menu/đơn cũ; chặn tạo đơn và gọi nhân viên | Chỉ xem; chặn đổi trạng thái đơn, xử lý gọi, thanh toán/reset bàn | Chỉ đọc dữ liệu, thanh toán và cập nhật tài khoản; chặn menu/bàn/PIN và mọi ghi nghiệp vụ khác | Guest: “Quán đang tạm ngưng nhận đơn. Vui lòng gọi nhân viên hỗ trợ.” Staff: “Quán đã hết thời gian gia hạn. Vui lòng báo chủ quán thanh toán để tiếp tục nhận đơn.” Owner: “Dịch vụ đang tạm ngưng. Hãy thanh toán để tiếp tục quản lý quán.” |
+| `SUSPENDED` | Như `PAST_DUE` | Như `PAST_DUE` | Như `PAST_DUE`; không tự kích hoạt lại bằng thanh toán, phải được hỗ trợ mở lại | Owner: “Tài khoản quán đang tạm ngưng. Vui lòng liên hệ hỗ trợ.” |
+
+`GRACE` bắt đầu đúng `trialEndsAt` hoặc `currentPeriodEndsAt`, kéo dài 7 × 24 giờ. Dunning tạo một sự kiện/audit ở ngày 1, 3 và 7 tính từ thời điểm bắt đầu grace; admin phải luôn hiển thị trạng thái và đường thanh toán, email chỉ là kênh bổ sung. Webhook thanh toán hợp lệ trong `TRIAL`/`GRACE`/`PAST_DUE` tạo hoặc thanh toán cycle và chuyển sang `ACTIVE`; `SUSPENDED` không tự đổi trạng thái. Hết grace mà không có webhook hợp lệ chuyển `PAST_DUE`. `SUSPENDED` chỉ dùng cho can thiệp thủ công như nghi ngờ gian lận/chargeback hoặc quyết định vận hành.
+
+Refund không tạo tự động từ UI hoặc webhook. Nhân sự hỗ trợ đối soát từng yêu cầu; nếu chấp thuận thì ghi quyết định, người duyệt, amount và mã giao dịch hoàn vào audit trước khi gọi provider. Không có refund theo tỷ lệ mặc định, và refund không tự đổi subscription/cycle nếu chưa có thao tác đối soát rõ ràng.
+
+Adapter provider phải xác thực chữ ký trên raw body, kiểm timestamp/nonce chống replay khi provider hỗ trợ và so sánh secret constant-time. Lưu payload tối thiểu đã che dữ liệu nhạy cảm, unique theo `provider_event_id`/mã giao dịch, xử lý idempotent trong transaction; chỉ worker/API server-side mới cập nhật subscription. Không nhận hoặc lưu dữ liệu thẻ. `SA-09` định nghĩa interface adapter chung, rồi thêm implementation theo quốc gia/provider mà không đổi lifecycle hoặc controller nghiệp vụ.
 
 ## 5. Lộ trình migration không downtime lớn
 

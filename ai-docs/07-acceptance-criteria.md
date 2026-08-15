@@ -60,6 +60,14 @@
 4. Sửa tên bàn **không** làm đổi `qrToken` (mã đã dán không hỏng).
 5. Xoá bàn đang có khách → bị chặn, báo lỗi rõ ràng.
 
+### A9 — Billing SaaS
+1. Quán mới có `trialEndsAt = registeredAt + 2 tháng lịch`; hết đúng timestamp này vào `GRACE` 7 × 24 giờ.
+2. Trong `GRACE`, guest/staff vẫn vận hành bình thường; owner thấy banner, đường thanh toán và các nhắc thanh toán ngày 1, 3, 7.
+3. Không có webhook thanh toán hợp lệ khi grace hết → `PAST_DUE`: guest xem được nhưng không gửi đơn/gọi nhân viên; staff xem được nhưng không đổi trạng thái/reset; owner chỉ xem, thanh toán và cập nhật account.
+4. Webhook có xác thực hợp lệ từ bất kỳ provider adapter nào trong grace hoặc past due → một cycle được ghi nhận idempotent, dịch vụ thành `ACTIVE`; gửi lại cùng event không tạo cycle/thanh toán thứ hai.
+5. Webhook sai chữ ký, timestamp replay hoặc sai amount/account không đổi subscription và bị từ chối.
+6. `SUSPENDED` không tự mở lại sau payment; owner thấy copy liên hệ hỗ trợ. Refund chỉ do hỗ trợ duyệt, có audit, không tự hoàn theo tỷ lệ.
+
 ---
 
 ## B. Ngân sách hiệu năng — app khách

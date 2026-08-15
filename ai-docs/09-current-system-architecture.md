@@ -39,6 +39,10 @@ flowchart LR
 | `packages/contracts` | Contract dùng chung và phép tính tiền | Không phụ thuộc React/NestJS/DB |
 | `packages/mock` | MSW + fixture chỉ cho phát triển/test UI | Không được có trong production bundle |
 
+## Billing lifecycle local
+
+`SA-08` đã thêm catalog `Plan`, `Subscription` và `SubscriptionCycle` vào PostgreSQL, cùng `EntitlementService` NestJS. Plan seed hiện là `starter-monthly` 100.000 VND/tháng, không giới hạn đơn; giá/feature được snapshot trên subscription. Service chuyển trial/kỳ hết hạn sang grace 7 ngày và sau đó `PAST_DUE`, đồng bộ status rút gọn ở `Restaurant`; enforcement trên route và adapter provider vẫn ở các task tiếp theo (`SA-09`, `SA-11`).
+
 ## 2. Luồng vận hành chính
 
 ```mermaid

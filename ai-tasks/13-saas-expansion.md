@@ -39,11 +39,11 @@ Chọn deployment và HTTPS cho domain đã chốt: `tableqr.vn` (admin), `staff
 
 **Xong khi:** QR HTTPS cố định `https://guest.tableqr.vn/t/<qrToken>`, không có `localhost` trong build production, health/ready checks hoạt động, upload không phụ thuộc ổ đĩa ephemeral.
 
-### `SA-01` — Chốt chính sách billing · TODO · NEEDS DECISION
+### `SA-01` — Chốt chính sách billing · DONE 2026-08-15
 
 Ghi quyết định cổng thanh toán, ngày kết thúc trial, grace period, retry/dunning, refund và khi quá hạn guest/staff/admin được làm gì. Đã chốt: một tài khoản owner chỉ quản lý một quán; mỗi chi nhánh là quán/tài khoản độc lập. Chốt copy tiếng Việt cho trial/hết hạn/thanh toán thất bại.
 
-**Xong khi:** cập nhật `ai-docs/10`, enum status, state-transition và acceptance criteria; không còn quy tắc billing mơ hồ trong code task.
+**Kết quả:** chốt payment provider adapter generic (provider theo quốc gia được thêm ở `SA-09`), webhook xác thực/chống replay; trial hai tháng lịch, grace 7 ngày và dunning ngày 1/3/7. Hết grace chuyển `PAST_DUE`, dừng guest/staff ghi nghiệp vụ; owner chỉ đọc, thanh toán và cập nhật account. Refund thủ công theo từng trường hợp, có audit và không có prorate mặc định. `SUSPENDED` chỉ mở lại bằng hỗ trợ. Matrix quyền/copy, state-transition và acceptance criteria đã cập nhật; `SA-08` sẽ hiện thực lifecycle/entitlement.
 
 ### `SA-02` — Database operations & observability · TODO (Release gate)
 
@@ -91,15 +91,15 @@ Tạo public flow đăng ký email/mật khẩu, kích hoạt ngay (chưa xác m
 
 **Kết quả:** admin login nhận restaurant summary từ JWT, shell không còn gắn cứng tên Kim Thành cho owner mới. Settings hiển thị account/onboarding, mã login nhân viên và trial/billing; đổi PIN kiểm 6 chữ số, hash bcrypt và chỉ update staff service account của tenant JWT. Contracts/mock/API/UI build sạch; Docker smoke test xác nhận Kim Thành đổi PIN không ảnh hưởng Hương Quê và PIN fixture đã được khôi phục.
 
-### `SA-08` — Catalog gói & subscription lifecycle · TODO
+### `SA-08` — Catalog gói & subscription lifecycle · DONE 2026-08-15
 
 Tạo `Plan`, `Subscription`, `SubscriptionCycle`, enum lifecycle và `EntitlementService`. Seed gói `starter-monthly`: 100.000 VND/tháng, không giới hạn order; giá và feature snapshot vào subscription/cycle.
 
-**Xong khi:** trial → active → past due/suspended theo state machine; đổi giá plan không đổi cycle/subscription lịch sử; unit test state transitions.
+**Kết quả:** migration tạo `Plan`, `Subscription`, `SubscriptionCycle` với RLS tenant scope và seed `starter-monthly` 100.000 VND/tháng, `orders: unlimited`. Subscription snapshot giá/feature; owner registration và seed đều tạo subscription tenant-scoped. `EntitlementService` chuyển `TRIAL`/`ACTIVE` hết hạn sang grace 7 ngày rồi `PAST_DUE`; `SUSPENDED` bất biến. Logic transition có 4 unit test, contract/API/admin build sạch và migration + seed đã chạy local. Enforcement route thuộc `SA-11`; provider adapter thuộc `SA-09`.
 
-### `SA-09` — Payment provider adapter · TODO · NEEDS DECISION
+### `SA-09` — Payment provider adapter · TODO · NEEDS PROVIDER
 
-Implement adapter server-side cho provider đã chọn: tạo payment intent/link, verify webhook signature, unique event/provider transaction, retry an toàn, audit payload tối thiểu. Không nhận hoặc lưu dữ liệu thẻ.
+Định nghĩa interface server-side generic cho provider: tạo payment intent/link, verify webhook signature, unique event/provider transaction, retry an toàn, audit payload tối thiểu. Provider implementation đầu tiên sẽ được chọn theo quốc gia; không nhận hoặc lưu dữ liệu thẻ.
 
 **Xong khi:** sandbox chạy đủ paid/failed/duplicate webhook/out-of-order webhook; chỉ webhook hợp lệ cập nhật subscription.
 

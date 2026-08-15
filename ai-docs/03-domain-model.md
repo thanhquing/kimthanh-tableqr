@@ -68,7 +68,11 @@ Thông tin quán. MVP hiện có một bản ghi; target multi-tenant có một 
 | `address` | string \| null | |
 | `staffLoginCode` | string | **Target:** mã ngẫu nhiên unique để staff chọn đúng quán trước khi nhập PIN. |
 | `trialEndsAt` | ISO datetime | Cố định lúc owner đăng ký, bằng ngày đăng ký + 2 tháng lịch. |
-| `billingStatus` | `TRIAL` \| `ACTIVE` \| `PAST_DUE` \| `SUSPENDED` | Ban đầu `TRIAL`; billing đầy đủ sẽ tách sang `Subscription`. |
+| `billingStatus` | `TRIAL` \| `ACTIVE` \| `GRACE` \| `PAST_DUE` \| `SUSPENDED` | Bản sao nhanh của lifecycle trên `Subscription`, dùng cho shell hiện hữu; `EntitlementService` là nguồn quyết định quyền. |
+
+### `Plan`, `Subscription`, `SubscriptionCycle`
+
+`Plan` là catalog global, hiện seed `starter-monthly` 100.000 VND/tháng với `featureLimits.orders = "unlimited"`. Mỗi `Restaurant` có đúng một `Subscription`, snapshot `priceVnd` và feature tại thời điểm bắt đầu; `SubscriptionCycle` lưu kỳ/amount/due/paid để giá gói đổi sau này không sửa lịch sử. Lifecycle là `TRIAL → GRACE → PAST_DUE`, hoặc `ACTIVE → GRACE → PAST_DUE`; webhook payment hợp lệ đưa `TRIAL`/`GRACE`/`PAST_DUE` về `ACTIVE`, còn `SUSPENDED` chỉ mở lại thủ công. `GRACE` kéo dài 7 × 24 giờ.
 
 ### `DiningTable`
 
@@ -175,7 +179,8 @@ type OrderStatus     = 'NEW' | 'PREPARING' | 'SERVED' | 'CANCELLED'
 type StaffCallType   = 'CALL_STAFF' | 'REQUEST_BILL'
 type StaffCallStatus = 'PENDING' | 'DONE'
 type UserRole        = 'STAFF' | 'OWNER'
-type BillingStatus   = 'TRIAL' | 'ACTIVE' | 'PAST_DUE' | 'SUSPENDED'
+type BillingStatus   = 'TRIAL' | 'ACTIVE' | 'GRACE' | 'PAST_DUE' | 'SUSPENDED'
+type SubscriptionCycleStatus = 'PENDING' | 'PAID' | 'VOID'
 ```
 
 Chuyển trạng thái đơn hợp lệ:

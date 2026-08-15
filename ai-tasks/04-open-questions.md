@@ -68,12 +68,6 @@ Cân nhắc ở M6: job tự đóng phiên `OPEN` quá 6 giờ.
 2. **Dùng ảnh của quán thật** nếu dự án này có khách hàng cụ thể. Tốt nhất về mọi mặt — ảnh đúng món, đúng cách bày, và chính là ảnh sẽ chạy production.
 3. **Chấp nhận chất lượng hiện tại** cho giai đoạn prototype. Vẫn là ảnh thật nên vẫn đánh giá được bố cục; đổi ảnh sau không phải sửa code, chỉ thay file cùng tên.
 
-### Q11 — Cổng thanh toán và chính sách quá hạn cho SaaS?
-
-Định hướng đã chốt: chủ quán tự đăng ký, dùng miễn phí 2 tháng rồi trả **100.000 VND/tháng**, không giới hạn đơn. Mỗi tài khoản owner quản lý đúng một quán; mỗi chi nhánh là một quán/tài khoản độc lập (chốt 2026-08-10). Chưa chốt provider nhận tiền, thời gian ân hạn, retry/dunning và quyền guest/staff/admin khi quá hạn.
-
-**Giả định thiết kế:** tạo `Subscription` có `trialEndsAt` cố định (2 tháng lịch từ lúc đăng ký), số tiền lịch sử được snapshot; trạng thái billing được kiểm ở một `EntitlementService`. Không code payment hoặc chặn quán khi chưa làm `SA-01`. Chi tiết ở [../ai-docs/10-saas-evolution.md](../ai-docs/10-saas-evolution.md).
-
 ---
 
 ## Đã chốt
@@ -89,3 +83,4 @@ Cân nhắc ở M6: job tự đóng phiên `OPEN` quá 6 giờ.
 | 2026-08-01 | Nút "Gọi nhân viên"? | **Có** |
 | 2026-08-09 | Kiểm thử migration BE-01 | Docker Desktop đã chạy; migration `20260809000000_init` áp dụng thành công trên PostgreSQL 15, API readiness 200. |
 | 2026-08-10 | Hostname production | `tableqr.vn` cho admin, `staff.tableqr.vn` cho staff, `guest.tableqr.vn` cho QR khách. Mỗi hostname reverse proxy `/api/v1` về cùng API để giữ same-origin; QR luôn dùng `https://guest.tableqr.vn/t/<qrToken>`. |
+| 2026-08-15 | Cổng thanh toán và chính sách quá hạn SaaS | Provider adapter generic, mỗi implementation dùng webhook xác thực/chống replay; trial 2 tháng lịch; grace 7 ngày/dunning ngày 1–3–7; sau grace chặn guest/staff ghi nghiệp vụ, owner chỉ đọc/thanh toán/cập nhật account; refund thủ công theo case, không prorate mặc định. |
