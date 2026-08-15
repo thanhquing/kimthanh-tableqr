@@ -14,18 +14,18 @@ export class RealtimeService {
     return this.events.pipe(filter((entry) => entry.restaurantId === restaurantId), map((entry) => ({ type: entry.event.type, data: entry.event.data })))
   }
 
-  async publishOrderCreated(orderId: string): Promise<void> {
-    const { restaurantId, dto } = await this.order(orderId)
+  async publishOrderCreated(restaurantId: string, orderId: string): Promise<void> {
+    const { dto } = await this.order(restaurantId, orderId)
     this.events.next({ restaurantId, event: { type: 'order.created', data: dto } })
   }
 
-  async publishOrderStatusChanged(orderId: string): Promise<void> {
-    const { restaurantId, dto } = await this.order(orderId)
+  async publishOrderStatusChanged(restaurantId: string, orderId: string): Promise<void> {
+    const { dto } = await this.order(restaurantId, orderId)
     this.events.next({ restaurantId, event: { type: 'order.status_changed', data: dto } })
   }
 
-  async publishCallCreated(callId: string): Promise<void> {
-    const call = await this.prisma.staffCall.findUniqueOrThrow({ where: { id: callId }, include: { table: true } })
+  async publishCallCreated(restaurantId: string, callId: string): Promise<void> {
+    const call = await this.prisma.withTenant(restaurantId, (tx) => tx.staffCall.findUniqueOrThrow({ where: { id: callId }, include: { table: true } }))
     const data: StaffCallWithTableDto = {
       id: call.id,
       type: call.type,
@@ -40,8 +40,8 @@ export class RealtimeService {
     this.events.next({ restaurantId, event: { type: 'session.closed', data: { sessionId, tableId } } })
   }
 
-  private async order(orderId: string): Promise<{ restaurantId: string; dto: StaffOrderDto }> {
-    const order = await this.prisma.order.findUniqueOrThrow({ where: { id: orderId }, include: { table: true, items: true } })
+  private async order(restaurantId: string, orderId: string): Promise<{ dto: StaffOrderDto }> {
+    const order = await this.prisma.withTenant(restaurantId, (tx) => tx.order.findUniqueOrThrow({ where: { id: orderId }, include: { table: true, items: true } }))
     const items = order.items.map((item) => ({
       id: item.id,
       menuItemId: item.menuItemId,
@@ -51,7 +51,7 @@ export class RealtimeService {
       note: item.note,
       lineTotalVnd: item.unitPriceVndSnapshot * item.quantity,
     }))
-    return { restaurantId: order.restaurantId, dto: {
+    return { dto: {
       id: order.id,
       sessionId: order.sessionId,
       sequenceNo: order.sequenceNo,

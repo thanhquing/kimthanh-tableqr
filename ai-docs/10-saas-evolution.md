@@ -1,6 +1,6 @@
 # 10 — Mở rộng SaaS, đa quán và thuê bao
 
-Tài liệu này là thiết kế đích để TableQR phục vụ nhiều chủ quán trên một hệ thống. Theo quyết định người dùng ngày 2026-08-13, local database đã được reset để bắt đầu tenant foundation sớm: dữ liệu nghiệp vụ có `restaurant_id`, JWT mang tenant context, staff ghép tablet bằng QR rồi đăng nhập PIN và SSE scope theo quán. Kiểm tra với hai tenant đã chặn truy cập chéo; guest dùng capability hash thay vì UUID session; PostgreSQL có composite foreign key nên tự chặn quan hệ nghiệp vụ chéo quán; SSE dùng ticket 60 giây thay access JWT trên URL. `SA-03`/`SA-04` vẫn chưa hoàn tất cho đến khi có RLS. Task theo thứ tự tại [../ai-tasks/13-saas-expansion.md](../ai-tasks/13-saas-expansion.md).
+Tài liệu này là thiết kế đích để TableQR phục vụ nhiều chủ quán trên một hệ thống. Theo quyết định người dùng ngày 2026-08-13, local database đã được reset để bắt đầu tenant foundation sớm: dữ liệu nghiệp vụ có `restaurant_id`, JWT mang tenant context, staff ghép tablet bằng QR rồi đăng nhập PIN và SSE scope theo quán. Kiểm tra với hai tenant đã chặn truy cập chéo; guest dùng capability hash thay vì UUID session; PostgreSQL có composite foreign key nên tự chặn quan hệ nghiệp vụ chéo quán; SSE dùng ticket 60 giây thay access JWT trên URL. Ngày 2026-08-15, `SA-03`/`SA-04` hoàn tất local sau khi migration RLS, REST/PATCH/SSE isolation, direct-query guard và full guest–staff flow cùng pass. Task theo thứ tự tại [../ai-tasks/13-saas-expansion.md](../ai-tasks/13-saas-expansion.md).
 
 ## 1. Quy tắc sản phẩm đã chốt
 
@@ -211,6 +211,38 @@ Webhook thanh toán phải: xác minh chữ ký, lưu raw event tối thiểu c�
 5. **Production release gate:** sau khi code/sandbox đạt, chọn deployment; xác minh domain HTTPS, secrets, backup/restore, object storage, observability và thiết bị 4G/tablet thật trước khi mời quán thật.
 
 Mỗi migration phải có backup, kiểm thử restore, `EXPLAIN` cho các query tenant-scoped, migration rehearsal trên dữ liệu copy, và rollback plan. Không chạy một migration biến đổi toàn bộ bảng lớn trong giờ phục vụ.
+
+### RLS local (`20260815000000_tenant_rls`)
+
+Migration tạo role `tableqr_app` có `NOBYPASSRLS`. API runtime kết nối bằng
+role này; migration và seed dùng owner `tableqr` qua service `migrate` riêng.
+Mỗi repository operation chạy trong interactive transaction, đặt
+`app.restaurant_id` bằng giá trị đã được JWT/QR/capability xác minh, nên GUC
+không rò qua connection pool. Không có tenant context thì policy trả về 0 row.
+
+Ba bootstrap exception được thu hẹp bằng GUC riêng, không phải quyền đọc toàn
+bảng: `app.qr_token` chỉ đọc đúng bàn QR đang quét; `app.owner_email` và
+`app.staff_login_code` chỉ phục vụ đăng nhập; guest session phải có đồng thời
+`session_id` và SHA-256 capability hash. `guest_session_access` cũng có
+`restaurant_id`, được backfill từ session, để RLS không cần mở một relation
+chéo tenant. SSE không đọc lại data ngoài tenant transaction và Subject lọc
+theo `restaurantId`.
+
+**Rehearsal local:** trước khi apply, dump DB bằng `pg_dump -Fc`; chạy service
+`migrate`, seed hai tenant, rồi chạy
+`bash tableqr-api/scripts/verify-tenant-isolation.sh` và
+`bash tableqr-api/scripts/verify-sse-ticket.sh`. Script thứ nhất kiểm REST,
+guest capability, và trực tiếp `SET LOCAL ROLE tableqr_app`: không context
+không thấy row, context Kim Thành không thấy row Hương Quê. Xác nhận thêm
+`EXPLAIN` các query nóng tenant-scoped trước release.
+
+**Forward/rollback:** đây là migration additive nhưng API cũ không thể tạo
+guest capability mới sau khi cột `guest_session_access.restaurant_id` thành
+NOT NULL. Vì thế không chạy “migrate down” trên DB đang phục vụ. Nếu rehearsal
+lỗi, dừng API và restore dump trước migration vào DB tách biệt; nếu đã xác nhận
+data production, fix forward bằng migration mới. Chỉ tạm thời disable RLS để
+khôi phục sự cố khi có owner phê duyệt, đồng thời coi đó là security incident;
+không dùng cách này như rollback thường lệ.
 
 ## 6. Ngoài phạm vi lần mở rộng đầu
 

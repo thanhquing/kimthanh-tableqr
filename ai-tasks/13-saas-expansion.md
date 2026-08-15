@@ -18,7 +18,7 @@ Nguồn thiết kế: [../ai-docs/10-saas-evolution.md](../ai-docs/10-saas-evolu
 
 | Thứ tự | Task | Ghi chú |
 | --- | --- | --- |
-| 1 | `SA-03` + `SA-04` | Hoàn tất RLS và test tenant isolation local; đây là task hiện tại. |
+| 1 | `SA-03` + `SA-04` | **DONE 2026-08-15** — RLS, tenant isolation REST/PATCH/SSE, migration rehearsal và forward/rollback plan local đã đạt. |
 | 2 | `SA-05` | Đối soát query/index/business data tenant-scoped. |
 | 3 | `SA-06` → `SA-07` | Đăng ký chủ quán rồi hoàn thiện shell/onboarding admin. |
 | 4 | `SA-01` | Chốt policy billing trước khi tạo lifecycle. |
@@ -51,17 +51,21 @@ Managed PostgreSQL hoặc phương án tương đương: backup tự động, re
 
 **Xong khi:** restore thử thành công trong môi trường tách biệt; alert DB/API/backup lỗi; ảnh vẫn truy cập được sau redeploy.
 
-### `SA-03` — Tenant schema additive migration · IN PROGRESS
+### `SA-03` — Tenant schema additive migration · DONE 2026-08-15
 
 Thêm `restaurant_id` nullable vào `AuthUser` và mọi dữ liệu nghiệp vụ qua migration additive. Backfill toàn bộ dữ liệu hiện có vào quán mặc định; không đổi endpoint công khai ở task này. Không thêm `Organization`, `Membership` hay bảng billing ở task này.
 
 **Xong khi:** dữ liệu cũ còn nguyên, FK/index/composite unique đúng, migration rehearsal + rollback plan + test backfill pass.
 
-### `SA-04` — Tenant context & authorization · IN PROGRESS
+**Kết quả:** migration `20260815000000_tenant_rls` đã backfill `guest_session_access.restaurant_id`, thêm composite FK về session và RLS cho 12 bảng. Docker migration, seed hai tenant, direct query bằng role `tableqr_app` không context (0 row) và full flow guest–staff đều pass.
+
+### `SA-04` — Tenant context & authorization · DONE 2026-08-15
 
 JWT của `AuthUser` phải xác định restaurant đang thao tác. Tạo repository/service scope bắt buộc `restaurantId`; guest resolve qua QR token global unique và dùng guest-session capability được xác minh (không dựa vào UUID `sessionId` khó đoán). Không cho client chọn tenant bằng body/query không được xác minh; thay JWT query string của SSE bằng ticket ngắn hạn nếu cần.
 
 **Xong khi:** test hai tenant chứng minh không thể GET/PATCH/stream/SSE dữ liệu chéo; log/audit có tenant context.
+
+**Kết quả:** API runtime dùng role `tableqr_app` không `BYPASSRLS`; Prisma đặt tenant context transaction-local. Script regression đã pass guest capability, GET/PATCH cross-tenant, event SSE chỉ tới đúng quán, và stream ticket không dùng được cho REST.
 
 ### `SA-05` — Chuyển business data sang tenant-scoped · TODO
 

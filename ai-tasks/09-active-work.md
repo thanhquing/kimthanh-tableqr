@@ -6,19 +6,19 @@
 
 ## Current task
 
-> ### `SA-03` + `SA-04` — Tenant isolation hardening
+> ### `SA-05` — Business data tenant-scoped query/index audit
 >
-> **Mốc:** M8 · **Trạng thái:** IN PROGRESS
+> **Mốc:** M8 · **Trạng thái:** TODO
 >
 > Theo quyết định người dùng ngày 2026-08-13, hoàn tất code multi-tenant local trước; các task DevOps (`SA-00`, `SA-02`) và verify thiết bị thật (`BE-13`) được dời thành cổng phát hành cuối.
 >
-> **Mục tiêu hiện tại:** thêm PostgreSQL RLS đúng tenant policy, kiểm tra REST/SSE không truy cập chéo tenant và hoàn tất migration/test/rollback plan local.
+> **Mục tiêu hiện tại:** đối soát toàn bộ query/index business data tenant-scoped; xác nhận QR cũ, idempotency, snapshot totals và unique OPEN session vẫn đúng với dữ liệu nhiều tenant.
 >
 > **Đọc trước khi làm:** [`ai-tasks/13-saas-expansion.md`](13-saas-expansion.md), [`ai-docs/10-saas-evolution.md`](../ai-docs/10-saas-evolution.md), [`ai-docs/09-current-system-architecture.md`](../ai-docs/09-current-system-architecture.md), [`ai-docs/03-domain-model.md`](../ai-docs/03-domain-model.md).
 >
-> **Xong:** hai tenant không thể đọc/ghi/stream dữ liệu chéo kể cả khi bypass service scope; RLS policy, test regression, migration rehearsal và forward/rollback plan local đều đạt.
+> **Xong:** `EXPLAIN` query nóng không quét chéo tenant; QR cũ, totals/snapshot/idempotency và unique OPEN session vẫn đúng.
 >
-> **Tiến độ:** đã thêm `restaurant_id`, tenant context JWT, guest capability hash, SSE ticket scope và composite foreign key; hai tenant đã được seed/test. Phần còn lại là RLS.
+> **Tiến độ:** chưa bắt đầu. Tenant foundation `SA-03` + `SA-04` đã hoàn tất và kiểm thử local ngày 2026-08-15.
 
 ---
 
@@ -26,6 +26,7 @@
 
 | Task | Ngày | Ghi chú |
 | --- | --- | --- |
+| `SA-03` + `SA-04` — Tenant isolation hardening | 2026-08-15 | Migration RLS PostgreSQL đã áp dụng local; role runtime `tableqr_app`, transaction tenant context, 12 bảng RLS, backfill/FK guest access. Seed hai tenant, GET/PATCH/SSE chéo tenant, raw RLS không context và full guest–staff flow đều pass. |
 | `BE-12b` — nối staff + admin | 2026-08-09 | Staff/admin mặc định gọi API thật qua proxy; toàn bộ staff endpoint dùng base URL cấu hình. Login + dữ liệu đã kiểm qua proxy đến Docker; production bundle của cả ba app không có MSW. |
 | `SA-00`…`SA-14` — roadmap SaaS | 2026-08-09 | Production foundation, tenant isolation, owner signup, trial 2 tháng, 100.000 VND/tháng unlimited orders và chuẩn bị tiered plans. Chưa triển khai code/schema. Ưu tiên tăng ngày 2026-08-10. |
 | `BE-12a` — nối lát cắt khách | 2026-08-09 | Guest chạy API thật qua Vite proxy; menu asset, mở phiên, gửi đơn, gọi nhân viên/xin bill đã kiểm qua proxy. Staff/admin vẫn mock. |

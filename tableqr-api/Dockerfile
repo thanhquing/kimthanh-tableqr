@@ -33,4 +33,4 @@ COPY --from=build /app/tableqr-api/dist ./tableqr-api/dist
 COPY --from=build /app/tableqr-api/prisma ./tableqr-api/prisma
 
 WORKDIR /app/tableqr-api
-CMD ["sh", "-c", "./node_modules/.bin/prisma migrate deploy && node dist/main.js"]
+CMD ["node", "dist/main.js"]

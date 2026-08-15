@@ -13,19 +13,20 @@ export class AuthService {
   ) {}
 
   async loginStaff(staffLoginCode: string, pin: string) {
-    const restaurant = await this.prisma.restaurant.findUnique({ where: { staffLoginCode: staffLoginCode.trim().toUpperCase() } })
+    const normalizedCode = staffLoginCode.trim().toUpperCase()
+    const restaurant = await this.prisma.withStaffLoginCode(normalizedCode, (tx) => tx.restaurant.findUnique({ where: { staffLoginCode: normalizedCode } }))
     if (!restaurant) this.reject()
-    const user = await this.prisma.authUser.findFirst({
+    const user = await this.prisma.withTenant(restaurant!.id, (tx) => tx.authUser.findFirst({
       where: { restaurantId: restaurant!.id, role: 'STAFF', isActive: true, pinHash: { not: null } },
-    })
+    }))
     if (!user?.pinHash || !(await compare(pin, user.pinHash))) this.reject()
     return this.response(user.id, 'staff', user.displayName, restaurant!.id)
   }
 
   async loginOwner(email: string, password: string) {
-    const user = await this.prisma.authUser.findFirst({
+    const user = await this.prisma.withOwnerEmail(email, (tx) => tx.authUser.findFirst({
       where: { role: 'OWNER', isActive: true, email },
-    })
+    }))
     if (!user?.passwordHash || !(await compare(password, user.passwordHash))) this.reject()
     return this.response(user.id, 'owner', user.displayName, user.restaurantId)
   }
@@ -43,7 +44,7 @@ export class AuthService {
   async createStaffDevicePairing(restaurantId: string) {
     const token = randomBytes(32).toString('base64url')
     const expiresAt = new Date(Date.now() + 10 * 60_000)
-    await this.prisma.$transaction(async (tx) => {
+    await this.prisma.withTenant(restaurantId, async (tx) => {
       await tx.staffDevicePairing.deleteMany({ where: { restaurantId, OR: [{ claimedAt: null }, { expiresAt: { lte: new Date() } }] } })
       await tx.staffDevicePairing.create({ data: { restaurantId, tokenHash: this.hashDevicePairingToken(token), expiresAt } })
     })
@@ -53,17 +54,17 @@ export class AuthService {
 
   async claimStaffDevicePairing(token: string) {
     const tokenHash = this.hashDevicePairingToken(token)
-    const result = await this.prisma.$transaction(async (tx) => {
+    const restaurantId = await this.prisma.withStaffPairingToken(tokenHash, async (tx) => {
       const pairing = await tx.staffDevicePairing.findFirst({
         where: { tokenHash, claimedAt: null, expiresAt: { gt: new Date() } },
-        include: { restaurant: { select: { staffLoginCode: true } } },
       })
       if (!pairing) return null
       const claimed = await tx.staffDevicePairing.updateMany({ where: { id: pairing.id, claimedAt: null }, data: { claimedAt: new Date() } })
-      return claimed.count ? pairing.restaurant.staffLoginCode : null
+      return claimed.count ? pairing.restaurantId : null
     })
-    if (!result) throw new HttpException({ error: { code: 'PAIRING_TOKEN_INVALID', message: 'Mã ghép thiết bị không hợp lệ hoặc đã hết hạn.', details: null } }, 401)
-    return { staffLoginCode: result }
+    if (!restaurantId) throw new HttpException({ error: { code: 'PAIRING_TOKEN_INVALID', message: 'Mã ghép thiết bị không hợp lệ hoặc đã hết hạn.', details: null } }, 401)
+    const restaurant = await this.prisma.withTenant(restaurantId, (tx) => tx.restaurant.findUniqueOrThrow({ where: { id: restaurantId }, select: { staffLoginCode: true } }))
+    return { staffLoginCode: restaurant.staffLoginCode }
   }
 
   private async response(id: string, role: 'staff' | 'owner', displayName: string, restaurantId: string) {

@@ -48,6 +48,7 @@ model Restaurant {
   sessions       TableSession[]
   orders         Order[]
   guestRequests  GuestOrderRequest[]
+  guestAccesses  GuestSessionAccess[]
   orderItems     OrderItem[]
   calls          StaffCall[]
   staffDevicePairings StaffDevicePairing[]
@@ -159,11 +160,14 @@ model TableSession {
 
 model GuestSessionAccess {
   id        String       @id @default(uuid()) @db.Uuid
+  restaurantId String    @map("restaurant_id") @db.Uuid
   sessionId String       @map("session_id") @db.Uuid
   tokenHash String       @unique @map("token_hash")
   createdAt DateTime     @default(now()) @map("created_at") @db.Timestamptz(3)
   session   TableSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  restaurant Restaurant  @relation(fields: [restaurantId], references: [id])
 
+  @@index([restaurantId, sessionId], map: "guest_session_access_restaurant_session_id_idx")
   @@index([sessionId], map: "guest_session_access_session_id_idx")
   @@map("guest_session_access")
 }

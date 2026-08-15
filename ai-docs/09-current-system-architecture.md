@@ -193,7 +193,7 @@ erDiagram
   DINING_TABLE ||--o{ STAFF_CALL : appears_at
 ```
 
-`Restaurant` và `AuthUser` đã mang tenant context: `AuthUser.restaurant_id` xác định quán trong JWT, và dữ liệu nghiệp vụ có `restaurant_id` để query scope theo quán. ERD ở phần này chưa liệt kê đầy đủ các cột tenant/composite foreign key; sơ đồ đích và quy tắc isolation cập nhật nằm tại [10-saas-evolution.md](10-saas-evolution.md).
+`Restaurant` và `AuthUser` đã mang tenant context: `AuthUser.restaurant_id` xác định quán trong JWT, và dữ liệu nghiệp vụ có `restaurant_id` để query scope theo quán. Runtime API dùng role PostgreSQL `tableqr_app` (không có `BYPASSRLS`); mỗi query nghiệp vụ đặt tenant GUC trong một transaction, còn owner chỉ dùng cho migration/seed. ERD ở phần này chưa liệt kê đầy đủ các cột tenant/composite foreign key; sơ đồ đích và quy tắc isolation cập nhật nằm tại [10-saas-evolution.md](10-saas-evolution.md).
 
 ### Ràng buộc quan trọng trong DB
 

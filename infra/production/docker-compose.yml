@@ -24,7 +24,7 @@ services:
       context: ../..
       dockerfile: tableqr-api/Dockerfile
     command: ["sh", "-c", "./node_modules/.bin/prisma migrate deploy"]
-    environment: &api_environment
+    environment: &migration_environment
       NODE_ENV: production
       DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}?schema=public
       JWT_SECRET: ${JWT_SECRET:?set JWT_SECRET}
@@ -42,7 +42,10 @@ services:
       dockerfile: tableqr-api/Dockerfile
     command: ["node", "dist/main.js"]
     restart: unless-stopped
-    environment: *api_environment
+    environment:
+      <<: *migration_environment
+      # API runtime phai dung role khong bypass RLS; migrate ben tren dung owner.
+      DATABASE_URL: "postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}?schema=public&options=-c%20role=tableqr_app"
     volumes:
       # Volume có tên giữ được dữ liệu qua thay container/image API. Chuyển sang
       # object storage managed ở SA-02 trước khi chạy nhiều API replica.
