@@ -284,6 +284,18 @@ export type UpdateTableRequest = Partial<
 
 export type UpdateRestaurantRequest = Partial<Pick<Restaurant, 'name' | 'logoUrl' | 'address'>>
 
+export interface BillingSummaryResponse {
+  plan: { code: string; name: string; priceVnd: number; interval: 'MONTHLY'; featureLimits: Record<string, unknown> }
+  subscription: { status: 'TRIAL' | 'ACTIVE' | 'GRACE' | 'PAST_DUE' | 'SUSPENDED'; trialEndsAt: IsoDateTime; graceEndsAt: IsoDateTime | null; currentPeriodStartsAt: IsoDateTime | null; currentPeriodEndsAt: IsoDateTime | null }
+  cycles: { id: string; sequenceNo: number; status: 'PENDING' | 'PAID' | 'VOID'; amountVnd: number; periodStartsAt: IsoDateTime; periodEndsAt: IsoDateTime; dueAt: IsoDateTime; paidAt: IsoDateTime | null; payments: { id: string; provider: string; paymentCode: string; amountVnd: number; status: 'PENDING' | 'SUCCEEDED' | 'FAILED' | 'REFUNDED'; paidAt: IsoDateTime | null }[] }[]
+}
+
+export interface CreatePaymentIntentResponse {
+  paymentId: string
+  status: 'PENDING' | 'SUCCEEDED' | 'FAILED' | 'REFUNDED'
+  instruction: { provider: string; paymentCode: string; amountVnd: number; transferContent: string; bankName: string | null; bankAccount: string | null }
+}
+
 /* ------------------------------------------------------- SSE (chi tu M7) */
 
 export type StaffStreamEvent =

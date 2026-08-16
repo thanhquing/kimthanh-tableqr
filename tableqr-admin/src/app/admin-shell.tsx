@@ -1,9 +1,9 @@
-import { LayoutGrid, LogOut, Menu, Settings, TableProperties } from 'lucide-react'
+import { CreditCard, LayoutGrid, LogOut, Menu, Settings, TableProperties } from 'lucide-react'
 import { type ReactNode, useState } from 'react'
 import { NavLink } from 'react-router-dom'
 import { useAdminAuth } from '../features/auth/auth-context'
 
-const links = [{ icon: Menu, label: 'Thực đơn', to: '/menu' }, { icon: TableProperties, label: 'Bàn & mã QR', to: '/tables' }, { icon: Settings, label: 'Cài đặt', to: '/settings' }]
+const links = [{ icon: Menu, label: 'Thực đơn', to: '/menu' }, { icon: TableProperties, label: 'Bàn & mã QR', to: '/tables' }, { icon: CreditCard, label: 'Thanh toán', to: '/billing' }, { icon: Settings, label: 'Cài đặt', to: '/settings' }]
 
 export function AdminShell({ children }: { readonly children: ReactNode }) {
   const [open, setOpen] = useState(false)

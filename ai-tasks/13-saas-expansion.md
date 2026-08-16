@@ -103,9 +103,9 @@ Tạo `Plan`, `Subscription`, `SubscriptionCycle`, enum lifecycle và `Entitleme
 
 **Đã kiểm:** SePay Test mode xác thực endpoint HMAC thật 200; Docker E2E tạo intent, settle `Payment`/`SubscriptionCycle`, replay duplicate và amount mismatch audit mà không đổi state. Cycle trả trước chỉ kích hoạt `ACTIVE` khi period bắt đầu để không cắt trial/kỳ đang chạy.
 
-### `SA-10` — Billing UI & owner self-service · TODO
+### `SA-10` — Billing UI & owner self-service · DONE
 
-Màn gói hiện tại, trial còn lại, hoá đơn/cycle, nút thanh toán và trạng thái rõ ràng. Copy phải nói 100.000 VND/tháng, không giới hạn đơn; chỉ hiển thị gói đang active.
+Admin `/billing` hiển thị gói active, trial/kỳ còn lại, tối đa 12 cycle, nút tạo hướng dẫn chuyển khoản và trạng thái thành công/lỗi rõ ràng. Giá gói và mọi số tiền hiển thị qua `formatVnd` (quy tắc vàng #4) → `100.000 ₫ / tháng`, không giới hạn đơn; chỉ hiển thị gói đang active. `GET /admin/billing` tenant-scoped, chỉ trả đúng field trong `BillingSummaryResponse`, không trả secret provider; UI mock/API thật đều dùng contract chung.
 
 **Xong khi:** owner hoàn thành luồng trial → pay → active và hiểu lỗi thanh toán không cần hỗ trợ thủ công.
 

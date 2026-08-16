@@ -1,4 +1,4 @@
-import { Body, Controller, Post, UseGuards } from '@nestjs/common'
+import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common'
 import { JwtAuthGuard } from '../auth/jwt-auth.guard'
 import { CurrentUser } from '../auth/current-user.decorator'
 import type { AuthenticatedUser } from '../auth/auth.types'
@@ -11,6 +11,9 @@ import { PaymentService } from './payment.service'
 @Roles('owner')
 export class PaymentIntentController {
   constructor(private readonly payments: PaymentService) {}
+
+  @Get()
+  summary(@CurrentUser() user: AuthenticatedUser) { return this.payments.summary(user.restaurantId) }
 
   @Post('payment-intents')
   create(@CurrentUser() user: AuthenticatedUser, @Body() body: { provider?: unknown }) {

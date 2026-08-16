@@ -330,6 +330,18 @@ export function createHandlers(options: HandlerOptions = {}): HttpHandler[] {
         return HttpResponse.json({ displayName: 'Chủ quán Kim Thành', email: ADMIN_EMAIL, restaurant: { id: restaurant.id, name: restaurant.name, staffLoginCode: 'KIM-4821' }, trialEndsAt: '2026-10-15T00:00:00.000Z', billingStatus: 'TRIAL' })
       }),
     ),
+    http.get(`${api}/admin/billing`, ({ request }) =>
+      execute(request, chaosController, () => {
+        requireRole(request, ['owner'])
+        return HttpResponse.json({ plan: { code: 'starter-monthly', name: 'Starter', priceVnd: 100000, interval: 'MONTHLY', featureLimits: { orders: 'unlimited' } }, subscription: { status: 'TRIAL', trialEndsAt: '2026-10-15T00:00:00.000Z', currentPeriodStartsAt: '2026-08-15T00:00:00.000Z', currentPeriodEndsAt: '2026-10-15T00:00:00.000Z', graceEndsAt: null }, cycles: [] })
+      }),
+    ),
+    http.post(`${api}/admin/billing/payment-intents`, ({ request }) =>
+      execute(request, chaosController, () => {
+        requireRole(request, ['owner'])
+        return HttpResponse.json({ paymentId: 'pay_mock_01', status: 'PENDING', instruction: { provider: 'sepay', paymentCode: 'TQR1234567890', amountVnd: 100000, transferContent: 'TQR1234567890', bankName: 'VPBank', bankAccount: '0000000001' } }, { status: 201 })
+      }),
+    ),
     http.patch(`${api}/admin/restaurant`, ({ request }) =>
       execute(request, chaosController, async () => {
         requireRole(request, ['owner'])

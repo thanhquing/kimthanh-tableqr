@@ -112,8 +112,10 @@ Trong một transaction, server tạo `Restaurant` (kèm `staffLoginCode`, `tria
 | --- | --- | --- | --- |
 | `GET` | `/admin/account` | owner | `{ displayName, email, restaurant: { id, name, staffLoginCode }, trialEndsAt, billingStatus }` |
 | `PATCH` | `/admin/staff-pin` | owner | Request `{ pin: "123456" }`; PIN đúng 6 chữ số, đổi bcrypt hash của service account `STAFF` trong chính tenant và trả `{ updated: true }` |
+| `GET` | `/admin/billing` | owner | `{ plan, subscription, cycles }`; chỉ trả gói đang active và tối đa 12 cycle mới nhất, không trả secrets provider |
+| `POST` | `/admin/billing/payment-intents` | owner | Tạo/lấy payment intent đang chờ cho cycle cần thanh toán; `{ paymentId, status, instruction: { provider, paymentCode, amountVnd, transferContent, bankName, bankAccount } }` (`bankName`/`bankAccount` là `null` khi chưa cấu hình) |
 
-`GET /admin/account` và `PATCH /admin/staff-pin` chỉ lấy `restaurantId` từ JWT owner; không nhận tenant từ client. PIN không bao giờ xuất hiện trong response hoặc log. PIN sai định dạng trả `400 VALIDATION_ERROR`.
+Các endpoint owner trên chỉ lấy `restaurantId` từ JWT owner; không nhận tenant từ client. PIN không bao giờ xuất hiện trong response hoặc log. Payment intent không trả secret webhook/provider, chỉ trả hướng dẫn chuyển khoản. PIN sai định dạng trả `400 VALIDATION_ERROR`.
 
 ### Contract target — billing lifecycle (`SA-08` trở đi)
 

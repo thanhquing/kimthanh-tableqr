@@ -68,6 +68,33 @@ export class PaymentService {
     })
   }
 
+  async summary(restaurantId: string) {
+    return this.prisma.withTenant(restaurantId, async (tx) => {
+      const subscription = await tx.subscription.findUniqueOrThrow({
+        where: { restaurantId },
+        include: {
+          plan: true,
+          // Chi tra dung cac truong co trong `BillingSummaryResponse`: khong ro ri
+          // khoa noi bo (restaurantId/subscriptionId) hay secret provider ra owner.
+          cycles: {
+            select: {
+              id: true, sequenceNo: true, status: true, amountVnd: true,
+              periodStartsAt: true, periodEndsAt: true, dueAt: true, paidAt: true,
+              payments: { select: { id: true, provider: true, paymentCode: true, amountVnd: true, status: true, paidAt: true }, orderBy: { createdAt: 'desc' } },
+            },
+            orderBy: { sequenceNo: 'desc' },
+            take: 12,
+          },
+        },
+      })
+      return {
+        plan: { code: subscription.plan.code, name: subscription.plan.name, priceVnd: subscription.priceVndSnapshot, interval: subscription.plan.interval, featureLimits: subscription.featureLimitsSnapshot },
+        subscription: { status: subscription.status, trialEndsAt: subscription.trialEndsAt, graceEndsAt: subscription.graceEndsAt, currentPeriodStartsAt: subscription.currentPeriodStartsAt, currentPeriodEndsAt: subscription.currentPeriodEndsAt },
+        cycles: subscription.cycles,
+      }
+    })
+  }
+
   async processWebhook(event: VerifiedPaymentEvent): Promise<PaymentOutcome> {
     const candidate = await this.prisma.withPaymentCode(event.paymentCode, (tx) =>
       tx.payment.findUnique({ where: { paymentCode: event.paymentCode }, select: { id: true, restaurantId: true } }),
