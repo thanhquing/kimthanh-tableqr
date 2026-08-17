@@ -1,5 +1,5 @@
 import { calcSessionTotal, formatTime, formatVnd } from '@kimthanh-tableqr/contracts'
-import { Button, EmptyState, Modal } from '@kimthanh-tableqr/ui'
+import { Button, EmptyState, Modal, ToastRegion } from '@kimthanh-tableqr/ui'
 import { useQuery } from '@tanstack/react-query'
 import { useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
@@ -14,6 +14,7 @@ export function SessionPage() {
   const [isPaying, setIsPaying] = useState(false)
   const [isResetting, setIsResetting] = useState(false)
   const [paid, setPaid] = useState(false)
+  const [message, setMessage] = useState<string | null>(null)
 
   const tables = useQuery({
     queryKey: ['staff-tables'],
@@ -41,9 +42,12 @@ export function SessionPage() {
 
   async function pay() {
     setIsPaying(true)
+    setMessage(null)
     try {
       await paySession(auth!.token, sessionId)
       setPaid(true)
+    } catch (caught) {
+      setMessage(caught instanceof Error ? caught.message : 'Không thể cập nhật thanh toán. Vui lòng thử lại.')
     } finally {
       setIsPaying(false)
     }
@@ -51,9 +55,13 @@ export function SessionPage() {
 
   async function reset() {
     setIsResetting(true)
+    setMessage(null)
     try {
       await closeSession(auth!.token, sessionId)
       navigate('/tables')
+    } catch (caught) {
+      setConfirmReset(false)
+      setMessage(caught instanceof Error ? caught.message : 'Không thể reset bàn. Vui lòng thử lại.')
     } finally {
       setIsResetting(false)
     }
@@ -105,6 +113,7 @@ export function SessionPage() {
         onClose={() => setConfirmReset(false)}
         title={`Reset ${table.displayName}?`}
       />
+      <ToastRegion toasts={message ? [{ id: 'staff-session-error', message }] : []} />
     </div>
   )
 }

@@ -26,6 +26,13 @@ export function formatTime(iso: string): string {
   return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`
 }
 
+/** Ngay ngan kieu Viet: "17/10/2026". Nhan chuoi ISO. */
+export function formatDate(iso: string): string {
+  const d = new Date(iso)
+  if (Number.isNaN(d.getTime())) return '--/--/----'
+  return `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`
+}
+
 /**
  * Thoi gian tuong doi tieng Viet: "vua xong", "3 phut truoc", "1 gio truoc".
  * `now` truyen vao duoc de test khong phu thuoc dong ho that.

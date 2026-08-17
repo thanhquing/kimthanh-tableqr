@@ -1,5 +1,5 @@
 import { STAFF_CALL_TYPE_LABEL, type StaffCallsResponse } from '@kimthanh-tableqr/contracts'
-import { Button, Modal } from '@kimthanh-tableqr/ui'
+import { Button, Modal, ToastRegion } from '@kimthanh-tableqr/ui'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { Bell } from 'lucide-react'
 import { useState } from 'react'
@@ -18,6 +18,7 @@ export function CallBell() {
   const client = useQueryClient()
   const [isOpen, setIsOpen] = useState(false)
   const [processingId, setProcessingId] = useState<string | null>(null)
+  const [message, setMessage] = useState<string | null>(null)
   const calls = useQuery({
     enabled: Boolean(auth),
     queryKey: ['staff-calls'],
@@ -31,8 +32,9 @@ export function CallBell() {
     client.setQueryData<StaffCallsResponse>(['staff-calls'], (current) => current ? { calls: current.calls.filter((call) => call.id !== id) } : current)
     try {
       await completeStaffCall(auth!.token, id)
-    } catch {
+    } catch (caught) {
       client.setQueryData(['staff-calls'], previous)
+      setMessage(caught instanceof Error ? caught.message : 'Không thể xử lý yêu cầu. Vui lòng thử lại.')
     } finally {
       setProcessingId(null)
     }
@@ -59,5 +61,6 @@ export function CallBell() {
         </div>)}
       </div> : null}
     </Modal>
+    <ToastRegion toasts={message ? [{ id: 'staff-call-error', message }] : []} />
   </>
 }

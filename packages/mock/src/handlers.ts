@@ -333,7 +333,7 @@ export function createHandlers(options: HandlerOptions = {}): HttpHandler[] {
     http.get(`${api}/admin/billing`, ({ request }) =>
       execute(request, chaosController, () => {
         requireRole(request, ['owner'])
-        return HttpResponse.json({ plan: { code: 'starter-monthly', name: 'Starter', priceVnd: 100000, interval: 'MONTHLY', featureLimits: { orders: 'unlimited' } }, subscription: { status: 'TRIAL', trialEndsAt: '2026-10-15T00:00:00.000Z', currentPeriodStartsAt: '2026-08-15T00:00:00.000Z', currentPeriodEndsAt: '2026-10-15T00:00:00.000Z', graceEndsAt: null }, cycles: [] })
+        return HttpResponse.json({ plan: { code: 'starter-monthly', name: 'Starter', priceVnd: 100000, interval: 'MONTHLY', featureLimits: { orders: 'unlimited' } }, subscription: { status: 'TRIAL', trialEndsAt: '2026-10-15T00:00:00.000Z', currentPeriodStartsAt: '2026-08-15T00:00:00.000Z', currentPeriodEndsAt: '2026-10-15T00:00:00.000Z', graceEndsAt: null }, cycles: [], dunningNotices: [] })
       }),
     ),
     http.post(`${api}/admin/billing/payment-intents`, ({ request }) =>

@@ -2,6 +2,7 @@ import { HttpException, Injectable } from '@nestjs/common'
 import { hash } from 'bcryptjs'
 import { randomBytes } from 'node:crypto'
 import { PrismaService } from '../prisma.service'
+import { EntitlementService } from '../billing/entitlement.service'
 
 const fail = (status: number, code: string, message: string): never => { throw new HttpException({ error: { code, message, details: null } }, status) }
 const string = (value: unknown) => typeof value === 'string' ? value : undefined
@@ -9,7 +10,7 @@ const int = (value: unknown) => typeof value === 'number' && Number.isInteger(va
 
 @Injectable()
 export class AdminService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService, private readonly entitlement: EntitlementService) {}
 
   categories(restaurantId: string) { return this.prisma.withTenant(restaurantId, (tx) => tx.menuCategory.findMany({ where: { restaurantId }, orderBy: { sortOrder: 'asc' } })) }
   createCategory(restaurantId: string, body: Record<string, unknown>) {
@@ -58,6 +59,9 @@ export class AdminService {
   async deleteTable(restaurantId: string, id: string) { return this.prisma.withTenant(restaurantId, async (tx) => { if (await tx.tableSession.count({ where: { restaurantId, tableId: id, status: 'OPEN' } })) fail(409, 'TABLE_HAS_OPEN_SESSION', 'Bàn đang có khách.'); if (!(await tx.diningTable.deleteMany({ where: { id, restaurantId } })).count) fail(404, 'TABLE_NOT_FOUND', 'Không tìm thấy bàn.'); return { id } }) }
   restaurant(restaurantId: string) { return this.prisma.withTenant(restaurantId, (tx) => tx.restaurant.findUniqueOrThrow({ where: { id: restaurantId } })) }
   async account(ownerId: string, restaurantId: string) {
+    // `billingStatus` hiển thị trong Cài đặt phải là trạng thái đã tính lại, không
+    // phải giá trị còn tồn từ lần ghi trước.
+    await this.entitlement.status(restaurantId)
     return this.prisma.withTenant(restaurantId, async (tx) => {
       const [owner, restaurant] = await Promise.all([
         tx.authUser.findFirst({ where: { id: ownerId, restaurantId, role: 'OWNER', isActive: true }, select: { displayName: true, email: true } }),

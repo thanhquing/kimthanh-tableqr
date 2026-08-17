@@ -112,18 +112,22 @@ Trong một transaction, server tạo `Restaurant` (kèm `staffLoginCode`, `tria
 | --- | --- | --- | --- |
 | `GET` | `/admin/account` | owner | `{ displayName, email, restaurant: { id, name, staffLoginCode }, trialEndsAt, billingStatus }` |
 | `PATCH` | `/admin/staff-pin` | owner | Request `{ pin: "123456" }`; PIN đúng 6 chữ số, đổi bcrypt hash của service account `STAFF` trong chính tenant và trả `{ updated: true }` |
-| `GET` | `/admin/billing` | owner | `{ plan, subscription, cycles }`; chỉ trả gói đang active và tối đa 12 cycle mới nhất, không trả secrets provider |
+| `GET` | `/admin/billing` | owner | `{ plan, subscription, cycles, dunningNotices }`; chỉ trả gói đang active, tối đa 12 cycle mới nhất và mốc nhắc gia hạn của kỳ grace hiện tại, không trả secrets provider |
 | `POST` | `/admin/billing/payment-intents` | owner | Tạo/lấy payment intent đang chờ cho cycle cần thanh toán; `{ paymentId, status, instruction: { provider, paymentCode, amountVnd, transferContent, bankName, bankAccount } }` (`bankName`/`bankAccount` là `null` khi chưa cấu hình) |
 
 Các endpoint owner trên chỉ lấy `restaurantId` từ JWT owner; không nhận tenant từ client. PIN không bao giờ xuất hiện trong response hoặc log. Payment intent không trả secret webhook/provider, chỉ trả hướng dẫn chuyển khoản. PIN sai định dạng trả `400 VALIDATION_ERROR`.
 
-### Contract target — billing lifecycle (`SA-08` trở đi)
+### Billing lifecycle enforcement (`SA-11` đã triển khai)
 
-Cho đến khi `SA-08` triển khai, `billingStatus` trên `Restaurant` chỉ là trạng thái onboarding và chưa có enforcement. Sau đó `EntitlementService` là nơi duy nhất quyết định quyền theo `Subscription.status` (`TRIAL`, `ACTIVE`, `GRACE`, `PAST_DUE`, `SUSPENDED`) và trả **403** `RESTAURANT_INACTIVE` cho thao tác bị chặn.
+`EntitlementService` là nơi duy nhất quyết định quyền theo `Subscription.status` (`TRIAL`, `ACTIVE`, `GRACE`, `PAST_DUE`, `SUSPENDED`) và trả **403** `RESTAURANT_INACTIVE` cho thao tác bị chặn. Quyết định đọc từ `allowsBillingAction()` trong `packages/contracts`, không rải điều kiện trong controller.
 
-Các endpoint đọc không bị chặn toàn bộ: guest/staff giữ quyền xem đúng dữ liệu đã được tenant/capability scope; owner vẫn đọc dữ liệu, cập nhật account và vào luồng thanh toán. Với `PAST_DUE`, guest bị chặn `POST /guest/orders` và `POST /guest/calls`; staff bị chặn mọi `PATCH`/`POST` làm đổi nghiệp vụ; owner bị chặn mọi thay đổi menu/bàn/PIN/quán ngoài account/billing. Với `SUSPENDED`, quyền giống `PAST_DUE` nhưng payment không tự khôi phục dịch vụ.
+Enforcement chạy bằng guard toàn cục **mặc định từ chối**: mọi route `POST`/`PATCH`/`PUT`/`DELETE` phải khai báo `@BillingAction('guest-write' | 'staff-write' | 'admin-business-write' | 'admin-account-write' | 'exempt')`. Route ghi quên khai báo trả 500 ngay lần gọi đầu thay vì âm thầm bỏ qua entitlement. `exempt` chỉ dùng cho đăng nhập/đăng ký/ghép thiết bị, webhook provider và `POST /staff/stream-ticket` (đường đọc realtime).
 
-`message` của `RESTAURANT_INACTIVE` phải theo đúng copy đã chốt trong `ai-docs/10-saas-evolution.md` §4, không trả status nội bộ hay hướng dẫn kỹ thuật cho khách. API billing/payment và webhook sẽ được bổ sung ở `SA-09`; endpoint webhook không dùng JWT frontend và chỉ chấp nhận xác thực HMAC provider trên raw body.
+Các endpoint đọc không bao giờ bị chặn: guest/staff giữ quyền xem đúng dữ liệu đã được tenant/capability scope; owner vẫn đọc dữ liệu, cập nhật account và vào luồng thanh toán. Với `PAST_DUE`, guest bị chặn `POST /guest/sessions/:id/orders` và `POST /guest/sessions/:id/calls`; staff bị chặn mọi `PATCH`/`POST` làm đổi nghiệp vụ; owner bị chặn mọi thay đổi menu/bàn/PIN/quán, chỉ còn `GET` và `POST /admin/billing/payment-intents`. Với `SUSPENDED`, quyền giống `PAST_DUE` nhưng thanh toán không tự khôi phục dịch vụ — webhook vẫn ghi `Payment`/`SubscriptionCycle` là `PAID`, còn `Subscription.status` chỉ đổi bằng can thiệp hỗ trợ.
+
+`message` của `RESTAURANT_INACTIVE` phải theo đúng copy đã chốt trong `ai-docs/10-saas-evolution.md` §4 (`restaurantInactiveMessage()` trong contracts), không trả status nội bộ hay hướng dẫn kỹ thuật cho khách. Endpoint webhook không dùng JWT frontend và chỉ chấp nhận xác thực HMAC provider trên raw body.
+
+Dunning ngày 1/3/7 của grace được ghi vào `subscription_event` với `occurredAt` suy ra từ `graceEndsAt` nên không trùng lặp giữa các request. `GET /admin/billing` trả thêm `dunningNotices: { day, occurredAt }[]` của kỳ grace hiện tại; `GET /admin/billing` và `GET /admin/account` tính lại trạng thái trước khi trả để admin không hiển thị status cũ.
 
 ---
 

@@ -6,19 +6,19 @@
 
 ## Current task
 
-> ### `SA-10` — Billing UI & owner self-service
+> ### `SA-11` — Entitlement enforcement
 >
 > **Mốc:** M10 · **Trạng thái:** DONE
 >
 > Theo quyết định người dùng ngày 2026-08-13, hoàn tất code multi-tenant local trước; các task DevOps (`SA-00`, `SA-02`) và verify thiết bị thật (`BE-13`) được dời thành cổng phát hành cuối.
 >
-> **Kết quả:** admin có route `/billing` hiển thị gói active, giá qua `formatVnd` (`100.000 ₫ / tháng`) và unlimited orders, trial/kỳ còn lại, tối đa 12 cycle. Owner tạo hướng dẫn SePay, sao chép nội dung chuyển khoản và xem trạng thái thanh toán; API owner `GET /admin/billing` giữ tenant scope, không trả secret provider.
+> **Kết quả:** `EntitlementGuard` toàn cục mặc định từ chối, mọi route ghi phải khai báo `@BillingAction` nên không route nghiệp vụ nào lọt enforcement. `PAST_DUE`/`SUSPENDED` chặn guest gửi đơn/gọi nhân viên, chặn staff đổi trạng thái/tính tiền/reset bàn, chặn owner sửa menu/bàn/PIN/quán — nhưng đọc, đăng nhập và thanh toán vẫn mở. Dunning ngày 1/3/7 ghi `SubscriptionEvent` không trùng, admin có banner grace/quá hạn ở mọi trang và `dunningNotices` trong `GET /admin/billing`; `SUSPENDED` không tự mở lại khi có tiền vào.
 >
 > **Đọc trước khi làm:** [`ai-tasks/13-saas-expansion.md`](13-saas-expansion.md), [`ai-docs/10-saas-evolution.md`](../ai-docs/10-saas-evolution.md), [`prototype/README.md`](../prototype/README.md).
 >
 > **Policy đầu vào:** payment provider adapter generic với webhook xác thực/chống replay; trial 2 tháng lịch; grace 7 ngày, dunning ngày 1/3/7; `PAST_DUE` dừng guest/staff ghi nghiệp vụ và chỉ cho owner đọc/thanh toán/cập nhật account; refund thủ công, không prorate mặc định.
 >
-> **Đã chốt:** Việt Nam là thị trường/provider implementation đầu tiên. **Cần người dùng cung cấp:** chọn provider Việt Nam và tài khoản sandbox/API credentials khi đã chọn. Đề xuất implementation đầu tiên là SePay vì có Test mode cô lập, mô phỏng giao dịch và webhook ký HMAC; adapter vẫn không phụ thuộc SePay.
+> **Tiếp theo:** `SA-12` — vận hành/nghiệm thu billing (runbook payment fail, reconciliation có audit, webhook replay, cancel/reactivate, test tải tenant).
 
 ---
 
@@ -26,6 +26,7 @@
 
 | Task | Ngày | Ghi chú |
 | --- | --- | --- |
+| `SA-11` — Entitlement enforcement | 2026-08-17 | Guard toàn cục mặc định từ chối + `@BillingAction` cho mọi route ghi; quyền đọc từ `allowsBillingAction()` trong contracts, copy guest/staff/owner từ `restaurantInactiveMessage()`. Audit `SubscriptionEvent` cho grace/dunning 1-3-7/quá hạn, `dunningNotices` trong `GET /admin/billing`, banner admin mọi trang; `SUSPENDED` + tiền vào không tự mở lại. 13 unit test billing; `verify-entitlement-matrix.sh` chạy Docker pass đủ 5 trạng thái, regression guest flow/tenant isolation/SSE vẫn pass. |
 | `SA-10` — Billing UI & owner self-service | 2026-08-16 | Admin `/billing`: gói active, giá qua `formatVnd` (`100.000 ₫ / tháng`)/unlimited, trial/kỳ còn lại, 12 cycle và trạng thái rõ ràng. Tạo hướng dẫn SePay + sao chép payment code; `GET /admin/billing` tenant-scoped, chỉ trả field trong `BillingSummaryResponse`, không trả secret. API Docker smoke 200; admin/API/contracts/mock checks pass. |
 | `SA-09` — Payment provider adapter | 2026-08-15 | `PaymentProviderAdapter` generic; SePay HMAC SHA-256 raw body/timestamp, owner intent `POST /admin/billing/payment-intents`, RLS lookup tối thiểu theo payment code rồi tenant transaction. Payment/cycle/event audit unique; settle chỉ khi tiền vào + đúng số tiền, replay/mismatch an toàn. SePay sandbox endpoint thật 200; Docker E2E `SUCCEEDED/PAID`, duplicate và mismatch amount pass. |
 | `SA-08` — Catalog/lifecycle/entitlement | 2026-08-15 | Plan/subscription/cycle RLS, seed starter snapshot giá/feature, lifecycle grace 7 ngày và 4 unit test transition. Migration + seed local, contracts/API/admin checks đều pass. |
@@ -92,7 +93,7 @@
 
 ## Tiếp theo (theo thứ tự, không đảo)
 
-`SA-03` + `SA-04` → `SA-05` → `SA-06` → `SA-07` → `SA-01` → `SA-08` → `SA-09`…`SA-12` → `SA-13` → `SA-00` → `SA-02` → `BE-13`. `SA-14` chỉ làm sau này nếu mô hình một tài khoản/một quán không còn phù hợp.
+`SA-12` → `SA-13` → `SA-00` → `SA-02` → `BE-13`. (`SA-03`…`SA-11` đã DONE.) `SA-14` chỉ làm sau này nếu mô hình một tài khoản/một quán không còn phù hợp.
 
 Cổng M1→M2 đã đạt ngày 2026-08-02: đối chiếu xong 28 handler M1 ở bảng cuối `ai-docs/04`, dòng 29 là SSE để M7; prototype đã duyệt; 3 package M1 build sạch.
 

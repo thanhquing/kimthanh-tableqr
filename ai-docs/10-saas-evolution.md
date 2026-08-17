@@ -64,6 +64,7 @@ erDiagram
   RESTAURANT ||--o{ SUBSCRIPTION : billed_for
   PLAN ||--o{ SUBSCRIPTION : selected_by
   SUBSCRIPTION ||--o{ SUBSCRIPTION_CYCLE : invoices
+  SUBSCRIPTION ||--o{ SUBSCRIPTION_EVENT : audits
   SUBSCRIPTION_CYCLE ||--o{ PAYMENT : paid_by
   RESTAURANT ||--o{ MENU_CATEGORY : scopes
   RESTAURANT ||--o{ DINING_TABLE : scopes
@@ -117,6 +118,14 @@ erDiagram
     enum status
     timestamptz due_at
     timestamptz paid_at
+  }
+  SUBSCRIPTION_EVENT {
+    uuid id PK
+    uuid restaurant_id FK
+    uuid subscription_id FK
+    enum type
+    int dunning_day
+    timestamptz occurred_at
   }
   PAYMENT {
     uuid id PK
@@ -204,7 +213,7 @@ flowchart TD
   Warn --> Scope
 ```
 
-Không chặn mù tất cả GET ngay ngày hết hạn: chủ quán vẫn cần vào xem hoá đơn và thanh toán. `SA-08` phải thể hiện toàn bộ matrix dưới đây bằng một `EntitlementService` duy nhất, không rải `if subscription...` trong controller.
+Không chặn mù tất cả GET ngay ngày hết hạn: chủ quán vẫn cần vào xem hoá đơn và thanh toán. Matrix dưới đây đã được `SA-11` triển khai bằng một `EntitlementService` duy nhất đọc quy tắc từ `packages/contracts`, không rải `if subscription...` trong controller; guard toàn cục mặc định từ chối nên route ghi mới bắt buộc khai báo `@BillingAction`.
 
 | Subscription status | Guest QR | Staff | Owner admin | Copy bắt buộc |
 | --- | --- | --- | --- | --- |
@@ -213,7 +222,7 @@ Không chặn mù tất cả GET ngay ngày hết hạn: chủ quán vẫn cần
 | `PAST_DUE` | Chỉ xem menu/đơn cũ; chặn tạo đơn và gọi nhân viên | Chỉ xem; chặn đổi trạng thái đơn, xử lý gọi, thanh toán/reset bàn | Chỉ đọc dữ liệu, thanh toán và cập nhật tài khoản; chặn menu/bàn/PIN và mọi ghi nghiệp vụ khác | Guest: “Quán đang tạm ngưng nhận đơn. Vui lòng gọi nhân viên hỗ trợ.” Staff: “Quán đã hết thời gian gia hạn. Vui lòng báo chủ quán thanh toán để tiếp tục nhận đơn.” Owner: “Dịch vụ đang tạm ngưng. Hãy thanh toán để tiếp tục quản lý quán.” |
 | `SUSPENDED` | Như `PAST_DUE` | Như `PAST_DUE` | Như `PAST_DUE`; không tự kích hoạt lại bằng thanh toán, phải được hỗ trợ mở lại | Owner: “Tài khoản quán đang tạm ngưng. Vui lòng liên hệ hỗ trợ.” |
 
-`GRACE` bắt đầu đúng `trialEndsAt` hoặc `currentPeriodEndsAt`, kéo dài 7 × 24 giờ. Dunning tạo một sự kiện/audit ở ngày 1, 3 và 7 tính từ thời điểm bắt đầu grace; admin phải luôn hiển thị trạng thái và đường thanh toán, email chỉ là kênh bổ sung. Webhook thanh toán hợp lệ trong `TRIAL`/`GRACE`/`PAST_DUE` tạo hoặc thanh toán cycle và chuyển sang `ACTIVE`; `SUSPENDED` không tự đổi trạng thái. Hết grace mà không có webhook hợp lệ chuyển `PAST_DUE`. `SUSPENDED` chỉ dùng cho can thiệp thủ công như nghi ngờ gian lận/chargeback hoặc quyết định vận hành.
+`GRACE` bắt đầu đúng `trialEndsAt` hoặc `currentPeriodEndsAt`, kéo dài 7 × 24 giờ. Dunning tạo một sự kiện/audit ở ngày 1, 3 và 7 tính từ thời điểm bắt đầu grace — bảng `SubscriptionEvent`, `occurredAt` suy ra từ `graceEndsAt` nên mỗi mốc chỉ ghi một hàng dù request nào phát hiện ra nó; admin phải luôn hiển thị trạng thái và đường thanh toán (banner mọi trang + `dunningNotices` trong `GET /admin/billing`), email chỉ là kênh bổ sung. Webhook thanh toán hợp lệ trong `TRIAL`/`GRACE`/`PAST_DUE` tạo hoặc thanh toán cycle và chuyển sang `ACTIVE`; `SUSPENDED` không tự đổi trạng thái. Hết grace mà không có webhook hợp lệ chuyển `PAST_DUE`. `SUSPENDED` chỉ dùng cho can thiệp thủ công như nghi ngờ gian lận/chargeback hoặc quyết định vận hành.
 
 Refund không tạo tự động từ UI hoặc webhook. Nhân sự hỗ trợ đối soát từng yêu cầu; nếu chấp thuận thì ghi quyết định, người duyệt, amount và mã giao dịch hoàn vào audit trước khi gọi provider. Không có refund theo tỷ lệ mặc định, và refund không tự đổi subscription/cycle nếu chưa có thao tác đối soát rõ ràng.
 

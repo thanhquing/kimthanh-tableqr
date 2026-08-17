@@ -1,8 +1,10 @@
 import { HttpException, Injectable } from '@nestjs/common'
 import { Prisma } from '@prisma/client'
 import { randomInt } from 'node:crypto'
+import { reactivatesOnPayment } from '@kimthanh-tableqr/contracts'
 import { PrismaService } from '../prisma.service'
 import type { PaymentProviderAdapter, VerifiedPaymentEvent } from './payment-provider'
+import { EntitlementService } from './entitlement.service'
 import { SepayAdapter } from './sepay.adapter'
 
 type PaymentOutcome = { received: boolean; duplicate: boolean; settled: boolean; reason: 'settled' | 'duplicate' | 'unknown_payment' | 'not_incoming' | 'amount_mismatch' | 'already_finalized' }
@@ -21,7 +23,7 @@ function addCalendarMonth(value: Date): Date {
 export class PaymentService {
   private readonly adapters: Map<string, PaymentProviderAdapter>
 
-  constructor(private readonly prisma: PrismaService, sepay: SepayAdapter) {
+  constructor(private readonly prisma: PrismaService, private readonly entitlement: EntitlementService, sepay: SepayAdapter) {
     this.adapters = new Map([[sepay.provider, sepay]])
   }
 
@@ -69,6 +71,9 @@ export class PaymentService {
   }
 
   async summary(restaurantId: string) {
+    // Đọc trước khi hiển thị: trạng thái và mốc nhắc gia hạn phải đúng tại thời
+    // điểm owner mở trang, không đợi request ghi kế tiếp kích hoạt lifecycle.
+    await this.entitlement.status(restaurantId)
     return this.prisma.withTenant(restaurantId, async (tx) => {
       const subscription = await tx.subscription.findUniqueOrThrow({
         where: { restaurantId },
@@ -91,6 +96,7 @@ export class PaymentService {
         plan: { code: subscription.plan.code, name: subscription.plan.name, priceVnd: subscription.priceVndSnapshot, interval: subscription.plan.interval, featureLimits: subscription.featureLimitsSnapshot },
         subscription: { status: subscription.status, trialEndsAt: subscription.trialEndsAt, graceEndsAt: subscription.graceEndsAt, currentPeriodStartsAt: subscription.currentPeriodStartsAt, currentPeriodEndsAt: subscription.currentPeriodEndsAt },
         cycles: subscription.cycles,
+        dunningNotices: await this.entitlement.dunningNotices(tx, subscription),
       }
     })
   }
@@ -132,7 +138,10 @@ export class PaymentService {
 
       const paidAt = new Date()
       await tx.subscriptionCycle.update({ where: { id: payment.subscriptionCycleId }, data: { status: 'PAID', paidAt } })
-      if (payment.subscriptionCycle.periodStartsAt <= paidAt) {
+      const subscription = await tx.subscription.findUniqueOrThrow({ where: { id: payment.subscriptionCycle.subscriptionId }, select: { status: true } })
+      // Quán `SUSPENDED` chỉ mở lại bằng hỗ trợ thủ công: tiền vẫn được ghi nhận
+      // và cycle vẫn `PAID`, nhưng trạng thái thuê bao không tự đổi.
+      if (payment.subscriptionCycle.periodStartsAt <= paidAt && reactivatesOnPayment(subscription.status)) {
         await tx.subscription.update({
           where: { id: payment.subscriptionCycle.subscriptionId },
           data: {

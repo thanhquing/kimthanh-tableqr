@@ -70,9 +70,11 @@ Thông tin quán. MVP hiện có một bản ghi; target multi-tenant có một 
 | `trialEndsAt` | ISO datetime | Cố định lúc owner đăng ký, bằng ngày đăng ký + 2 tháng lịch. |
 | `billingStatus` | `TRIAL` \| `ACTIVE` \| `GRACE` \| `PAST_DUE` \| `SUSPENDED` | Bản sao nhanh của lifecycle trên `Subscription`, dùng cho shell hiện hữu; `EntitlementService` là nguồn quyết định quyền. |
 
-### `Plan`, `Subscription`, `SubscriptionCycle`
+### `Plan`, `Subscription`, `SubscriptionCycle`, `SubscriptionEvent`
 
-`Plan` là catalog global, hiện seed `starter-monthly` 100.000 VND/tháng với `featureLimits.orders = "unlimited"`. Mỗi `Restaurant` có đúng một `Subscription`, snapshot `priceVnd` và feature tại thời điểm bắt đầu; `SubscriptionCycle` lưu kỳ/amount/due/paid để giá gói đổi sau này không sửa lịch sử. Lifecycle là `TRIAL → GRACE → PAST_DUE`, hoặc `ACTIVE → GRACE → PAST_DUE`; webhook payment hợp lệ đưa `TRIAL`/`GRACE`/`PAST_DUE` về `ACTIVE`, còn `SUSPENDED` chỉ mở lại thủ công. `GRACE` kéo dài 7 × 24 giờ.
+`Plan` là catalog global, hiện seed `starter-monthly` 100.000 VND/tháng với `featureLimits.orders = "unlimited"`. Mỗi `Restaurant` có đúng một `Subscription`, snapshot `priceVnd` và feature tại thời điểm bắt đầu; `SubscriptionCycle` lưu kỳ/amount/due/paid để giá gói đổi sau này không sửa lịch sử. Lifecycle là `TRIAL → GRACE → PAST_DUE`, hoặc `ACTIVE → GRACE → PAST_DUE`; webhook payment hợp lệ đưa `TRIAL`/`GRACE`/`PAST_DUE` về `ACTIVE`, còn `SUSPENDED` chỉ mở lại thủ công — tiền vào vẫn được ghi nhận (`Payment` `SUCCEEDED`, cycle `PAID`) nhưng không tự đổi trạng thái thuê bao. `GRACE` kéo dài 7 × 24 giờ.
+
+`SubscriptionEvent` là audit lifecycle: `GRACE_STARTED`, `DUNNING_NOTICE` (kèm `dunningDay` 1/3/7), `PAST_DUE`, `ACTIVATED`. **Bất biến:** `occurredAt` luôn là mốc suy ra từ dữ liệu thuê bao (`graceStartedAt`, `graceStartedAt + n ngày`, `graceEndsAt`, `periodStartsAt`), không phải thời điểm chạy code. Nhờ vậy unique `(subscriptionId, type, dunningDay, occurredAt)` vừa chống ghi trùng khi nhiều request cùng phát hiện một mốc, vừa tách được các kỳ grace khác nhau.
 
 ### `DiningTable`
 
@@ -181,6 +183,8 @@ type StaffCallStatus = 'PENDING' | 'DONE'
 type UserRole        = 'STAFF' | 'OWNER'
 type BillingStatus   = 'TRIAL' | 'ACTIVE' | 'GRACE' | 'PAST_DUE' | 'SUSPENDED'
 type SubscriptionCycleStatus = 'PENDING' | 'PAID' | 'VOID'
+type SubscriptionEventType   = 'GRACE_STARTED' | 'DUNNING_NOTICE' | 'PAST_DUE' | 'ACTIVATED'
+type BillingAction   = 'guest-write' | 'staff-write' | 'admin-business-write' | 'admin-account-write'
 ```
 
 Chuyển trạng thái đơn hợp lệ:

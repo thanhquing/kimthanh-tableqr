@@ -3,8 +3,11 @@ import type { RawBodyRequest } from '@nestjs/common'
 import type { Request } from 'express'
 import { PaymentService } from './payment.service'
 import { SepayAdapter } from './sepay.adapter'
+import { BillingAction } from './billing-action.decorator'
 
+// Webhook là tiền vào của chính quán quá hạn — chặn nó thì quán không bao giờ mở lại được.
 @Controller('payments/webhooks')
+@BillingAction('exempt')
 export class PaymentWebhookController {
   constructor(private readonly sepay: SepayAdapter, private readonly payments: PaymentService) {}
   @Post('sepay') @HttpCode(200)

@@ -41,7 +41,9 @@ flowchart LR
 
 ## Billing lifecycle local
 
-`SA-08` đã thêm catalog `Plan`, `Subscription` và `SubscriptionCycle` vào PostgreSQL, cùng `EntitlementService` NestJS. Plan seed hiện là `starter-monthly` 100.000 VND/tháng, không giới hạn đơn; giá/feature được snapshot trên subscription. Service chuyển trial/kỳ hết hạn sang grace 7 ngày và sau đó `PAST_DUE`, đồng bộ status rút gọn ở `Restaurant`; enforcement trên route và adapter provider vẫn ở các task tiếp theo (`SA-09`, `SA-11`).
+`SA-08` đã thêm catalog `Plan`, `Subscription` và `SubscriptionCycle` vào PostgreSQL, cùng `EntitlementService` NestJS. Plan seed hiện là `starter-monthly` 100.000 VND/tháng, không giới hạn đơn; giá/feature được snapshot trên subscription. Service chuyển trial/kỳ hết hạn sang grace 7 ngày và sau đó `PAST_DUE`, đồng bộ status rút gọn ở `Restaurant`. `SA-09` bổ sung `PaymentProviderAdapter` (SePay là implementation đầu tiên).
+
+`SA-11` đã gắn enforcement: `EntitlementGuard` toàn cục đọc metadata `@BillingAction` của route và gọi `EntitlementService.assert()`. Guard **mặc định từ chối** — route ghi không khai báo action sẽ lỗi ngay, nên không thể vô tình thêm endpoint bỏ qua entitlement. Đọc (`GET`/`HEAD`/`OPTIONS`), đăng nhập/đăng ký, webhook provider và `POST /staff/stream-ticket` không bị chặn; owner quá hạn vẫn tạo được payment intent. Guard tự resolve tenant: JWT cho staff/admin, capability guest (`X-Guest-Access` + RLS) cho route khách. Mốc grace/dunning ngày 1-3-7 ghi vào `SubscriptionEvent`; admin hiện banner ở mọi trang và `dunningNotices` trong `GET /admin/billing`.
 
 ## 2. Luồng vận hành chính
 

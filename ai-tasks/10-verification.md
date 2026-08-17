@@ -117,3 +117,21 @@ Mọi script `verify-flow-*.sh` phải pass. Đối chiếu lại bảng 29 endp
 5. Tablet mở màn bếp: đơn hiện **< 2s, không refresh**.
 6. Bếp bấm "Bắt đầu làm" → điện thoại khách thấy badge đổi "Đang làm" trong ≤ 10s.
 7. Reset bàn → điện thoại khách thao tác tiếp → hiện "Phiên đã kết thúc".
+
+## M8–M11 — SaaS đa quán, lifecycle và billing
+
+```bash
+cd tableqr-api && docker compose -f docker-compose.yml -f docker-compose.local.yml up -d api
+docker compose run --rm migrate      # bat buoc sau moi migration moi
+cd ..
+bash tableqr-api/scripts/verify-tenant-isolation.sh
+bash tableqr-api/scripts/verify-tenant-query-plans.sh
+bash tableqr-api/scripts/verify-sse-ticket.sh
+bash tableqr-api/scripts/verify-owner-registration.sh
+bash tableqr-api/scripts/verify-entitlement-matrix.sh
+bash tableqr-api/scripts/verify-flow-01-guest-order.sh
+```
+
+`verify-entitlement-matrix.sh` tự đăng ký một quán riêng rồi ép `Subscription` qua đủ 5 trạng thái, nên không làm bẩn fixture Kim Thành/Hương Quê. Nó kiểm luôn: mọi controller có route ghi đều khai báo `@BillingAction`, copy `RESTAURANT_INACTIVE` đúng cho guest/staff/owner, đọc không bị chặn ở bất kỳ trạng thái nào, audit dunning không ghi trùng, và `SUSPENDED` không tự mở lại khi có tiền vào.
+
+Endpoint `public/owner-registration` giới hạn 3 lần/giờ: chạy lại nhóm script trên quá 3 lần trong một giờ thì restart container API để reset bộ đếm.

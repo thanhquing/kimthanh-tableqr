@@ -32,7 +32,11 @@ async function staffRequest<T>(token: string, path: string, init?: RequestInit):
     ...init,
     headers: { ...staffHeaders(token, init?.body !== undefined), ...init?.headers },
   })
-  if (!response.ok) throw new Error('Không thể cập nhật dữ liệu.')
+  if (!response.ok) {
+    // Uu tien message tu server: quán qua han co copy rieng cho nhan vien.
+    const body = await response.json().catch(() => null) as { error?: { message?: string } } | null
+    throw new Error(body?.error?.message ?? 'Không thể cập nhật dữ liệu.')
+  }
   return response.json() as Promise<T>
 }
 

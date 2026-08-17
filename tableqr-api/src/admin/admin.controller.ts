@@ -9,7 +9,10 @@ import { Roles } from '../auth/roles.decorator'
 import { AdminService } from './admin.service'
 import { AuthService } from '../auth/auth.service'
 import { MAX_MENU_IMAGE_BYTES, type UploadedImage, UploadService } from './upload.service'
-@Controller('admin') @UseGuards(JwtAuthGuard, RolesGuard) @Roles('owner')
+import { BillingAction } from '../billing/billing-action.decorator'
+// Toàn bộ ghi ở đây là nghiệp vụ quán (thực đơn, bàn, PIN, thông tin quán) nên
+// bị chặn khi quá hạn; đường thanh toán nằm ở `PaymentIntentController`.
+@Controller('admin') @UseGuards(JwtAuthGuard, RolesGuard) @Roles('owner') @BillingAction('admin-business-write')
 export class AdminController {
   constructor(private readonly admin: AdminService, private readonly uploads: UploadService, private readonly auth: AuthService) {}
   @Get('categories') categories(@CurrentUser() user: AuthenticatedUser) { return this.admin.categories(user.restaurantId) }

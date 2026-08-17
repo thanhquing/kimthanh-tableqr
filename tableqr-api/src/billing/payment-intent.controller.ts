@@ -5,10 +5,13 @@ import type { AuthenticatedUser } from '../auth/auth.types'
 import { Roles } from '../auth/roles.decorator'
 import { RolesGuard } from '../auth/roles.guard'
 import { PaymentService } from './payment.service'
+import { BillingAction } from './billing-action.decorator'
 
 @Controller('admin/billing')
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Roles('owner')
+// Đường thoát khi quá hạn: owner luôn tạo được hướng dẫn thanh toán.
+@BillingAction('admin-account-write')
 export class PaymentIntentController {
   constructor(private readonly payments: PaymentService) {}
 

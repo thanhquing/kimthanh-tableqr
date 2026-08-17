@@ -68,6 +68,8 @@
 5. Webhook sai chữ ký, timestamp replay hoặc sai amount/account không đổi subscription và bị từ chối.
 6. `SUSPENDED` không tự mở lại sau payment; owner thấy copy liên hệ hỗ trợ. Refund chỉ do hỗ trợ duyệt, có audit, không tự hoàn theo tỷ lệ.
 
+Mục 2, 3 và 6 được kiểm tự động bằng `bash tableqr-api/scripts/verify-entitlement-matrix.sh` (đủ 5 trạng thái, đúng copy từng đối tượng, audit dunning không trùng). Mục 4 và 5 kiểm bằng E2E webhook của `SA-09`.
+
 ---
 
 ## B. Ngân sách hiệu năng — app khách

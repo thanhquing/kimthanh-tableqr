@@ -288,6 +288,8 @@ export interface BillingSummaryResponse {
   plan: { code: string; name: string; priceVnd: number; interval: 'MONTHLY'; featureLimits: Record<string, unknown> }
   subscription: { status: 'TRIAL' | 'ACTIVE' | 'GRACE' | 'PAST_DUE' | 'SUSPENDED'; trialEndsAt: IsoDateTime; graceEndsAt: IsoDateTime | null; currentPeriodStartsAt: IsoDateTime | null; currentPeriodEndsAt: IsoDateTime | null }
   cycles: { id: string; sequenceNo: number; status: 'PENDING' | 'PAID' | 'VOID'; amountVnd: number; periodStartsAt: IsoDateTime; periodEndsAt: IsoDateTime; dueAt: IsoDateTime; paidAt: IsoDateTime | null; payments: { id: string; provider: string; paymentCode: string; amountVnd: number; status: 'PENDING' | 'SUCCEEDED' | 'FAILED' | 'REFUNDED'; paidAt: IsoDateTime | null }[] }[]
+  /** Nhac gia han da ghi trong ky grace hien tai (ngay 1, 3, 7). */
+  dunningNotices: { day: number; occurredAt: IsoDateTime }[]
 }
 
 export interface CreatePaymentIntentResponse {

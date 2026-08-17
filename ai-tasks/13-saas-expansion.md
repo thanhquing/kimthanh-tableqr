@@ -23,7 +23,7 @@ Nguồn thiết kế: [../ai-docs/10-saas-evolution.md](../ai-docs/10-saas-evolu
 | 3 | `SA-06` → `SA-07` | **DONE 2026-08-15** — đăng ký/onboarding API, shell owner tenant-scoped, account/trial và đổi PIN staff đã kiểm local. |
 | 4 | `SA-01` | Chốt policy billing trước khi tạo lifecycle. |
 | 5 | `SA-08` | Plan/subscription/entitlement bằng code và test local. |
-| 6 | `SA-09` → `SA-12` | Payment provider, UI, enforcement và acceptance sandbox. |
+| 6 | `SA-09` → `SA-12` | **`SA-09`/`SA-10`/`SA-11` DONE** — payment adapter, billing UI và enforcement đã kiểm local; còn `SA-12` acceptance/vận hành sandbox. |
 | 7 | `SA-13` | Feature entitlement data-driven. |
 | 8 | `SA-00` → `SA-02` | Chọn provider, deploy HTTPS, managed DB/object storage, backup/observability. |
 | 9 | `BE-13` | Kiểm thử phát hành bằng QR giấy, điện thoại 4G và tablet thật. |
@@ -109,11 +109,15 @@ Admin `/billing` hiển thị gói active, trial/kỳ còn lại, tối đa 12 c
 
 **Xong khi:** owner hoàn thành luồng trial → pay → active và hiểu lỗi thanh toán không cần hỗ trợ thủ công.
 
-### `SA-11` — Entitlement enforcement · TODO
+### `SA-11` — Entitlement enforcement · DONE 2026-08-17
 
 Gắn `EntitlementService` vào endpoint/stream cần bảo vệ, dunning/grace theo `SA-01`, copy khác nhau cho owner/staff/guest. Duy trì đường vào billing/read-only cần thiết khi quá hạn.
 
 **Xong khi:** matrix permission có integration test cho TRIAL, ACTIVE, GRACE, PAST_DUE, SUSPENDED; không có route ghi nghiệp vụ nào bỏ qua enforcement.
+
+**Kết quả:** `EntitlementGuard` toàn cục mặc định từ chối — mọi route `POST`/`PATCH`/`PUT`/`DELETE` phải khai báo `@BillingAction`, nên không thể thêm route ghi lọt enforcement; quyết định quyền đọc từ `allowsBillingAction()` trong contracts. Guard resolve tenant bằng JWT (staff/admin) hoặc capability guest qua RLS. Đọc, đăng nhập/đăng ký, webhook và `POST /staff/stream-ticket` không bị chặn; owner quá hạn vẫn tạo được payment intent. Dunning ngày 1/3/7 ghi vào `SubscriptionEvent` với `occurredAt` suy ra từ `graceEndsAt` (không ghi trùng); `GET /admin/billing` trả `dunningNotices` và admin có banner grace/quá hạn ở mọi trang. `SUSPENDED` không còn tự kích hoạt lại khi có tiền vào. Copy guest/staff/owner lấy từ `restaurantInactiveMessage()`, staff/guest hiện đúng message của server thay vì chuỗi cứng.
+
+**Đã kiểm:** 13 unit test billing trong contracts (58/58 workspace contracts) và `verify-entitlement-matrix.sh` chạy thật trên Docker — đủ 5 trạng thái, đúng copy từng đối tượng, audit dunning `1,3` trong grace, `SUSPENDED` + tiền vào vẫn `SUSPENDED`, `GRACE` + cycle đã trả thành `ACTIVE`. Regression `verify-flow-01-guest-order.sh`, `verify-tenant-isolation.sh`, `verify-sse-ticket.sh` vẫn pass; lint/build API + 3 app sạch.
 
 ### `SA-12` — Billing operations & acceptance · TODO
 

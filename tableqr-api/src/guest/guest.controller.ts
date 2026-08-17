@@ -1,11 +1,13 @@
 import { Body, Controller, Get, Headers, HttpCode, Param, Post, Res } from '@nestjs/common'
 import type { Response } from 'express'
+import { BillingAction } from '../billing/billing-action.decorator'
 import { GuestService } from './guest.service'
 
 type CreateOrderBody = { note?: unknown; items?: unknown }
 type CreateCallBody = { type?: unknown }
 
 @Controller('guest')
+@BillingAction('guest-write')
 export class GuestController {
   constructor(private readonly guest: GuestService) {}
 

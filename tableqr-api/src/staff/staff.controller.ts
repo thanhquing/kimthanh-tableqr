@@ -9,13 +9,16 @@ import { Roles } from '../auth/roles.decorator'
 import { StaffService } from './staff.service'
 import { RealtimeService } from '../realtime/realtime.service'
 import { AuthService } from '../auth/auth.service'
+import { BillingAction } from '../billing/billing-action.decorator'
 
 @Controller('staff')
 @Roles('staff', 'owner')
+@BillingAction('staff-write')
 export class StaffController {
   constructor(private readonly staff: StaffService, private readonly realtime: RealtimeService, private readonly auth: AuthService) {}
   @Sse('stream') @UseGuards(StaffStreamTicketGuard, RolesGuard) stream(@CurrentUser() user: AuthenticatedUser): Observable<MessageEvent> { return this.realtime.stream(user.restaurantId) }
-  @Post('stream-ticket') @UseGuards(JwtAuthGuard, RolesGuard) streamTicket(@CurrentUser() user: AuthenticatedUser) { return this.auth.createStaffStreamTicket(user) }
+  // Ticket chỉ mở đường đọc realtime: quán quá hạn vẫn được xem, chỉ mất quyền ghi.
+  @Post('stream-ticket') @BillingAction('exempt') @UseGuards(JwtAuthGuard, RolesGuard) streamTicket(@CurrentUser() user: AuthenticatedUser) { return this.auth.createStaffStreamTicket(user) }
   @Get('orders') @UseGuards(JwtAuthGuard, RolesGuard) orders(@CurrentUser() user: AuthenticatedUser, @Query('status') status?: string, @Query('since') since?: string) { return this.staff.orders(user.restaurantId, status, since) }
   @Patch('orders/:orderId/status') @UseGuards(JwtAuthGuard, RolesGuard) updateOrder(@CurrentUser() user: AuthenticatedUser, @Param('orderId') id: string, @Body() body: { status?: unknown }) { return this.staff.updateOrder(user.restaurantId, id, body.status) }
   @Get('tables') @UseGuards(JwtAuthGuard, RolesGuard) tables(@CurrentUser() user: AuthenticatedUser) { return this.staff.tables(user.restaurantId) }

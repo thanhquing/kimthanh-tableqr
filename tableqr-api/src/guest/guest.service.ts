@@ -1,7 +1,8 @@
 import { HttpException, Injectable } from '@nestjs/common'
-import { createHash, randomBytes } from 'node:crypto'
+import { randomBytes } from 'node:crypto'
 import { Prisma } from '@prisma/client'
 import { PrismaService, type TenantTransaction } from '../prisma.service'
+import { hashGuestAccessToken } from './guest-access'
 import { GuestRateLimitService } from './guest-rate-limit.service'
 import { calcOrderTotalFromContracts, calcSessionTotalFromContracts } from '../common/totals'
 import { RealtimeService } from '../realtime/realtime.service'
@@ -32,7 +33,7 @@ export class GuestService {
       // Mỗi lần quét QR tạo capability riêng. Hash nằm trong DB nên lần quét sau
       // không làm hết hiệu lực điện thoại khách đang gọi món cùng phiên.
       const guestAccessToken = this.newGuestAccessToken()
-      await tx.guestSessionAccess.create({ data: { restaurantId: activeTable.restaurantId, sessionId: session!.id, tokenHash: this.hashGuestAccessToken(guestAccessToken) } })
+      await tx.guestSessionAccess.create({ data: { restaurantId: activeTable.restaurantId, sessionId: session!.id, tokenHash: hashGuestAccessToken(guestAccessToken) } })
       const [restaurant, categories, items] = await Promise.all([
         tx.restaurant.findUniqueOrThrow({ where: { id: activeTable.restaurantId } }),
         tx.menuCategory.findMany({ where: { restaurantId: activeTable.restaurantId, isActive: true }, orderBy: { sortOrder: 'asc' } }),
@@ -108,8 +109,7 @@ export class GuestService {
   }
 
   private newGuestAccessToken(): string { return randomBytes(32).toString('base64url') }
-  private hashGuestAccessToken(token: string): string { return createHash('sha256').update(token).digest('hex') }
-  private hashGuestAccessTokenOrNull(token: string | undefined): string { if (!token?.trim()) fail(401, 'GUEST_ACCESS_INVALID', 'Phiên quét mã không hợp lệ. Vui lòng quét lại mã QR.'); return this.hashGuestAccessToken(token) }
+  private hashGuestAccessTokenOrNull(token: string | undefined): string { if (!token?.trim()) fail(401, 'GUEST_ACCESS_INVALID', 'Phiên quét mã không hợp lệ. Vui lòng quét lại mã QR.'); return hashGuestAccessToken(token) }
   private async requireSessionAccess(client: Pick<PrismaService, 'guestSessionAccess'> | Prisma.TransactionClient, sessionId: string, token: string | undefined) {
     const access = await client.guestSessionAccess.findFirst({ where: { sessionId, tokenHash: this.hashGuestAccessTokenOrNull(token) }, select: { id: true } })
     if (!access) fail(401, 'GUEST_ACCESS_INVALID', 'Phiên quét mã không hợp lệ. Vui lòng quét lại mã QR.')
