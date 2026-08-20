@@ -230,6 +230,8 @@ Adapter provider phải xác thực chữ ký trên raw body, kiểm timestamp/n
 
 **Implementation đầu tiên (2026-08-15):** `PaymentProviderAdapter` giữ hai trách nhiệm provider-specific là `paymentInstruction()` và `verifyWebhook()`. `PaymentService` giữ intent, audit, idempotency và lifecycle dùng chung. SePay Việt Nam xác thực HMAC-SHA256 trên `{timestamp}.{raw_body}`; `Payment` lookup dưới RLS chỉ được phép theo `app.payment_code`, rồi mọi ghi dữ liệu diễn ra trong `app.restaurant_id` của payment đã khớp. Event tiền vào chỉ settle khi đúng amount; cùng `provider_event_id` trả thành công nhưng không chạy lại. Payment trả trước giữ cycle `PAID` và chỉ kích hoạt `ACTIVE` tại đầu kỳ, không làm ngắn trial/kỳ đã trả.
 
+**Vận hành và huỷ gia hạn (`SA-12`, 2026-08-20):** owner tự ngừng gia hạn bằng `cancelAtPeriodEnd` — chỉ khoá đường tạo payment intent (`409 SUBSCRIPTION_CANCELED`) và đổi copy banner, không cắt ngắn kỳ đã trả, không hoàn tiền, không thêm trạng thái lifecycle. Webhook đã ghi audit mà chưa `processedAt` được xử lý tiếp thay vì báo trùng, nếu không một lần crash giữa chừng sẽ khoá quán vĩnh viễn dù tiền đã vào. Đối soát thủ công, replay, tạm ngưng và mở lại đi qua ops CLI chạy ngoài tiến trình API, dùng lại đúng `PaymentService`/`EntitlementService` nên không có nhánh settle thứ hai; mọi can thiệp ghi `subscription_event` kèm `actor` + `note`. Runbook, bảng giám sát và người chịu trách nhiệm: [11-billing-operations.md](11-billing-operations.md).
+
 ## 5. Lộ trình migration không downtime lớn
 
 1. **Tenant foundation local:** mở rộng additive, backfill dữ liệu vào quán mặc định, tenant context và RLS; kiểm thử không thể đọc chéo qua REST/SSE. Chỉ bỏ đường cũ sau khi đối soát.

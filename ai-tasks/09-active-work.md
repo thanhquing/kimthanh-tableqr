@@ -6,19 +6,21 @@
 
 ## Current task
 
-> ### `SA-11` — Entitlement enforcement
+> ### `SA-12` — Vận hành và nghiệm thu billing
 >
 > **Mốc:** M10 · **Trạng thái:** DONE
 >
 > Theo quyết định người dùng ngày 2026-08-13, hoàn tất code multi-tenant local trước; các task DevOps (`SA-00`, `SA-02`) và verify thiết bị thật (`BE-13`) được dời thành cổng phát hành cuối.
 >
-> **Kết quả:** `EntitlementGuard` toàn cục mặc định từ chối, mọi route ghi phải khai báo `@BillingAction` nên không route nghiệp vụ nào lọt enforcement. `PAST_DUE`/`SUSPENDED` chặn guest gửi đơn/gọi nhân viên, chặn staff đổi trạng thái/tính tiền/reset bàn, chặn owner sửa menu/bàn/PIN/quán — nhưng đọc, đăng nhập và thanh toán vẫn mở. Dunning ngày 1/3/7 ghi `SubscriptionEvent` không trùng, admin có banner grace/quá hạn ở mọi trang và `dunningNotices` trong `GET /admin/billing`; `SUSPENDED` không tự mở lại khi có tiền vào.
+> **Kết quả:** runbook hỗ trợ [`ai-docs/11-billing-operations.md`](../ai-docs/11-billing-operations.md) và ops CLI (`attention`/`find`/`status`/`reconcile`/`replay`/`suspend`/`unsuspend`) dùng lại đúng service của API, chạy ngoài tiến trình đang phục vụ và ghi audit kèm `actor` + `note`. Owner tự huỷ/bật lại gia hạn mà không cắt kỳ đã trả. Backup/restore drill so cả checksum sáu bảng billing; test tải nhiều quán chứng minh không rò rỉ chéo tenant. Test tải phát hiện và đã sửa hai lỗi 500 thật khi hai điện thoại thao tác cùng lúc (mở phiên bàn, cấp `sequence_no`), cộng một lỗ hổng khiến webhook crash giữa chừng khoá quán vĩnh viễn dù tiền đã vào.
 >
-> **Đọc trước khi làm:** [`ai-tasks/13-saas-expansion.md`](13-saas-expansion.md), [`ai-docs/10-saas-evolution.md`](../ai-docs/10-saas-evolution.md), [`prototype/README.md`](../prototype/README.md).
+> **Đọc trước khi làm:** [`ai-tasks/13-saas-expansion.md`](13-saas-expansion.md), [`ai-docs/10-saas-evolution.md`](../ai-docs/10-saas-evolution.md), [`ai-docs/11-billing-operations.md`](../ai-docs/11-billing-operations.md).
 >
 > **Policy đầu vào:** payment provider adapter generic với webhook xác thực/chống replay; trial 2 tháng lịch; grace 7 ngày, dunning ngày 1/3/7; `PAST_DUE` dừng guest/staff ghi nghiệp vụ và chỉ cho owner đọc/thanh toán/cập nhật account; refund thủ công, không prorate mặc định.
 >
-> **Tiếp theo:** `SA-12` — vận hành/nghiệm thu billing (runbook payment fail, reconciliation có audit, webhook replay, cancel/reactivate, test tải tenant).
+> **Cần người quyết:** throttle toàn cục 100 req/phút theo IP + chưa `trust proxy` ⇒ sau reverse proxy production cả hệ thống dùng chung một hạn mức. Xem [`04-open-questions.md`](04-open-questions.md) **Q13**, chốt trước `SA-00`.
+>
+> **Tiếp theo:** `SA-13` — feature entitlement data-driven (đọc `feature_limits` từ Plan, không hard-code theo `plan.code`).
 
 ---
 
@@ -26,6 +28,7 @@
 
 | Task | Ngày | Ghi chú |
 | --- | --- | --- |
+| `SA-12` — Vận hành & nghiệm thu billing | 2026-08-20 | Runbook hỗ trợ + ops CLI (đối soát thủ công, replay webhook, tạm ngưng/mở lại) dùng lại `PaymentService`/`EntitlementService`, chạy ngoài API và ghi audit `actor`/`note`; owner tự huỷ/bật lại gia hạn không cắt kỳ đã trả. Sửa 2 lỗi concurrency làm khách nhận 500 (mở phiên bàn thiếu `SAVEPOINT`, `sequence_no` thiếu khoá hàng), webhook dở dang nay settle tiếp được, 5xx có log, 429 trả copy tiếng Việt. `verify-billing-operations.sh`, `verify-billing-backup-restore.sh`, `load-test-tenants.sh` (20×2 và 48×4, 0 lỗi 5xx) đều PASS trên Docker; 5 script regression cũ vẫn PASS; workspace lint/test/build sạch. |
 | `SA-11` — Entitlement enforcement | 2026-08-17 | Guard toàn cục mặc định từ chối + `@BillingAction` cho mọi route ghi; quyền đọc từ `allowsBillingAction()` trong contracts, copy guest/staff/owner từ `restaurantInactiveMessage()`. Audit `SubscriptionEvent` cho grace/dunning 1-3-7/quá hạn, `dunningNotices` trong `GET /admin/billing`, banner admin mọi trang; `SUSPENDED` + tiền vào không tự mở lại. 13 unit test billing; `verify-entitlement-matrix.sh` chạy Docker pass đủ 5 trạng thái, regression guest flow/tenant isolation/SSE vẫn pass. |
 | `SA-10` — Billing UI & owner self-service | 2026-08-16 | Admin `/billing`: gói active, giá qua `formatVnd` (`100.000 ₫ / tháng`)/unlimited, trial/kỳ còn lại, 12 cycle và trạng thái rõ ràng. Tạo hướng dẫn SePay + sao chép payment code; `GET /admin/billing` tenant-scoped, chỉ trả field trong `BillingSummaryResponse`, không trả secret. API Docker smoke 200; admin/API/contracts/mock checks pass. |
 | `SA-09` — Payment provider adapter | 2026-08-15 | `PaymentProviderAdapter` generic; SePay HMAC SHA-256 raw body/timestamp, owner intent `POST /admin/billing/payment-intents`, RLS lookup tối thiểu theo payment code rồi tenant transaction. Payment/cycle/event audit unique; settle chỉ khi tiền vào + đúng số tiền, replay/mismatch an toàn. SePay sandbox endpoint thật 200; Docker E2E `SUCCEEDED/PAID`, duplicate và mismatch amount pass. |
@@ -93,7 +96,7 @@
 
 ## Tiếp theo (theo thứ tự, không đảo)
 
-`SA-12` → `SA-13` → `SA-00` → `SA-02` → `BE-13`. (`SA-03`…`SA-11` đã DONE.) `SA-14` chỉ làm sau này nếu mô hình một tài khoản/một quán không còn phù hợp.
+`SA-13` → `SA-00` → `SA-02` → `BE-13`. (`SA-03`…`SA-12` đã DONE, M10 đạt.) `SA-14` chỉ làm sau này nếu mô hình một tài khoản/một quán không còn phù hợp.
 
 Cổng M1→M2 đã đạt ngày 2026-08-02: đối chiếu xong 28 handler M1 ở bảng cuối `ai-docs/04`, dòng 29 là SSE để M7; prototype đã duyệt; 3 package M1 build sạch.
 

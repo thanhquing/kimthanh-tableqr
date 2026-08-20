@@ -1,4 +1,4 @@
-import { graceWarningMessage, restaurantInactiveMessage } from '@kimthanh-tableqr/contracts'
+import { cancellationNoticeMessage, graceWarningMessage, restaurantInactiveMessage } from '@kimthanh-tableqr/contracts'
 import { useQuery } from '@tanstack/react-query'
 import { AlertTriangle } from 'lucide-react'
 import { Link } from 'react-router-dom'
@@ -15,16 +15,23 @@ export function BillingBanner() {
   const subscription = summary.data?.subscription
   if (!subscription) return null
 
-  const message = subscription.status === 'GRACE' && subscription.graceEndsAt
-    ? graceWarningMessage(subscription.graceEndsAt)
-    : subscription.status === 'PAST_DUE' || subscription.status === 'SUSPENDED'
-      ? restaurantInactiveMessage('owner', subscription.status)
-      : null
+  // Đã yêu cầu ngừng gia hạn thì nhắc thanh toán là sai: nói đúng ngày dừng và
+  // chỉ sang đường bật lại.
+  // Trừ khi quán bị tạm ngưng: lúc đó phải chỉ sang hỗ trợ, huỷ gia hạn là phụ.
+  const canceled = subscription.cancelAtPeriodEnd && subscription.status !== 'SUSPENDED'
+  const message = canceled
+    ? cancellationNoticeMessage(subscription.serviceEndsAt)
+    : subscription.status === 'GRACE' && subscription.graceEndsAt
+      ? graceWarningMessage(subscription.graceEndsAt)
+      : subscription.status === 'PAST_DUE' || subscription.status === 'SUSPENDED'
+        ? restaurantInactiveMessage('owner', subscription.status)
+        : null
   if (!message) return null
 
-  return <div className={`admin-billing-banner admin-billing-banner--${subscription.status.toLowerCase()}`} role="status">
+  const tone = canceled ? 'canceled' : subscription.status.toLowerCase()
+  return <div className={`admin-billing-banner admin-billing-banner--${tone}`} role="status">
     <AlertTriangle size={18} />
     <p>{message}</p>
-    <Link to="/billing">{subscription.status === 'SUSPENDED' ? 'Xem chi tiết' : 'Thanh toán'}</Link>
+    <Link to="/billing">{canceled ? 'Bật lại dịch vụ' : subscription.status === 'SUSPENDED' ? 'Xem chi tiết' : 'Thanh toán'}</Link>
   </div>
 }

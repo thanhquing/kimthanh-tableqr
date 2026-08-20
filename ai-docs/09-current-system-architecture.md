@@ -45,6 +45,8 @@ flowchart LR
 
 `SA-11` đã gắn enforcement: `EntitlementGuard` toàn cục đọc metadata `@BillingAction` của route và gọi `EntitlementService.assert()`. Guard **mặc định từ chối** — route ghi không khai báo action sẽ lỗi ngay, nên không thể vô tình thêm endpoint bỏ qua entitlement. Đọc (`GET`/`HEAD`/`OPTIONS`), đăng nhập/đăng ký, webhook provider và `POST /staff/stream-ticket` không bị chặn; owner quá hạn vẫn tạo được payment intent. Guard tự resolve tenant: JWT cho staff/admin, capability guest (`X-Guest-Access` + RLS) cho route khách. Mốc grace/dunning ngày 1-3-7 ghi vào `SubscriptionEvent`; admin hiện banner ở mọi trang và `dunningNotices` trong `GET /admin/billing`.
 
+`SA-12` bổ sung lớp vận hành: owner tự huỷ/bật lại gia hạn (`cancelAtPeriodEnd`, không đổi lifecycle), webhook đã ghi audit mà chưa `processedAt` được xử lý tiếp thay vì bị coi là trùng, và một **ops CLI** (`dist/ops/billing-ops.cli.js`) cho hỗ trợ: `attention`, `status`, `reconcile`, `replay`, `suspend`, `unsuspend`. CLI dùng lại đúng `PaymentService`/`EntitlementService` của API nên không có nhánh settle thứ hai, và chỉ chạy được bằng kết nối DB của người vận hành — role runtime `tableqr_app` bị RLS chặn nên CLI tự từ chối. Mọi can thiệp ghi `subscription_event` kèm `actor` + `note`. Runbook: [11-billing-operations.md](11-billing-operations.md).
+
 ## 2. Luồng vận hành chính
 
 ```mermaid
@@ -210,6 +212,10 @@ erDiagram
 | unique `order(session_id, sequence_no)` | Lần gọi món tăng liên tục trong một phiên |
 | unique `guest_order_request(session_id, request_id)` | Retry/double-click không tạo đơn trùng trong 60 giây |
 | `OrderItem` snapshot tên/giá | Đổi menu sau đó không đổi bill lịch sử |
+| unique `payment_webhook_event(provider, provider_event_id)` | Provider gửi lại webhook không settle hai lần |
+| unique `subscription_event(subscription_id, type, dunning_day, occurred_at)` | Mốc lifecycle không ghi trùng giữa các request |
+
+Hai ràng buộc unique ở giữa bảng chỉ đúng nếu code xử lý được va chạm. `SA-12` đã sửa hai chỗ va chạm làm khách nhận 500 khi hai điện thoại thao tác cùng lúc: mở phiên bàn (bắt `P2002` trong transaction đã abort → phải có `SAVEPOINT`) và cấp `sequence_no` cho đơn (`MAX+1` chạy song song → khoá hàng phiên bằng `SELECT … FOR UPDATE`).
 
 ## 6. Bản đồ code cần đọc
 
@@ -221,3 +227,4 @@ erDiagram
 | Realtime | `tableqr-api/src/realtime/`, `tableqr-staff/src/lib/realtime.ts` |
 | FE data layer | `tableqr-*/src/lib/api/` và TanStack Query hooks |
 | Docker/runtime local | `tableqr-api/docker-compose.yml`, `tableqr-api/Dockerfile` |
+| Vận hành billing / hỗ trợ | [11-billing-operations.md](11-billing-operations.md), `tableqr-api/src/ops/billing-ops.cli.ts`, `tableqr-api/src/billing/billing-ops.service.ts` |

@@ -286,7 +286,18 @@ export type UpdateRestaurantRequest = Partial<Pick<Restaurant, 'name' | 'logoUrl
 
 export interface BillingSummaryResponse {
   plan: { code: string; name: string; priceVnd: number; interval: 'MONTHLY'; featureLimits: Record<string, unknown> }
-  subscription: { status: 'TRIAL' | 'ACTIVE' | 'GRACE' | 'PAST_DUE' | 'SUSPENDED'; trialEndsAt: IsoDateTime; graceEndsAt: IsoDateTime | null; currentPeriodStartsAt: IsoDateTime | null; currentPeriodEndsAt: IsoDateTime | null }
+  subscription: {
+    status: 'TRIAL' | 'ACTIVE' | 'GRACE' | 'PAST_DUE' | 'SUSPENDED'
+    trialEndsAt: IsoDateTime
+    graceEndsAt: IsoDateTime | null
+    currentPeriodStartsAt: IsoDateTime | null
+    currentPeriodEndsAt: IsoDateTime | null
+    /** Owner da yeu cau ngung gia han; ky dang chay van dung het (`SA-12`). */
+    cancelAtPeriodEnd: boolean
+    canceledAt: IsoDateTime | null
+    /** Moc dich vu con chay den, `null` khi da qua han hoac tam ngung. */
+    serviceEndsAt: IsoDateTime | null
+  }
   cycles: { id: string; sequenceNo: number; status: 'PENDING' | 'PAID' | 'VOID'; amountVnd: number; periodStartsAt: IsoDateTime; periodEndsAt: IsoDateTime; dueAt: IsoDateTime; paidAt: IsoDateTime | null; payments: { id: string; provider: string; paymentCode: string; amountVnd: number; status: 'PENDING' | 'SUCCEEDED' | 'FAILED' | 'REFUNDED'; paidAt: IsoDateTime | null }[] }[]
   /** Nhac gia han da ghi trong ky grace hien tai (ngay 1, 3, 7). */
   dunningNotices: { day: number; occurredAt: IsoDateTime }[]

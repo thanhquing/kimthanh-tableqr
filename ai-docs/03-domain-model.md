@@ -76,6 +76,10 @@ Thông tin quán. MVP hiện có một bản ghi; target multi-tenant có một 
 
 `SubscriptionEvent` là audit lifecycle: `GRACE_STARTED`, `DUNNING_NOTICE` (kèm `dunningDay` 1/3/7), `PAST_DUE`, `ACTIVATED`. **Bất biến:** `occurredAt` luôn là mốc suy ra từ dữ liệu thuê bao (`graceStartedAt`, `graceStartedAt + n ngày`, `graceEndsAt`, `periodStartsAt`), không phải thời điểm chạy code. Nhờ vậy unique `(subscriptionId, type, dunningDay, occurredAt)` vừa chống ghi trùng khi nhiều request cùng phát hiện một mốc, vừa tách được các kỳ grace khác nhau.
 
+`Subscription` còn có `cancelAtPeriodEnd` + `canceledAt` cho việc owner tự ngừng gia hạn (`SA-12`). Đây **không** phải trạng thái lifecycle: nó chỉ khoá đường tạo payment intent và đổi copy banner, còn `TRIAL`/`ACTIVE` vẫn chạy hết kỳ rồi vào `GRACE` → `PAST_DUE` như thường. Không prorate, không hoàn tiền tự động.
+
+Ngoài bốn loại lifecycle tự động, `SubscriptionEvent` còn ghi năm loại do người thao tác: `CANCELED`, `REACTIVATED` (owner), `MANUAL_RECONCILED`, `SUSPENDED`, `UNSUSPENDED` (hỗ trợ). Các loại này mang thêm `actor` và `note`, và `occurredAt` là thời điểm thao tác thật — chúng là hành động một lần, không phải mốc suy ra được. Sự kiện lifecycle tự động để `actor`/`note` rỗng.
+
 ### `DiningTable`
 
 | Trường | Kiểu | Ghi chú |
@@ -184,6 +188,7 @@ type UserRole        = 'STAFF' | 'OWNER'
 type BillingStatus   = 'TRIAL' | 'ACTIVE' | 'GRACE' | 'PAST_DUE' | 'SUSPENDED'
 type SubscriptionCycleStatus = 'PENDING' | 'PAID' | 'VOID'
 type SubscriptionEventType   = 'GRACE_STARTED' | 'DUNNING_NOTICE' | 'PAST_DUE' | 'ACTIVATED'
+                             | 'CANCELED' | 'REACTIVATED' | 'MANUAL_RECONCILED' | 'SUSPENDED' | 'UNSUSPENDED'
 type BillingAction   = 'guest-write' | 'staff-write' | 'admin-business-write' | 'admin-account-write'
 ```
 

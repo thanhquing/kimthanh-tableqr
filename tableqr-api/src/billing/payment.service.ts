@@ -1,13 +1,42 @@
 import { HttpException, Injectable } from '@nestjs/common'
 import { Prisma } from '@prisma/client'
 import { randomInt } from 'node:crypto'
-import { reactivatesOnPayment } from '@kimthanh-tableqr/contracts'
+import { BILLING_CANCEL_MESSAGE, reactivatesOnPayment, serviceEndsAt } from '@kimthanh-tableqr/contracts'
 import { PrismaService } from '../prisma.service'
 import type { PaymentProviderAdapter, VerifiedPaymentEvent } from './payment-provider'
 import { EntitlementService } from './entitlement.service'
 import { SepayAdapter } from './sepay.adapter'
 
-type PaymentOutcome = { received: boolean; duplicate: boolean; settled: boolean; reason: 'settled' | 'duplicate' | 'unknown_payment' | 'not_incoming' | 'amount_mismatch' | 'already_finalized' }
+export type PaymentOutcome = { received: boolean; duplicate: boolean; settled: boolean; reason: 'settled' | 'duplicate' | 'unknown_payment' | 'not_incoming' | 'amount_mismatch' | 'already_finalized' }
+
+/**
+ * Provider giả cho tiền vào đã đối chiếu bằng tay (`SA-12`). Không có adapter
+ * HTTP: chỉ ops CLI tạo được, và mọi lần đối chiếu vẫn đi đúng đường settle
+ * của webhook nên idempotency và audit không có nhánh thứ hai.
+ */
+export const MANUAL_PROVIDER = 'manual'
+
+export type ManualReconciliationInput = { paymentCode: string; amountVnd: number; reference: string; operator: string; note?: string | null }
+
+export function manualPaymentEvent(input: ManualReconciliationInput): VerifiedPaymentEvent {
+  return {
+    provider: MANUAL_PROVIDER,
+    // Trùng số tham chiếu ngân hàng nghĩa là cùng một lần chuyển tiền: lần đối
+    // chiếu thứ hai phải là no-op, không tạo thêm cycle.
+    eventId: `manual:${input.reference}`,
+    paymentCode: input.paymentCode,
+    amountVnd: input.amountVnd,
+    isIncoming: true,
+    payload: {
+      source: 'manual-reconciliation',
+      paymentCode: input.paymentCode,
+      amountVnd: input.amountVnd,
+      reference: input.reference,
+      operator: input.operator,
+      note: input.note ?? null,
+    },
+  }
+}
 
 const fail = (status: number, code: string, message: string): never => {
   throw new HttpException({ error: { code, message, details: null } }, status)
@@ -32,6 +61,9 @@ export class PaymentService {
 
     return this.prisma.withTenant(restaurantId, async (tx) => {
       const subscription = await tx.subscription.findUniqueOrThrow({ where: { restaurantId } })
+      // Đã yêu cầu ngừng gia hạn thì không tạo kỳ mới để thu tiền: owner phải
+      // bật lại dịch vụ trước, nếu không sẽ trả tiền cho kỳ mình vừa từ chối.
+      if (subscription.cancelAtPeriodEnd) fail(409, 'SUBSCRIPTION_CANCELED', BILLING_CANCEL_MESSAGE.payBlocked)
       const existing = await tx.payment.findFirst({
         where: { restaurantId, provider, status: 'PENDING' },
         include: { subscriptionCycle: true },
@@ -94,10 +126,46 @@ export class PaymentService {
       })
       return {
         plan: { code: subscription.plan.code, name: subscription.plan.name, priceVnd: subscription.priceVndSnapshot, interval: subscription.plan.interval, featureLimits: subscription.featureLimitsSnapshot },
-        subscription: { status: subscription.status, trialEndsAt: subscription.trialEndsAt, graceEndsAt: subscription.graceEndsAt, currentPeriodStartsAt: subscription.currentPeriodStartsAt, currentPeriodEndsAt: subscription.currentPeriodEndsAt },
+        subscription: {
+          status: subscription.status,
+          trialEndsAt: subscription.trialEndsAt,
+          graceEndsAt: subscription.graceEndsAt,
+          currentPeriodStartsAt: subscription.currentPeriodStartsAt,
+          currentPeriodEndsAt: subscription.currentPeriodEndsAt,
+          cancelAtPeriodEnd: subscription.cancelAtPeriodEnd,
+          canceledAt: subscription.canceledAt,
+          serviceEndsAt: serviceEndsAt(subscription),
+        },
         cycles: subscription.cycles,
         dunningNotices: await this.entitlement.dunningNotices(tx, subscription),
       }
+    })
+  }
+
+  /**
+   * Owner tự ngừng gia hạn. Không cắt ngắn kỳ đã trả và không hoàn tiền
+   * (`SA-01`: không prorate) — chỉ dừng việc mời thanh toán kỳ tiếp theo.
+   */
+  async cancel(restaurantId: string, actor: string) {
+    await this.setCancellation(restaurantId, true, actor)
+    return this.summary(restaurantId)
+  }
+
+  /** Bật lại gia hạn. Đây là đường duy nhất mở lại nút thanh toán sau khi huỷ. */
+  async reactivate(restaurantId: string, actor: string) {
+    await this.setCancellation(restaurantId, false, actor)
+    return this.summary(restaurantId)
+  }
+
+  private async setCancellation(restaurantId: string, canceled: boolean, actor: string): Promise<void> {
+    await this.prisma.withTenant(restaurantId, async (tx) => {
+      const subscription = await tx.subscription.findUniqueOrThrow({ where: { restaurantId }, select: { id: true, cancelAtPeriodEnd: true } })
+      if (subscription.cancelAtPeriodEnd === canceled) return
+      const occurredAt = new Date()
+      await tx.subscription.update({ where: { id: subscription.id }, data: { cancelAtPeriodEnd: canceled, canceledAt: canceled ? occurredAt : null } })
+      await tx.subscriptionEvent.create({
+        data: { restaurantId, subscriptionId: subscription.id, type: canceled ? 'CANCELED' : 'REACTIVATED', occurredAt, actor },
+      })
     })
   }
 
@@ -108,12 +176,18 @@ export class PaymentService {
     if (!candidate) return { received: true, duplicate: false, settled: false, reason: 'unknown_payment' }
 
     return this.prisma.withTenant(candidate.restaurantId, async (tx) => {
-      const duplicate = await tx.paymentWebhookEvent.findUnique({ where: { provider_providerEventId: { provider: event.provider, providerEventId: event.eventId } } })
-      if (duplicate) return { received: true, duplicate: true, settled: false, reason: 'duplicate' }
+      const stored = await tx.paymentWebhookEvent.findUnique({
+        where: { provider_providerEventId: { provider: event.provider, providerEventId: event.eventId } },
+        select: { id: true, processedAt: true },
+      })
+      // Đã xử lý xong thì gửi lại là vô hại. Nhưng nếu tiến trình chết ngay sau
+      // khi ghi audit mà chưa settle thì tiền đã vào và quán vẫn đóng; lần gửi
+      // lại (hoặc `ops replay`) phải chạy tiếp chứ không được báo trùng rồi bỏ.
+      if (stored?.processedAt) return { received: true, duplicate: true, settled: false, reason: 'duplicate' }
 
       let audit: { id: string }
       try {
-        audit = await tx.paymentWebhookEvent.create({
+        audit = stored ?? await tx.paymentWebhookEvent.create({
           data: { restaurantId: candidate.restaurantId, provider: event.provider, providerEventId: event.eventId, payload: event.payload as Prisma.InputJsonValue },
           select: { id: true },
         })
@@ -155,6 +229,21 @@ export class PaymentService {
       }
       return finalize('settled', true)
     })
+  }
+
+  /** Dựng lại sự kiện từ payload đã lưu để ops replay đúng một lần xử lý dở. */
+  replayableEvent(provider: string, payload: Record<string, unknown>): VerifiedPaymentEvent {
+    if (provider === MANUAL_PROVIDER) {
+      return manualPaymentEvent({
+        paymentCode: String(payload.paymentCode ?? ''),
+        amountVnd: Number(payload.amountVnd ?? 0),
+        reference: String(payload.reference ?? ''),
+        operator: String(payload.operator ?? ''),
+        note: typeof payload.note === 'string' ? payload.note : null,
+      })
+    }
+    const adapter = this.adapters.get(provider) ?? fail(400, 'PAYMENT_PROVIDER_UNSUPPORTED', 'Nhà cung cấp thanh toán chưa được hỗ trợ.')
+    return adapter.eventFromPayload(payload)
   }
 
   private async nextPaymentCode(tx: Prisma.TransactionClient): Promise<string> {

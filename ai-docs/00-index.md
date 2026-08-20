@@ -16,6 +16,7 @@ Thứ tự ưu tiên khi có mâu thuẫn: **code đang chạy → `ai-docs` →
 | [08-design-system.md](08-design-system.md) | **Giá trị token thật** (hex đã kiểm tương phản), thang chữ, quy cách ảnh, danh sách cấm | Mọi task UI — dán vào prompt |
 | [09-current-system-architecture.md](09-current-system-architecture.md) | **Sơ đồ FE/BE/infra, runtime flow và ERD database đang chạy** | Onboard AI/dev, task kiến trúc hoặc deploy |
 | [10-saas-evolution.md](10-saas-evolution.md) | Thiết kế đích đa quán, trial 2 tháng, subscription/billing và migration | Trước mọi `SA-*` |
+| [11-billing-operations.md](11-billing-operations.md) | **Runbook hỗ trợ**: ops CLI, đối soát thủ công, replay webhook, backup drill, bảng giám sát | Khi có sự cố thanh toán hoặc trực vận hành |
 
 Backlog và mã task nằm ở [`../ai-tasks/`](../ai-tasks/00-index.md).
 

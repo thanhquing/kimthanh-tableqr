@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import {
   allowsBillingAction,
+  BILLING_CANCEL_MESSAGE,
+  cancellationNoticeMessage,
   canWriteBusiness,
   dueDunningDays,
   graceStartedAt,
@@ -8,6 +10,7 @@ import {
   nextSubscriptionState,
   reactivatesOnPayment,
   restaurantInactiveMessage,
+  serviceEndsAt,
   SUBSCRIPTION_STATUS,
   type BillingAction,
 } from './billing.js'
@@ -80,6 +83,28 @@ describe('copy khi quán ngung hoat dong', () => {
 
   it('banner grace noi ro han cuoi', () => {
     expect(graceWarningMessage('2026-10-17T00:00:00.000Z')).toContain('17/10/2026')
+  })
+})
+
+describe('huy va bat lai gia han', () => {
+  const trialEndsAt = new Date('2026-10-10T00:00:00.000Z')
+  const periodEndsAt = new Date('2026-11-10T00:00:00.000Z')
+  const graceEndsAt = new Date('2026-10-17T00:00:00.000Z')
+
+  it('moc dung dich vu theo dung trang thai dang chay', () => {
+    expect(serviceEndsAt({ status: 'TRIAL', trialEndsAt, currentPeriodEndsAt: null, graceEndsAt: null })).toEqual(trialEndsAt)
+    expect(serviceEndsAt({ status: 'ACTIVE', trialEndsAt, currentPeriodEndsAt: periodEndsAt, graceEndsAt: null })).toEqual(periodEndsAt)
+    expect(serviceEndsAt({ status: 'GRACE', trialEndsAt, currentPeriodEndsAt: null, graceEndsAt })).toEqual(graceEndsAt)
+  })
+
+  it('quán da qua han hoac tam ngung khong con moc dung nao', () => {
+    expect(serviceEndsAt({ status: 'PAST_DUE', trialEndsAt, currentPeriodEndsAt: periodEndsAt, graceEndsAt })).toBeNull()
+    expect(serviceEndsAt({ status: 'SUSPENDED', trialEndsAt, currentPeriodEndsAt: periodEndsAt, graceEndsAt })).toBeNull()
+  })
+
+  it('copy huy gia han noi ro ngay dung, hoac chi duong bat lai khi da het', () => {
+    expect(cancellationNoticeMessage('2026-11-10T00:00:00.000Z')).toContain('10/11/2026')
+    expect(cancellationNoticeMessage(null)).toBe(BILLING_CANCEL_MESSAGE.ended)
   })
 })
 

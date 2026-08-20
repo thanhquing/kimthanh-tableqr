@@ -68,7 +68,14 @@
 5. Webhook sai chữ ký, timestamp replay hoặc sai amount/account không đổi subscription và bị từ chối.
 6. `SUSPENDED` không tự mở lại sau payment; owner thấy copy liên hệ hỗ trợ. Refund chỉ do hỗ trợ duyệt, có audit, không tự hoàn theo tỷ lệ.
 
-Mục 2, 3 và 6 được kiểm tự động bằng `bash tableqr-api/scripts/verify-entitlement-matrix.sh` (đủ 5 trạng thái, đúng copy từng đối tượng, audit dunning không trùng). Mục 4 và 5 kiểm bằng E2E webhook của `SA-09`.
+7. Chủ quán bấm **Ngừng gia hạn** → kỳ đang chạy không bị cắt ngắn, không hoàn tiền, nút thanh toán khoá lại với `409 SUBSCRIPTION_CANCELED`, banner đổi sang thông báo ngày dừng; bấm **Bật lại dịch vụ** mở lại đường thanh toán. Cả hai đều ghi audit kèm người thao tác.
+8. Webhook đã lưu nhưng chưa xử lý xong (tiến trình chết giữa chừng) → gửi lại hoặc `ops replay` settle nốt; sự kiện đã xử lý xong thì replay là no-op, không tạo cycle thứ hai.
+9. Tiền vào nhưng webhook không tới → `ops reconcile` với đúng số tiền ghi nhận được và để lại audit kèm người thao tác + mã giao dịch ngân hàng; sai số tiền bị từ chối; trùng mã giao dịch là no-op.
+10. `ops suspend`/`ops unsuspend` đổi được trạng thái kèm lý do trong audit; quán mở lại nhận grace 7 ngày, hoặc `ACTIVE` ngay nếu đã có kỳ trả trước phủ hiện tại.
+11. Backup rồi restore sang database khác → mọi bảng billing khớp cả số hàng lẫn checksum nội dung, unique chống replay webhook và RLS còn nguyên.
+12. Nhiều quán chạy đồng thời → không có 5xx, không có dữ liệu quán này lọt sang quán kia; 429 (chặn có chủ đích) được tách riêng khỏi lỗi.
+
+Mục 2, 3 và 6 được kiểm tự động bằng `bash tableqr-api/scripts/verify-entitlement-matrix.sh` (đủ 5 trạng thái, đúng copy từng đối tượng, audit dunning không trùng). Mục 4 và 5 kiểm bằng E2E webhook của `SA-09`. Mục 7–10 kiểm bằng `bash tableqr-api/scripts/verify-billing-operations.sh`, mục 11 bằng `verify-billing-backup-restore.sh`, mục 12 bằng `load-test-tenants.sh`. Runbook xử lý sự cố: [11-billing-operations.md](11-billing-operations.md).
 
 ---
 

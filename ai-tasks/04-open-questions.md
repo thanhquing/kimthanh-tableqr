@@ -8,6 +8,18 @@ Khi có câu trả lời: cập nhật `ai-docs` liên quan, ghi ngày chốt v�
 
 ## Đang mở
 
+### Q13 — Throttle toàn cục tính theo IP: cả quán chung một hạn mức?
+
+**Phát hiện 2026-08-20** khi chạy `load-test-tenants.sh` cho `SA-12`. `ThrottlerModule` đang đặt 100 request/60 giây và tracker mặc định là `req.ip`; `main.ts` chưa bật `trust proxy`. Sau reverse proxy production (Caddy), `req.ip` là IP của proxy nên **toàn bộ traffic của mọi quán dùng chung một hạn mức 100 req/phút** — một quán đông là đủ chặn cả hệ thống. Ngay cả khi bật `trust proxy`, một quán 8 bàn ngồi chung Wi-Fi vẫn có thể vượt 100 req/phút vì app khách poll đơn 10 giây một lần.
+
+**Giả định đang dùng:** giữ nguyên cấu hình, không tự đổi — đây là quyết định chính sách, và rate limit theo QR/bàn của guest (20 bootstrap/phút, 10 đơn/phút) vẫn đang chặn đúng chỗ. Test tải đếm 429 riêng, không tính là lỗi.
+
+**Cần chốt trước `SA-00`** (deploy production), ba đường:
+
+1. Bật `trust proxy` + nâng hạn mức, giữ chặn theo IP thật của khách.
+2. Miễn throttle toàn cục cho đường guest (đã có rate limit riêng theo QR/bàn), chỉ giữ cho login/đăng ký.
+3. Đổi tracker sang khoá theo tenant/bàn thay vì IP.
+
 ### Q12 — Provider Việt Nam đầu tiên cho payment adapter?
 
 **Đã chốt:** Việt Nam là thị trường đầu tiên (2026-08-15). Adapter payment giữ interface generic để thêm provider/quốc gia khác mà không đổi lifecycle/entitlement.
@@ -89,4 +101,5 @@ Cân nhắc ở M6: job tự đóng phiên `OPEN` quá 6 giờ.
 | 2026-08-01 | Nút "Gọi nhân viên"? | **Có** |
 | 2026-08-09 | Kiểm thử migration BE-01 | Docker Desktop đã chạy; migration `20260809000000_init` áp dụng thành công trên PostgreSQL 15, API readiness 200. |
 | 2026-08-10 | Hostname production | `tableqr.vn` cho admin, `staff.tableqr.vn` cho staff, `guest.tableqr.vn` cho QR khách. Mỗi hostname reverse proxy `/api/v1` về cùng API để giữ same-origin; QR luôn dùng `https://guest.tableqr.vn/t/<qrToken>`. |
+| 2026-08-20 | Ngừng gia hạn theo yêu cầu chủ quán | `cancelAtPeriodEnd` chỉ khoá đường tạo payment intent và đổi copy banner; không cắt ngắn kỳ đã trả, không hoàn tiền, không thêm trạng thái lifecycle (khớp `SA-01`: không prorate). Prototype không có màn này nên UI thêm một khối xác nhận hai bước trong thẻ "Gia hạn thanh toán" sẵn có, không đổi bố cục/màu. |
 | 2026-08-15 | Cổng thanh toán và chính sách quá hạn SaaS | Provider adapter generic, mỗi implementation dùng webhook xác thực/chống replay; trial 2 tháng lịch; grace 7 ngày/dunning ngày 1–3–7; sau grace chặn guest/staff ghi nghiệp vụ, owner chỉ đọc/thanh toán/cập nhật account; refund thủ công theo case, không prorate mặc định. |

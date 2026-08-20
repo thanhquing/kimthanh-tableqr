@@ -21,12 +21,21 @@ export class GuestService {
     if (!table) fail(404, 'TABLE_NOT_FOUND', 'Mã QR không hợp lệ, vui lòng gọi nhân viên.')
     const activeTable = table!
     return this.prisma.withTenant(activeTable.restaurantId, async (tx) => {
-      let session = await tx.tableSession.findFirst({ where: { restaurantId: activeTable.restaurantId, tableId: activeTable.id, status: 'OPEN' } })
+      const openSessionOf = () => tx.tableSession.findFirst({ where: { restaurantId: activeTable.restaurantId, tableId: activeTable.id, status: 'OPEN' } })
+      let session = await openSessionOf()
       if (!session) {
-        try { session = await tx.tableSession.create({ data: { restaurantId: activeTable.restaurantId, tableId: activeTable.id } }) }
-        catch (error: unknown) {
+        // Hai khach quet cung mot ban trong cung mot khoanh khac: unique OPEN chi
+        // cho mot phien. PostgreSQL huy ca transaction khi vi pham unique, nen
+        // phai co SAVEPOINT — khong co no thi cau lenh doc lai chac chan hong
+        // 25P02 va khach thu hai nhan 500 thay vi vao dung phien dang mo.
+        await tx.$executeRawUnsafe('SAVEPOINT open_table_session')
+        try {
+          session = await tx.tableSession.create({ data: { restaurantId: activeTable.restaurantId, tableId: activeTable.id } })
+          await tx.$executeRawUnsafe('RELEASE SAVEPOINT open_table_session')
+        } catch (error: unknown) {
           if (!(error instanceof Prisma.PrismaClientKnownRequestError) || error.code !== 'P2002') throw error
-          session = await tx.tableSession.findFirst({ where: { restaurantId: activeTable.restaurantId, tableId: activeTable.id, status: 'OPEN' } })
+          await tx.$executeRawUnsafe('ROLLBACK TO SAVEPOINT open_table_session')
+          session = await openSessionOf()
           if (!session) throw error
         }
       }
@@ -78,6 +87,10 @@ export class GuestService {
       const menuItems = await tx.menuItem.findMany({ where: { restaurantId, id: { in: lines.map((line) => line.menuItemId as string) }, deletedAt: null } })
       const unavailable = menuItems.filter((item) => !item.isAvailable)
       if (menuItems.length !== lines.length || unavailable.length) fail(409, 'ITEMS_UNAVAILABLE', 'Có món vừa hết. Vui lòng chọn món khác.', { unavailableItemIds: unavailable.map((item) => item.id) })
+      // Hai dien thoai cung ban bam Gui don cung luc se doc cung mot MAX va dam
+      // nhau o unique (session, sequence_no). Khoa hang phien lai de hai don noi
+      // duoi nhau; chi phien nay bi tuan tu hoa, cac ban khac khong lien quan.
+      await tx.$executeRaw`SELECT id FROM table_session WHERE id = ${sessionId}::uuid FOR UPDATE`
       const max = await tx.order.aggregate({ where: { restaurantId, sessionId }, _max: { sequenceNo: true } })
       const order = await tx.order.create({ data: { restaurantId, sessionId, tableId: session.tableId, sequenceNo: (max._max.sequenceNo ?? 0) + 1, note: typeof body.note === 'string' ? body.note : null, items: { create: lines.map((line) => { const item = menuItems.find((candidate) => candidate.id === line.menuItemId)!; return { restaurantId, menuItemId: item.id, nameSnapshot: item.name, unitPriceVndSnapshot: item.priceVnd, quantity: line.quantity as number, note: typeof line.note === 'string' ? line.note : null } }) } }, include: { items: true } })
       await tx.guestOrderRequest.create({ data: { restaurantId, sessionId, requestId: safeRequestId, orderId: order.id } })

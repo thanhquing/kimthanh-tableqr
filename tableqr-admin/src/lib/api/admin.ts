@@ -46,3 +46,5 @@ export const updateStaffPin = (token: string, body: UpdateStaffPinRequest) => ad
 export const updateRestaurant = (token: string, body: UpdateRestaurantRequest) => adminRequest<Restaurant>(token, '/admin/restaurant', { method: 'PATCH', body: JSON.stringify(body) })
 export const getBillingSummary = (token: string) => adminRequest<BillingSummaryResponse>(token, '/admin/billing')
 export const createPaymentIntent = (token: string) => adminRequest<CreatePaymentIntentResponse>(token, '/admin/billing/payment-intents', { method: 'POST', body: JSON.stringify({ provider: 'sepay' }) })
+export const cancelSubscription = (token: string) => adminRequest<BillingSummaryResponse>(token, '/admin/billing/cancel', { method: 'POST' })
+export const reactivateSubscription = (token: string) => adminRequest<BillingSummaryResponse>(token, '/admin/billing/reactivate', { method: 'POST' })

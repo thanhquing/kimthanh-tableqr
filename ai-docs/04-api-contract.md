@@ -65,6 +65,10 @@ Không endpoint nào nhận `restaurantId` từ body/query/path. Với resource 
 | `STAFF_LOGIN_INVALID` | 401 | Mã quán/PIN staff sai hoặc tài khoản staff bị khoá |
 | `GUEST_ACCESS_INVALID` | 401 | Thiếu, hết hạn hoặc sai guest capability |
 | `RESTAURANT_INACTIVE` | 403 | Quán không được phép nhận thao tác ghi theo billing status |
+| `SUBSCRIPTION_CANCELED` | 409 | Owner đang yêu cầu ngừng gia hạn nên không tạo được payment intent |
+| `RATE_LIMITED` | 429 | Vượt giới hạn tần suất (theo QR/bàn của guest hoặc throttle toàn cục theo IP) |
+
+Mọi phản hồi 429 — kể cả từ throttle toàn cục — trả `code: RATE_LIMITED` và đúng một chuỗi tiếng Việt: `Bạn thao tác quá nhanh. Vui lòng thử lại sau.`
 
 ### `POST /api/v1/public/owner-registration`
 
@@ -112,8 +116,10 @@ Trong một transaction, server tạo `Restaurant` (kèm `staffLoginCode`, `tria
 | --- | --- | --- | --- |
 | `GET` | `/admin/account` | owner | `{ displayName, email, restaurant: { id, name, staffLoginCode }, trialEndsAt, billingStatus }` |
 | `PATCH` | `/admin/staff-pin` | owner | Request `{ pin: "123456" }`; PIN đúng 6 chữ số, đổi bcrypt hash của service account `STAFF` trong chính tenant và trả `{ updated: true }` |
-| `GET` | `/admin/billing` | owner | `{ plan, subscription, cycles, dunningNotices }`; chỉ trả gói đang active, tối đa 12 cycle mới nhất và mốc nhắc gia hạn của kỳ grace hiện tại, không trả secrets provider |
-| `POST` | `/admin/billing/payment-intents` | owner | Tạo/lấy payment intent đang chờ cho cycle cần thanh toán; `{ paymentId, status, instruction: { provider, paymentCode, amountVnd, transferContent, bankName, bankAccount } }` (`bankName`/`bankAccount` là `null` khi chưa cấu hình) |
+| `GET` | `/admin/billing` | owner | `{ plan, subscription, cycles, dunningNotices }`; chỉ trả gói đang active, tối đa 12 cycle mới nhất và mốc nhắc gia hạn của kỳ grace hiện tại, không trả secrets provider. `subscription` gồm `cancelAtPeriodEnd`, `canceledAt` và `serviceEndsAt` (mốc dịch vụ còn chạy đến, `null` khi đã quá hạn/tạm ngưng) |
+| `POST` | `/admin/billing/payment-intents` | owner | Tạo/lấy payment intent đang chờ cho cycle cần thanh toán; `{ paymentId, status, instruction: { provider, paymentCode, amountVnd, transferContent, bankName, bankAccount } }` (`bankName`/`bankAccount` là `null` khi chưa cấu hình). Trả `409 SUBSCRIPTION_CANCELED` khi owner đang yêu cầu ngừng gia hạn |
+| `POST` | `/admin/billing/cancel` | owner | Ngừng gia hạn kỳ sau; trả `BillingSummaryResponse` mới. Không cắt ngắn kỳ đã trả, không hoàn tiền, không đổi lifecycle |
+| `POST` | `/admin/billing/reactivate` | owner | Bật lại gia hạn; trả `BillingSummaryResponse` mới. Là đường duy nhất mở lại nút thanh toán sau khi huỷ |
 
 Các endpoint owner trên chỉ lấy `restaurantId` từ JWT owner; không nhận tenant từ client. PIN không bao giờ xuất hiện trong response hoặc log. Payment intent không trả secret webhook/provider, chỉ trả hướng dẫn chuyển khoản. PIN sai định dạng trả `400 VALIDATION_ERROR`.
 
@@ -128,6 +134,14 @@ Các endpoint đọc không bao giờ bị chặn: guest/staff giữ quyền xem
 `message` của `RESTAURANT_INACTIVE` phải theo đúng copy đã chốt trong `ai-docs/10-saas-evolution.md` §4 (`restaurantInactiveMessage()` trong contracts), không trả status nội bộ hay hướng dẫn kỹ thuật cho khách. Endpoint webhook không dùng JWT frontend và chỉ chấp nhận xác thực HMAC provider trên raw body.
 
 Dunning ngày 1/3/7 của grace được ghi vào `subscription_event` với `occurredAt` suy ra từ `graceEndsAt` nên không trùng lặp giữa các request. `GET /admin/billing` trả thêm `dunningNotices: { day, occurredAt }[]` của kỳ grace hiện tại; `GET /admin/billing` và `GET /admin/account` tính lại trạng thái trước khi trả để admin không hiển thị status cũ.
+
+### Huỷ gia hạn và webhook replay (`SA-12` đã triển khai)
+
+`cancelAtPeriodEnd` **không** phải một trạng thái lifecycle: nó chỉ khoá đường tạo payment intent và đổi copy banner. Quán đã huỷ vẫn chạy hết kỳ rồi vào `GRACE` → `PAST_DUE` như thường; không prorate, không hoàn tiền tự động. `POST /admin/billing/cancel` và `/reactivate` là `admin-account-write` nên owner quá hạn vẫn bật lại được.
+
+Webhook đã ghi audit nhưng **chưa** `processedAt` được coi là xử lý dở, không phải bản trùng: lần gửi lại của provider (hoặc `ops replay`) chạy tiếp và settle nốt. Nếu không vậy, một lần crash giữa chừng sẽ khoá quán vĩnh viễn dù tiền đã vào. Sự kiện đã `processedAt` trả `duplicate` và không đổi gì.
+
+Đối soát thủ công dùng provider giả `manual` với `eventId = manual:<mã giao dịch ngân hàng>`, đi đúng đường settle của webhook nên cùng idempotency và cùng quy tắc `SUSPENDED` không tự mở. Chỉ ops CLI tạo được; không có endpoint HTTP. Chi tiết vận hành: [11-billing-operations.md](11-billing-operations.md).
 
 ---
 

@@ -129,9 +129,14 @@ bash tableqr-api/scripts/verify-tenant-query-plans.sh
 bash tableqr-api/scripts/verify-sse-ticket.sh
 bash tableqr-api/scripts/verify-owner-registration.sh
 bash tableqr-api/scripts/verify-entitlement-matrix.sh
+bash tableqr-api/scripts/verify-billing-operations.sh
+bash tableqr-api/scripts/verify-billing-backup-restore.sh
+bash tableqr-api/scripts/load-test-tenants.sh
 bash tableqr-api/scripts/verify-flow-01-guest-order.sh
 ```
 
 `verify-entitlement-matrix.sh` tự đăng ký một quán riêng rồi ép `Subscription` qua đủ 5 trạng thái, nên không làm bẩn fixture Kim Thành/Hương Quê. Nó kiểm luôn: mọi controller có route ghi đều khai báo `@BillingAction`, copy `RESTAURANT_INACTIVE` đúng cho guest/staff/owner, đọc không bị chặn ở bất kỳ trạng thái nào, audit dunning không ghi trùng, và `SUSPENDED` không tự mở lại khi có tiền vào.
 
-Endpoint `public/owner-registration` giới hạn 3 lần/giờ: chạy lại nhóm script trên quá 3 lần trong một giờ thì restart container API để reset bộ đếm.
+`verify-billing-operations.sh` chạy chuỗi vận hành `SA-12`: huỷ/bật lại gia hạn, webhook sandbox, replay sự kiện đã xử lý và sự kiện dở dang, đối soát thủ công (sai số tiền / đúng số tiền / trùng mã giao dịch), tạm ngưng và mở lại — kiểm audit sau từng bước. `verify-billing-backup-restore.sh` dump rồi restore sang database diễn tập và so cả checksum sáu bảng billing. `load-test-tenants.sh` chạy nhiều quán đồng thời, fail khi có 5xx hoặc dữ liệu chéo tenant; 429 được đếm riêng vì là chặn có chủ đích.
+
+Endpoint `public/owner-registration` giới hạn 3 lần/giờ: `verify-entitlement-matrix.sh`, `verify-billing-operations.sh`, `verify-owner-registration.sh` và `load-test-tenants.sh` mỗi lần chạy dùng một lượt, nên restart container API để reset bộ đếm khi chạy cả nhóm.

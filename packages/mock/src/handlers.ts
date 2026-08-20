@@ -1,5 +1,6 @@
 import {
   API_BASE_PATH,
+  BILLING_CANCEL_MESSAGE,
   GUEST_TOKEN_HEADER,
   ORDER_STATUS,
   REQUEST_ID_HEADER,
@@ -32,6 +33,8 @@ import {
 
 export const STAFF_TOKEN = 'mock-token-staff'
 export const OWNER_TOKEN = 'mock-token-owner'
+/** Han dung thu co dinh cua fixture — account va billing phai tra cung mot moc. */
+const TRIAL_ENDS_AT = '2026-10-15T00:00:00.000Z'
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
 
 interface HandlerOptions {
@@ -111,6 +114,18 @@ export function createHandlers(options: HandlerOptions = {}): HttpHandler[] {
   // Cùng một package phục vụ ba app khác origin (5173/5174/5175) và Vitest Node.
   const api = `*${API_BASE_PATH}`
   let staffPin = STAFF_PIN
+  // Owner tu huy/bat lai gia han (`SA-12`); mock chi giu co, khong mo phong lifecycle.
+  let cancelAtPeriodEnd = false
+  let canceledAt: string | null = null
+  const billingSummary = () => ({
+    plan: { code: 'starter-monthly', name: 'Starter', priceVnd: 100000, interval: 'MONTHLY', featureLimits: { orders: 'unlimited' } },
+    subscription: {
+      status: 'TRIAL', trialEndsAt: TRIAL_ENDS_AT, currentPeriodStartsAt: '2026-08-15T00:00:00.000Z', currentPeriodEndsAt: TRIAL_ENDS_AT,
+      graceEndsAt: null, cancelAtPeriodEnd, canceledAt, serviceEndsAt: TRIAL_ENDS_AT,
+    },
+    cycles: [],
+    dunningNotices: [],
+  })
 
   return [
     http.get(`${api}/guest/tables/:qrToken`, ({ request, params }) =>
@@ -327,19 +342,36 @@ export function createHandlers(options: HandlerOptions = {}): HttpHandler[] {
       execute(request, chaosController, () => {
         requireRole(request, ['owner'])
         const restaurant = store.getRestaurant()
-        return HttpResponse.json({ displayName: 'Chủ quán Kim Thành', email: ADMIN_EMAIL, restaurant: { id: restaurant.id, name: restaurant.name, staffLoginCode: 'KIM-4821' }, trialEndsAt: '2026-10-15T00:00:00.000Z', billingStatus: 'TRIAL' })
+        return HttpResponse.json({ displayName: 'Chủ quán Kim Thành', email: ADMIN_EMAIL, restaurant: { id: restaurant.id, name: restaurant.name, staffLoginCode: 'KIM-4821' }, trialEndsAt: TRIAL_ENDS_AT, billingStatus: 'TRIAL' })
       }),
     ),
     http.get(`${api}/admin/billing`, ({ request }) =>
       execute(request, chaosController, () => {
         requireRole(request, ['owner'])
-        return HttpResponse.json({ plan: { code: 'starter-monthly', name: 'Starter', priceVnd: 100000, interval: 'MONTHLY', featureLimits: { orders: 'unlimited' } }, subscription: { status: 'TRIAL', trialEndsAt: '2026-10-15T00:00:00.000Z', currentPeriodStartsAt: '2026-08-15T00:00:00.000Z', currentPeriodEndsAt: '2026-10-15T00:00:00.000Z', graceEndsAt: null }, cycles: [], dunningNotices: [] })
+        return HttpResponse.json(billingSummary())
       }),
     ),
     http.post(`${api}/admin/billing/payment-intents`, ({ request }) =>
       execute(request, chaosController, () => {
         requireRole(request, ['owner'])
+        if (cancelAtPeriodEnd) throw new MockApiError(409, 'SUBSCRIPTION_CANCELED', BILLING_CANCEL_MESSAGE.payBlocked)
         return HttpResponse.json({ paymentId: 'pay_mock_01', status: 'PENDING', instruction: { provider: 'sepay', paymentCode: 'TQR1234567890', amountVnd: 100000, transferContent: 'TQR1234567890', bankName: 'VPBank', bankAccount: '0000000001' } }, { status: 201 })
+      }),
+    ),
+    http.post(`${api}/admin/billing/cancel`, ({ request }) =>
+      execute(request, chaosController, () => {
+        requireRole(request, ['owner'])
+        cancelAtPeriodEnd = true
+        canceledAt = new Date().toISOString()
+        return HttpResponse.json(billingSummary())
+      }),
+    ),
+    http.post(`${api}/admin/billing/reactivate`, ({ request }) =>
+      execute(request, chaosController, () => {
+        requireRole(request, ['owner'])
+        cancelAtPeriodEnd = false
+        canceledAt = null
+        return HttpResponse.json(billingSummary())
       }),
     ),
     http.patch(`${api}/admin/restaurant`, ({ request }) =>

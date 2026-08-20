@@ -23,7 +23,7 @@ Nguồn thiết kế: [../ai-docs/10-saas-evolution.md](../ai-docs/10-saas-evolu
 | 3 | `SA-06` → `SA-07` | **DONE 2026-08-15** — đăng ký/onboarding API, shell owner tenant-scoped, account/trial và đổi PIN staff đã kiểm local. |
 | 4 | `SA-01` | Chốt policy billing trước khi tạo lifecycle. |
 | 5 | `SA-08` | Plan/subscription/entitlement bằng code và test local. |
-| 6 | `SA-09` → `SA-12` | **`SA-09`/`SA-10`/`SA-11` DONE** — payment adapter, billing UI và enforcement đã kiểm local; còn `SA-12` acceptance/vận hành sandbox. |
+| 6 | `SA-09` → `SA-12` | **DONE 2026-08-20** — payment adapter, billing UI, enforcement, runbook/ops CLI, đối soát thủ công, backup drill và test tải tenant đã kiểm local. |
 | 7 | `SA-13` | Feature entitlement data-driven. |
 | 8 | `SA-00` → `SA-02` | Chọn provider, deploy HTTPS, managed DB/object storage, backup/observability. |
 | 9 | `BE-13` | Kiểm thử phát hành bằng QR giấy, điện thoại 4G và tablet thật. |
@@ -119,11 +119,19 @@ Gắn `EntitlementService` vào endpoint/stream cần bảo vệ, dunning/grace 
 
 **Đã kiểm:** 13 unit test billing trong contracts (58/58 workspace contracts) và `verify-entitlement-matrix.sh` chạy thật trên Docker — đủ 5 trạng thái, đúng copy từng đối tượng, audit dunning `1,3` trong grace, `SUSPENDED` + tiền vào vẫn `SUSPENDED`, `GRACE` + cycle đã trả thành `ACTIVE`. Regression `verify-flow-01-guest-order.sh`, `verify-tenant-isolation.sh`, `verify-sse-ticket.sh` vẫn pass; lint/build API + 3 app sạch.
 
-### `SA-12` — Billing operations & acceptance · TODO
+### `SA-12` — Billing operations & acceptance · DONE 2026-08-20
 
 Dashboard/support runbook cho payment fail, manual reconciliation có audit, webhook replay, cancel/reactivate và test tải tenant. Xác nhận backup/restore còn giữ subscription/payment audit.
 
 **Xong khi:** checklist E2E từ đăng ký đến paid/past-due pass với provider sandbox; monitor/alert có owner rõ ràng.
+
+**Kết quả:** runbook [`ai-docs/11-billing-operations.md`](../ai-docs/11-billing-operations.md) có đường xử lý theo triệu chứng, bảng giám sát và người chịu trách nhiệm từng tín hiệu. Ops CLI `dist/ops/billing-ops.cli.js` (`attention`/`find`/`status`/`reconcile`/`replay`/`suspend`/`unsuspend`) dùng lại `PaymentService`/`EntitlementService` nên không có nhánh settle thứ hai, chạy ngoài tiến trình API và tự từ chối khi bị chạy bằng role runtime `tableqr_app`. Đối soát thủ công là provider giả `manual` với `eventId = manual:<mã GD>` nên trùng mã là no-op, sai số tiền bị từ chối, thành công ghi `MANUAL_RECONCILED` kèm `actor` + `note`. Owner tự huỷ/bật lại gia hạn: `cancelAtPeriodEnd` chỉ khoá payment intent (`409 SUBSCRIPTION_CANCELED`) và đổi copy banner, không cắt kỳ đã trả, không đổi lifecycle.
+
+Sửa hai lỗi thật do test tải phát hiện, đều làm khách nhận 500 khi hai điện thoại thao tác cùng lúc: mở phiên bàn bắt `P2002` trong transaction đã abort (thiếu `SAVEPOINT`) và cấp `sequence_no` bằng `MAX+1` chạy song song (thiếu khoá hàng phiên). Thêm một lỗ hổng vận hành: webhook đã ghi audit mà chưa `processedAt` từng bị coi là bản trùng, nghĩa là crash giữa chừng sẽ khoá quán vĩnh viễn dù tiền đã vào — nay được xử lý tiếp. Ngoài ra 5xx giờ có log kèm stack (trước đây filter nuốt hết, không thể đặt alert) và mọi 429 trả `RATE_LIMITED` với copy tiếng Việt thay vì chuỗi `ThrottlerException` tiếng Anh.
+
+**Đã kiểm trên Docker:** `verify-billing-operations.sh` (8 nhóm, 40 assertion) PASS; `verify-billing-backup-restore.sh` PASS 6 bảng billing khớp cả số hàng lẫn checksum, unique chống replay và RLS còn nguyên; `load-test-tenants.sh` 20×2 PASS trong ngân sách p95, và 48×4 không có 5xx nào. Regression `verify-flow-01-guest-order.sh`, `verify-tenant-isolation.sh`, `verify-sse-ticket.sh`, `verify-entitlement-matrix.sh`, `verify-owner-registration.sh` đều PASS. Workspace `pnpm lint`/`test` (61 contracts + 17 mock)/`build` sạch.
+
+**Còn mở:** throttle toàn cục 100 req/phút tính theo IP và API chưa `trust proxy` — sau reverse proxy production, cả hệ thống dùng chung một hạn mức. Ghi ở [`04-open-questions.md`](04-open-questions.md) Q13, cần chốt trước `SA-00`.
 
 ### `SA-13` — Feature entitlements data-driven · TODO
 

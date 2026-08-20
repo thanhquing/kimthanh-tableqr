@@ -20,7 +20,7 @@ afterEach(() => {
 afterAll(() => server.close())
 
 describe('handlers', () => {
-  it('khai báo đủ 33 HTTP endpoint hiện tại và chưa khai báo SSE M7', () => {
+  it('khai báo đủ 35 HTTP endpoint hiện tại và chưa khai báo SSE M7', () => {
     expect(createHandlers({ store, chaos }).map((handler) => handler.info.header)).toEqual([
       'GET */api/v1/guest/tables/:qrToken',
       'GET */api/v1/guest/sessions/:sessionId/orders',
@@ -53,6 +53,8 @@ describe('handlers', () => {
       'GET */api/v1/admin/account',
       'GET */api/v1/admin/billing',
       'POST */api/v1/admin/billing/payment-intents',
+      'POST */api/v1/admin/billing/cancel',
+      'POST */api/v1/admin/billing/reactivate',
       'PATCH */api/v1/admin/restaurant',
       'PATCH */api/v1/admin/staff-pin',
     ])
@@ -122,6 +124,29 @@ describe('handlers', () => {
         details: { unavailableItemIds: ['item-ca-phe-sua-da'] },
       },
     })
+  })
+
+  it('huỷ gia hạn khoá đường thanh toán cho tới khi bật lại', async () => {
+    const ownerHeaders = { Authorization: `Bearer ${OWNER_TOKEN}`, 'Content-Type': 'application/json' }
+    const billing = async () => (await fetch(`${BASE}/admin/billing`, { headers: ownerHeaders })).json() as Promise<{ subscription: { cancelAtPeriodEnd: boolean; canceledAt: string | null } }>
+    const intent = () => fetch(`${BASE}/admin/billing/payment-intents`, { method: 'POST', headers: ownerHeaders, body: JSON.stringify({ provider: 'sepay' }) })
+
+    expect((await billing()).subscription.cancelAtPeriodEnd).toBe(false)
+    expect((await intent()).status).toBe(201)
+
+    const canceled = await fetch(`${BASE}/admin/billing/cancel`, { method: 'POST', headers: ownerHeaders })
+    expect(canceled.status).toBe(200)
+    const afterCancel = await billing()
+    expect(afterCancel.subscription.cancelAtPeriodEnd).toBe(true)
+    expect(afterCancel.subscription.canceledAt).not.toBeNull()
+
+    const blocked = await intent()
+    expect(blocked.status).toBe(409)
+    expect(await blocked.json()).toMatchObject({ error: { code: 'SUBSCRIPTION_CANCELED' } })
+
+    await fetch(`${BASE}/admin/billing/reactivate`, { method: 'POST', headers: ownerHeaders })
+    expect((await billing()).subscription.cancelAtPeriodEnd).toBe(false)
+    expect((await intent()).status).toBe(201)
   })
 
   it('PATCH partial không làm mất các trường client không gửi', async () => {

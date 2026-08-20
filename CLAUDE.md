@@ -48,6 +48,7 @@ Mục tiêu trải nghiệm: **quét → gửi đơn xong trong 25–30 giây.**
 | Kiến trúc, stack, quy ước code | [`ai-docs/06-architecture-and-tech-stack.md`](ai-docs/06-architecture-and-tech-stack.md) |
 | **Sơ đồ hệ thống đang chạy: FE/BE/infra/ERD** | [`ai-docs/09-current-system-architecture.md`](ai-docs/09-current-system-architecture.md) |
 | **Roadmap SaaS: đa quán, trial và billing** | [`ai-docs/10-saas-evolution.md`](ai-docs/10-saas-evolution.md) |
+| **Runbook vận hành billing + ops CLI + giám sát** | [`ai-docs/11-billing-operations.md`](ai-docs/11-billing-operations.md) |
 | Điều kiện nghiệm thu + ngân sách hiệu năng | [`ai-docs/07-acceptance-criteria.md`](ai-docs/07-acceptance-criteria.md) |
 | Mốc, backlog, task | [`ai-tasks/`](ai-tasks/00-index.md) |
 

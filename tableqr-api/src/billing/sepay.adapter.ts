@@ -34,10 +34,14 @@ export class SepayAdapter implements PaymentProviderAdapter {
     if (expected.length !== signature.length || !timingSafeEqual(Buffer.from(expected), Buffer.from(signature))) reject(`signature_mismatch_body_bytes=${rawBody.length}`)
     let payload: Record<string, unknown>
     try { payload = JSON.parse(rawBody.toString('utf8')) as Record<string, unknown> } catch { reject('invalid_json') }
-    const eventId = typeof payload!.id === 'number' || typeof payload!.id === 'string' ? String(payload!.id) : ''
-    const paymentCode = typeof payload!.code === 'string' ? payload!.code : ''
-    const amountVnd = typeof payload!.transferAmount === 'number' ? payload!.transferAmount : 0
+    return this.eventFromPayload(payload!)
+  }
+
+  eventFromPayload(payload: Record<string, unknown>): VerifiedPaymentEvent {
+    const eventId = typeof payload.id === 'number' || typeof payload.id === 'string' ? String(payload.id) : ''
+    const paymentCode = typeof payload.code === 'string' ? payload.code : ''
+    const amountVnd = typeof payload.transferAmount === 'number' ? payload.transferAmount : 0
     if (!eventId || !paymentCode || !Number.isInteger(amountVnd) || amountVnd < 1) reject('invalid_payment_payload')
-    return { provider: this.provider, eventId, paymentCode, amountVnd, isIncoming: payload!.transferType === 'in', payload: payload! }
+    return { provider: this.provider, eventId, paymentCode, amountVnd, isIncoming: payload.transferType === 'in', payload }
   }
 }

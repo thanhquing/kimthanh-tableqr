@@ -3,6 +3,16 @@ import { formatDate } from './format.js'
 export const SUBSCRIPTION_STATUS = ['TRIAL', 'ACTIVE', 'GRACE', 'PAST_DUE', 'SUSPENDED'] as const
 export type SubscriptionStatus = (typeof SUBSCRIPTION_STATUS)[number]
 
+/**
+ * Audit lifecycle. Bon loai dau do `EntitlementService` ghi tu dong; nam loai sau
+ * do owner tu thao tac hoac ho tro can thiep bang ops CLI (`SA-12`).
+ */
+export const SUBSCRIPTION_EVENT_TYPE = [
+  'GRACE_STARTED', 'DUNNING_NOTICE', 'PAST_DUE', 'ACTIVATED',
+  'CANCELED', 'REACTIVATED', 'MANUAL_RECONCILED', 'SUSPENDED', 'UNSUSPENDED',
+] as const
+export type SubscriptionEventType = (typeof SUBSCRIPTION_EVENT_TYPE)[number]
+
 /** Ai dang thao tac — quyet dinh copy hien ra, khong quyet dinh quyen. */
 export type BillingAudience = 'guest' | 'staff' | 'owner'
 
@@ -64,6 +74,29 @@ export function restaurantInactiveMessage(audience: BillingAudience, status: Sub
 /** Banner grace trong admin — bat buoc hien suot ky gia han. */
 export function graceWarningMessage(graceEndsAtIso: string): string {
   return `Quán sẽ tạm ngưng nhận đơn sau ngày ${formatDate(graceEndsAtIso)}. Hãy thanh toán để tiếp tục sử dụng.`
+}
+
+/**
+ * Moc dich vu con chay den. Huy gia han khong cat ngan ky da tra (`SA-01`:
+ * khong prorate), nen owner van dung het `serviceEndsAt` roi moi vao grace.
+ */
+export function serviceEndsAt(subscription: { status: SubscriptionStatus; trialEndsAt: Date; currentPeriodEndsAt: Date | null; graceEndsAt: Date | null }): Date | null {
+  if (subscription.status === 'TRIAL') return subscription.trialEndsAt
+  if (subscription.status === 'ACTIVE') return subscription.currentPeriodEndsAt
+  if (subscription.status === 'GRACE') return subscription.graceEndsAt
+  return null
+}
+
+/** Copy cho luong huy/bat lai gia han (`SA-12`). */
+export const BILLING_CANCEL_MESSAGE = {
+  ended: 'Bạn đã yêu cầu ngừng gia hạn. Hãy bật lại dịch vụ để tiếp tục sử dụng.',
+  payBlocked: 'Bạn đã yêu cầu ngừng gia hạn. Hãy bật lại dịch vụ trước khi thanh toán.',
+} as const
+
+/** Banner khi owner da huy gia han — thay cho loi nhac thanh toan. */
+export function cancellationNoticeMessage(serviceEndsAtIso: string | null): string {
+  if (!serviceEndsAtIso) return BILLING_CANCEL_MESSAGE.ended
+  return `Bạn đã yêu cầu ngừng gia hạn. Dịch vụ chạy đến hết ngày ${formatDate(serviceEndsAtIso)}.`
 }
 
 export function nextSubscriptionState(subscription: { status: SubscriptionStatus; trialEndsAt: Date; currentPeriodEndsAt: Date | null; graceEndsAt: Date | null }, now: Date): { status: SubscriptionStatus; graceEndsAt: Date | null } {

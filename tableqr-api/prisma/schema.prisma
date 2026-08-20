@@ -65,6 +65,12 @@ enum SubscriptionEventType {
   DUNNING_NOTICE
   PAST_DUE
   ACTIVATED
+  // Owner tu thao tac hoac ho tro can thiep bang ops CLI (`SA-12`).
+  CANCELED
+  REACTIVATED
+  MANUAL_RECONCILED
+  SUSPENDED
+  UNSUSPENDED
 }
 
 enum PaymentStatus {
@@ -126,6 +132,9 @@ model Subscription {
   currentPeriodEndsAt   DateTime?          @map("current_period_ends_at") @db.Timestamptz(3)
   priceVndSnapshot      Int                @map("price_vnd_snapshot")
   featureLimitsSnapshot Json               @map("feature_limits_snapshot")
+  // Owner yeu cau ngung gia han: ky dang chay van dung het roi moi vao grace.
+  cancelAtPeriodEnd     Boolean            @default(false) @map("cancel_at_period_end")
+  canceledAt            DateTime?          @map("canceled_at") @db.Timestamptz(3)
   createdAt             DateTime           @default(now()) @map("created_at") @db.Timestamptz(3)
   updatedAt             DateTime           @updatedAt @map("updated_at") @db.Timestamptz(3)
   restaurant            Restaurant         @relation(fields: [restaurantId], references: [id], onDelete: Restrict)
@@ -146,6 +155,9 @@ model SubscriptionEvent {
   type           SubscriptionEventType
   dunningDay     Int                   @default(0) @map("dunning_day")
   occurredAt     DateTime              @map("occurred_at") @db.Timestamptz(3)
+  // Chi su kien do ho tro/owner thao tac moi co actor va note.
+  actor          String?
+  note           String?
   createdAt      DateTime              @default(now()) @map("created_at") @db.Timestamptz(3)
   restaurant     Restaurant            @relation(fields: [restaurantId], references: [id], onDelete: Restrict)
   subscription   Subscription          @relation(fields: [subscriptionId], references: [id], onDelete: Restrict)
